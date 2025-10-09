@@ -62,8 +62,8 @@ static const ByteSetFormat UTF8(  "UTF-8",    "", 256, 8, ".*",                 
 
 /// @brief Alternative Decimals
 static const ByteSetFormat Wei(     "wei",    "",  10, 0, "^[0-9]+",                        0,  0);
-static const ByteSetFormat Gwei(   "Gwei",    "",  10, 0, "^\\d+(\\.\\d{1,9})?$",             0,  9);
-static const ByteSetFormat Eth(     "Eth",    "",  10, 0, "^\\d+(\\.\\d{1,18})?$",            0, 18);
+static const ByteSetFormat Gwei(   "Gwei",    "",  10, 0, "^\\d+(\\.\\d{1,9})?$",           0,  9);
+static const ByteSetFormat Eth(     "Eth",    "",  10, 0, "^\\d+(\\.\\d{1,18})?$",          0, 18);
 
 /// @brief Alternative Hexadecimals
 static const ByteSetFormat Hex20(   "Hex",  "0x",  16, 4, "^(0x)?[0-9a-fA-F]{0,40}",      160,  0); // Addresses
