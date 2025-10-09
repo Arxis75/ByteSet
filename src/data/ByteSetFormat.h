@@ -20,7 +20,13 @@ class ByteSetFormat
         inline const string &getHeader() const { return m_header; }
         inline uint16_t getBase() const { return m_base; }
         inline uint8_t getBitsPerChar() const { return m_bits_per_char; }
+        /// @brief Function returning the number of chars fitting in an element
+        /// @param bits_per_elem number of bits of the element to hosts chars
+        /// @return The number of complete chars fitting in a elem of size bits_per_elem (0 if char size > element size)
         inline uint8_t getCharsPerElem(uint8_t bits_per_elem) const { return (isCharAligned() ? (bits_per_elem / getBitsPerChar()) : 0); }
+        /// @brief Function returning the number of elements fitting in a char size
+        /// @param bits_per_elem number of bits of the element to be hosted in a char size
+        /// @return The number of complete elements fitting in a char (0 if element size > char size)
         inline uint8_t getElemsPerChar(uint8_t bits_per_elem) const { return (isCharAligned() ? (getBitsPerChar() / bits_per_elem) : 0); }
         inline const string &getRegex() const { return m_regex; }
         inline uint8_t getMaxBitSize() const { return m_bit_size; }
