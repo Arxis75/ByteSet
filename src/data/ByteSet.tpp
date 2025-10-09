@@ -69,40 +69,6 @@ Integer ByteSet<BitsPerElement>::asInteger() const
     return ret_value;     
 }
 
-/*template <uint8_t BitsPerElement>
-string ByteSet<BitsPerElement>::asString(const ByteSetFormat &f, bool with_header, bool upper_case) const
-{
-    stringstream ss;
-    if(f.getBase() == 10) {
-        if(Integer val = asInteger(); val >=0)  //Do not display -1 when the ByteSet is empty
-            ss << dec << val;
-    }
-    else if(f.isCharAligned()) {
-        uint8_t mask = f.getBase() - 1;
-        string str_elem;
-        for(int64_t i=0;i<getNbElements();i++) {
-            if( f.getBitsPerChar() > getBitsPerElem()) {
-                // 1 char spreads over several elements
-                if(  ((i % f.getElemsPerChar(getBitsPerElem())) == (f.getElemsPerChar(getBitsPerElem()) - 1))
-                   || (i ==  getNbElements() - 1) ) {
-                    ss << str_elem;
-                    str_elem.clear();
-                }
-                str_elem += f.digitToChar(vvalue[getNbElements() - i - 1] << (i*getBitsPerElem()), upper_case);
-            }
-            else {
-                uint8_t shift = 0;
-                for(uint64_t j=0;j<f.getCharsPerElem(getBitsPerElem());j++) {
-                    str_elem.insert(0, 1, f.digitToChar((vvalue[i]>>shift) & mask, upper_case));
-                    shift += f.getBitsPerChar();
-                }
-                ss << str_elem;
-            }
-        }
-    }
-    return f.toUserString(ss.str(), with_header);
-}*/
-
 template <uint8_t BitsPerElement>
 string ByteSet<BitsPerElement>::asString(const ByteSetFormat &f, bool with_header, bool upper_case) const
 {
@@ -137,39 +103,6 @@ string ByteSet<BitsPerElement>::asString(const ByteSetFormat &f, bool with_heade
     }
     return f.toUserString(str_result, with_header);
 }
-
-/*
-        for(uint64_t i=0;i<getNbElements();i++) {
-            string str_elem;
-            if(f.getBitsPerChar() > getBitsPerElem()) {
-                str_elem .clear();
-                char c = 0;
-                for(uint64_t j=0;j<f.getElemsPerChar(BitsPerElement);j++) {
-                    int64_t index = getNbElements() - i - j - 1;
-                    cout << dec << int(i) << " " << int(j) << " ";
-                    cout << hex << int(index) << " ";
-                    cout << hex << int(j*getBitsPerElem()) << " ";
-                    if(index >= 0)
-                        c += (vvalue[index] << j*getBitsPerElem());
-                    else
-                        goto lbl;
-                    cout << " " << hex << int(c) << endl;
-                }
-                str_elem = f.digitToChar(c, upper_case);
-                i += f.getElemsPerChar(BitsPerElement) - 1;
-                //chars empliés dans le mauvais sens!
-            }
-            else {
-                uint8_t shift = 0;
-                for(uint64_t j=0;j<f.getCharsPerElem(BitsPerElement);j++) {
-                    str_elem.insert(0, 1, f.digitToChar((vvalue[i]>>shift) & mask, upper_case));
-                    shift += f.getBitsPerChar();
-                }
-            }
-lbl:
-            ss << str_elem;
-        }
-*/
 
 template <uint8_t BitsPerElement>
 uint64_t ByteSet<BitsPerElement>::getStrNbElem(const string &str, const ByteSetFormat &f, bool is_already_Canonical) const
