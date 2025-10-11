@@ -3,7 +3,7 @@
 #include <data/System.h>
 #include <data/ByteSetFormat.h>
 
-template <uint8_t BitsPerElement = 8> 
+template <uint8_t BitsPerElement = 8>   //Should work for 1, 2, 4, 8 only
 class ByteSet
 {
     public: 
@@ -65,7 +65,7 @@ class ByteSet
         inline uint8_t getIntElem(const Integer &val, uint64_t elem_offset) const { return uint8_t((Givaro::pow(2, getBitsPerElem()) - 1) & (val >> (getIntNbElem(val) - 1 - elem_offset) * getBitsPerElem())); }
 
         inline uint8_t getBitsPerElem() const { return BitsPerElement; }
-        inline bool isByteAligned() const { return (getBitsPerElem() == 8);}
+        inline bool isByteAligned() const { return !(getBitsPerElem()%8);}
 
         /// @brief Gets the size in bits of the stored value.
         /// @return The logical size in  bits of the container, not the vector size.

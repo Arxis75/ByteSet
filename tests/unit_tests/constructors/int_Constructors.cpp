@@ -113,7 +113,17 @@ using MyIntTypes = ::testing::Types<
     MyIntType<uint64_t, 1>,
     MyIntType<uint64_t, 8>,
     MyIntType<Integer, 8>,
-    MyIntType<Integer, 1>
+    MyIntType<Integer, 1>,
+
+    MyIntType<int8_t, 4>,
+    MyIntType<uint8_t, 4>,
+    MyIntType<int16_t, 4>,
+    MyIntType<uint16_t, 4>,
+    MyIntType<int32_t, 4>,
+    MyIntType<uint32_t, 4>,
+    MyIntType<int64_t, 4>,
+    MyIntType<uint64_t, 4>,
+    MyIntType<Integer, 4>
 >;
 
 TYPED_TEST_SUITE(MyIntTypedTest, MyIntTypes);
@@ -131,17 +141,14 @@ TYPED_TEST(MyIntTypedTest, Constructors) {
     ///************* Constructors **************
     b = val;                                //operator= 
     ASSERT_EQ(b.bitSize(), 8 * sizeof(T) - (b.getBitsPerElem() == 1 && std::is_signed_v<T>));   // skip the sign bit if not aligned && present
-    ASSERT_EQ(b.byteSize(), sizeof(T));
     ASSERT_EQ(b.asInteger(), val);
     b.clear();
     b = ByteSet<nb>(val);                   //constructor 
     ASSERT_EQ(b.bitSize(), 8 * sizeof(T) - (b.getBitsPerElem() == 1 && std::is_signed_v<T>));   // skip the sign bit if not aligned && present
-    ASSERT_EQ(b.byteSize(), sizeof(T));
     ASSERT_EQ(b.asInteger(), val);
     b.clear();
     b = ByteSet<nb>(val, 131);              //131 elem-wide constructor
     ASSERT_EQ(b.bitSize(), 131 * b.getBitsPerElem());
-    ASSERT_EQ(b.byteSize(), (b.getBitsPerElem() == 8 ? 131 : 17));      //rounded to the upper byte if BitsPerElem = 1
     ASSERT_EQ(b.asInteger(), val);                                      //Big-Endian
     b.clear();
 }

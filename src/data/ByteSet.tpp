@@ -28,7 +28,8 @@ ByteSet<BitsPerElement>::ByteSet(const Integer &val, uint64_t nb_elem)
 template <uint8_t BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const char *str, const ByteSetFormat &f, uint64_t target_nb_elem)
 {
-    if(string s = f.toCanonicalString(str); s.size()) {
+    string s = f.toCanonicalString(str);
+    if(s.size()) {
         if(f.getBase() == 10)
             push_back(ByteSet(Integer(s.c_str()), target_nb_elem));
         else if(f.isCharAligned()) {
@@ -38,7 +39,7 @@ ByteSet<BitsPerElement>::ByteSet(const char *str, const ByteSetFormat &f, uint64
                 uint8_t elem_value = 0;
                 if( f.getBitsPerChar() > getBitsPerElem()) {
                     // 1 char spreads over several elements
-                    int64_t index = s.size() - (i/f.getBitsPerChar()) - 1;
+                    int64_t index = s.size() - (i*getBitsPerElem()/f.getBitsPerChar()) - 1;
                     elem_value = (elem_mask & (f.charToDigit(s[index]) >> ((i*getBitsPerElem())%f.getBitsPerChar())));
                 }
                 else {
@@ -74,7 +75,8 @@ string ByteSet<BitsPerElement>::asString(const ByteSetFormat &f, bool with_heade
 {
     string str_result;
     if(f.getBase() == 10) {
-        if(Integer val = asInteger(); val >=0) {  //Do not display -1 when the ByteSet is empty
+        Integer val = asInteger();
+        if(val >=0) {  //Do not display -1 when the ByteSet is empty
             stringstream ss;
             ss << dec << val;
             str_result = ss.str();
