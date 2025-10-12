@@ -14,6 +14,9 @@
 #include <stdexcept>
 #include <algorithm>*/
 
+#include <ethash/keccak.hpp>
+#include <openssl/sha.h>
+
 using Givaro::Integer;
 
 /*using std::make_shared;

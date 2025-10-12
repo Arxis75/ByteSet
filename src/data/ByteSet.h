@@ -81,6 +81,9 @@ class ByteSet
 
         inline void clear() { vvalue.clear(); }
 
+        ByteSet keccak256() const;
+        ByteSet sha256() const;
+
     private:
         /// @brief Vector is used to store the data with the Big-Endian convention
         vector<uint8_t> vvalue;

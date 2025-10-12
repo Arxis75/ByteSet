@@ -39,7 +39,7 @@ ByteSet<BitsPerElement>::ByteSet(const char *str, const ByteSetFormat &f, uint64
                 uint8_t elem_value = 0;
                 if( f.getBitsPerChar() > getBitsPerElem()) {
                     // 1 char spreads over several elements
-                    int64_t index = s.size() - (i*getBitsPerElem()/f.getBitsPerChar()) - 1;
+                    int64_t index = s.size() - (i * getBitsPerElem() / f.getBitsPerChar()) - 1;
                     elem_value = (elem_mask & (f.charToDigit(s[index]) >> ((i*getBitsPerElem())%f.getBitsPerChar())));
                 }
                 else {
@@ -118,6 +118,37 @@ uint64_t ByteSet<BitsPerElement>::getStrNbElem(const string &str, const ByteSetF
     else if(f.isCharAligned())
         nb_elem = ceil(float(s.size()*f.getBitsPerChar())/getBitsPerElem());
     return nb_elem; 
+}
+
+template <uint8_t BitsPerElement>
+ByteSet<BitsPerElement> ByteSet<BitsPerElement>::keccak256() const
+{
+    ByteSet<BitsPerElement> result;
+    if(BitsPerElement == 8)
+        result = ByteSet(ethash::keccak256((unsigned char*)this, byteSize()).bytes, 32);
+    else {
+        assert(!bitSize()%8);
+        ByteSet<8> this_8(asInteger(), byteSize());
+        ByteSet<8> digest_8(ethash::keccak256(this_8, this_8.byteSize()).bytes, 32);
+        result = ByteSet<BitsPerElement>(digest_8.asInteger(), 256/BitsPerElement);
+    }
+    return result;
+}
+
+template <uint8_t BitsPerElement>
+ByteSet<BitsPerElement> ByteSet<BitsPerElement>::sha256() const
+{
+    ByteSet<BitsPerElement> result(0, 32);
+    if(BitsPerElement == 8)
+        SHA256((unsigned char*)this, byteSize(), result);   //result needs to be already initialized at 32 Bytes
+    else {
+        assert(!bitSize()%8);
+        ByteSet<8> this_8(asInteger(), byteSize());
+        ByteSet<8> digest_8(0, 32);
+        SHA256((unsigned char*)this_8, this_8.byteSize(), digest_8);
+        result = ByteSet<BitsPerElement>(digest_8.asInteger(), 256/BitsPerElement);
+    }
+    return result;
 }
 
 template <uint8_t bb>
