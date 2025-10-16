@@ -19,10 +19,17 @@
 
 using Givaro::Integer;
 
-/*using std::make_shared;
 using std::shared_ptr;
+using std::unique_ptr;
+using std::make_shared;
+using std::make_unique;
+using std::enable_shared_from_this;
+using std::dynamic_pointer_cast;
+using std::const_pointer_cast;
+using std::static_pointer_cast;
+//using std::move;    //Generates Warning! Must be explicit std::move
 
-using std::time_t;
+/*using std::time_t;
 
 using std::deque;*/
 using std::string;

@@ -12,7 +12,7 @@ FetchContent_Declare(
      BINARY_DIR "${JSON_INSTALL}"
      SOURCE_DIR "${JSON_INSTALL}"
      SUBBUILD_DIR "${JSON_INSTALL}-subbuild"
- )
- FetchContent_MakeAvailable(json)
+)
+FetchContent_MakeAvailable(json)
 
- set(JSON_BuildTests OFF CACHE INTERNAL "")
+set(JSON_BuildTests OFF CACHE INTERNAL "")

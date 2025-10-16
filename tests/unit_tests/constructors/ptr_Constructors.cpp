@@ -69,9 +69,9 @@ TEST(PtrConstructorsTest, Brackets_Operator)
 
     //******* Verifies that the operator[] won't accept index over bondaries ********
     ASSERT_DEATH(uc[2] = b[10], "");
-    ASSERT_DEATH(b[10] = uc[2], "");
+    ASSERT_DEATH(const_cast<unsigned char&>(b[10]) = uc[2], "");
 
-    b[1] = uc[1];
+    const_cast<unsigned char&>(b[1]) = uc[1];
     ASSERT_EQ(b.asInteger(), 0xFFBBFF);
 
     uc[2] = b[2];
@@ -99,7 +99,7 @@ TEST(PtrConstructorsTest, Value_Truncation)
     unsigned int ui[] = {0xAAAAAAAA, 0xBBBBBBBB, 0xCCCCCCCC};
     ByteSet b3(0xFFFFFF, 3);
 
-    b3[1] = ui[1];
+    const_cast<unsigned char&>(b3[1]) = ui[1];
     ASSERT_EQ(b3.asInteger(), 0xFFBBFF);
 
     ui[2] = b3[2];

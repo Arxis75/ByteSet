@@ -50,15 +50,30 @@ class ByteSet
         
         inline void push_front_elem(uint8_t elem) { vvalue.insert(vvalue.begin(), elem); }
         inline void push_back_elem(uint8_t elem) { vvalue.push_back(elem); }
+        uint8_t pop_front_elem();
+        uint8_t pop_back_elem();
+
+        inline void push_front(const ByteSet& subset) { vvalue.insert(vvalue.begin(), subset.vvalue.begin(), subset.vvalue.end()); }
         inline void push_back(const ByteSet& subset) { vvalue.insert(vvalue.end(), subset.vvalue.begin(), subset.vvalue.end()); }
+        ByteSet pop_front(uint64_t nb_element);
+        ByteSet pop_back(uint64_t nb_element);
 
         //************************************** Accessors ****************************************//
 
         inline bool operator==(const ByteSet &b) const { return vvalue == b.vvalue; }
 
-        /// @brief operate an element (any size ok)
-        inline unsigned char& operator[](uint64_t elem_index) { assert(elem_index < getNbElements()); return vvalue[elem_index]; }
-        
+        /// @brief 
+
+        /// @brief Access in read mode an element of the ByteSet (Might be const_cast<unsigned char &> for write mode access)
+        /// @param elem_index 
+        /// @return the reference of the element
+        inline const unsigned char &operator[](uint64_t elem_index) const { assert(elem_index < getNbElements()); return vvalue[elem_index]; }
+        /// @brief extract a sub-ByteSet
+        /// @param elem_offset offset in elements of the beginning of the sub-ByteSet
+        /// @param nb_element number of elements of the sub-ByteSet
+        /// @return The sub-ByteSet
+        ByteSet at(const uint64_t elem_offset, const uint64_t nb_element) const;
+
         inline uint8_t getElem(uint64_t elem_index) const { return vvalue[elem_index]; }
         inline uint64_t getIntNbElem(Integer val) const { return ceil(logtwo(1 + val) / getBitsPerElem()); }
         uint64_t getStrNbElem(const string &str, const ByteSetFormat &f = Hex, bool is_already_Canonical = false) const;

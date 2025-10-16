@@ -121,6 +121,51 @@ uint64_t ByteSet<BitsPerElement>::getStrNbElem(const string &str, const ByteSetF
 }
 
 template <uint8_t BitsPerElement>
+uint8_t ByteSet<BitsPerElement>::pop_front_elem()
+{
+    assert(getNbElements());
+    uint8_t ret_value = vvalue[0];
+    vvalue.erase(vvalue.begin());
+    return ret_value;
+}
+
+template <uint8_t BitsPerElement>
+uint8_t ByteSet<BitsPerElement>::pop_back_elem()
+{
+    assert(getNbElements());
+    uint8_t ret_val = vvalue[getNbElements()-1];
+    vvalue.pop_back();
+    return ret_val;
+}
+
+template <uint8_t BitsPerElement>
+ByteSet<BitsPerElement> ByteSet<BitsPerElement>::pop_front(uint64_t nb_element) {
+    ByteSet ret_value;
+    if(nb_element <= getNbElements())
+        for(uint64_t i=0;i<nb_element;i++)
+            ret_value.push_back_elem(pop_front_elem());
+    return ret_value;
+}
+
+template <uint8_t BitsPerElement>
+ByteSet<BitsPerElement> ByteSet<BitsPerElement>::pop_back(uint64_t nb_element) {
+    ByteSet ret_value;
+    if(nb_element <= getNbElements())
+        for(uint64_t i=0;i<nb_element;i++)
+            ret_value.push_front_elem(pop_back_elem());
+    return ret_value;
+}
+
+template <uint8_t BitsPerElement>
+ByteSet<BitsPerElement> ByteSet<BitsPerElement>::at(const uint64_t elem_offset, const uint64_t nb_element) const
+{
+    ByteSet ret_value = *this;
+    ret_value.pop_front(elem_offset);
+    ret_value.pop_back(getNbElements() - (elem_offset + nb_element));
+    return ret_value;
+}
+
+template <uint8_t BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::keccak256() const
 {
     ByteSet<BitsPerElement> result;
