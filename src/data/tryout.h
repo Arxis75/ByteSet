@@ -115,15 +115,15 @@ class Block : public Composite {
         Block(ByteSet<> b) : Composite(b) {}    // ByteSet<> is copied here to preserve the original
         virtual ~Block() {};
 
-         BlockHeader* getHeader() const {
+          const shared_ptr<const BlockHeader> getHeader() const {
             auto block = dynamic_pointer_cast<const List>(getItem(0));
             auto header = dynamic_pointer_cast<const List>(block->getItem(0));
-            return new BlockHeader(header);
+            return make_shared<const BlockHeader>(header);
         }
 
-         Withdrawals* getWithdrawals() const {
+         const shared_ptr<const Withdrawals> getWithdrawals() const {
             auto block = dynamic_pointer_cast<const List>(getItem(0));
             auto w = dynamic_pointer_cast<const List>(block->getItem(3));
-            return new Withdrawals(w);
+            return make_shared<const Withdrawals>(w);
         }
 };
