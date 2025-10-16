@@ -15,9 +15,9 @@ int main(int argc, char *argv[])
     Block b(block_rlp);
     cout << hex << b.getHeader()->getParentHash()->asString() << endl;
     //cout << hex << block_rlp << endl;
-    cout << hex << b.getTransactions()->getTransaction(0)->getValue().asString() << endl;
-    cout << hex << b.getTransactions()->getTransaction(1)->getValue().asString() << endl;
-    cout << hex << b.getTransactions()->getTransaction(2)->getValue().asString() << endl;
+    cout << hex << b.getTransactions()->getTransaction(0)->getNonce()->asString() << endl;
+    cout << hex << b.getTransactions()->getTransaction(1)->getNonce()->asString() << endl;
+    cout << hex << b.getTransactions()->getTransaction(2)->getNonce()->asString() << endl;
     cout << hex << b.getWithdrawals()->getWithdrawal(15)->getAmount()->asString() << endl;
     //cout << hex << b.getBlockHeader().getsha3Uncles().asString() << endl;
     //cout << hex << b->asString() << endl;

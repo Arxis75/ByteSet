@@ -77,10 +77,27 @@ class BlockHeader : public Composite {
         }
 };
 
-class Transaction : public Field {
+/*class Transaction : public Field {
     public:
         Transaction(shared_ptr<const Field> f) : Field(*f) {}
         virtual ~Transaction() {};
+};*/
+
+class Transaction : public Composite {
+    public:
+        Transaction(shared_ptr<const Composite> c) : Composite(*c), m_type(0) {}    //Legacy transaction
+        Transaction(ByteSet<> &b, uint8_t type = 0) : Composite(b), m_type(type) {} //Non legacy transaction: consumes b
+        virtual ~Transaction() {};
+    
+        const ByteSet<>* getNonce() const {
+            if( auto l = dynamic_pointer_cast<const List>(getItem(0)); l)
+                if( auto f = dynamic_pointer_cast<const Field>(l->getItem(1)); f)
+                    return &f->getValue();
+            return nullptr;
+        }
+
+    private:
+        uint8_t m_type;
 };
 
 class Transactions : public Composite {
@@ -89,8 +106,14 @@ class Transactions : public Composite {
         virtual ~Transactions() {}
 
         const shared_ptr<const Transaction> getTransaction(uint64_t index) const {
-            auto t = dynamic_pointer_cast<const Field>(getItem(index));   
-            return make_shared<const Transaction>(t);
+            if(auto t = dynamic_pointer_cast<const Field>(getItem(index)); t) {
+                uint8_t type = t->getValue().getElem(0);
+                ByteSet b = t->getValue().at(1, t->getValue().getNbElements() - 1); //copy to be consumed
+                return make_shared<const Transaction>(b, type);
+            }
+            else if(auto t = dynamic_pointer_cast<const List>(getItem(index)); t)
+                return make_shared<const Transaction>(t);
+            return nullptr;
         }
 };
 
