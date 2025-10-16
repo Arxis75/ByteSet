@@ -112,7 +112,7 @@ class Withdrawals : public Composite {
 
 class Block : public Composite {
     public:
-        Block(ByteSet<> &b) : Composite(b) {}    // ByteSet<> is copied here to preserve the original
+        Block(ByteSet<> b) : Composite(b) {}    // ByteSet<> is copied here to preserve the original
         virtual ~Block() {};
 
          BlockHeader* getHeader() const {
