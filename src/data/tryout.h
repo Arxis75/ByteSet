@@ -33,6 +33,7 @@ class Composite : public FieldList {
     protected:
         Composite(ByteSet<> &b);        //consumes b
 
+    private:
         vector<shared_ptr<const FieldList>> m_fieldlist;
         CompositeParsingStrategy* const m_parser;
 };
@@ -76,6 +77,23 @@ class BlockHeader : public Composite {
         }
 };
 
+class Transaction : public Field {
+    public:
+        Transaction(shared_ptr<const Field> f) : Field(*f) {}
+        virtual ~Transaction() {};
+};
+
+class Transactions : public Composite {
+    public:
+        Transactions(shared_ptr<const Composite> c) : Composite(*c) {}
+        virtual ~Transactions() {}
+
+        const shared_ptr<const Transaction> getTransaction(uint64_t index) const {
+            auto t = dynamic_pointer_cast<const Field>(getItem(index));   
+            return make_shared<const Transaction>(t);
+        }
+};
+
 class Withdrawal : public Composite {
     public:
         Withdrawal(shared_ptr<const Composite> c) : Composite(*c) {}
@@ -104,9 +122,9 @@ class Withdrawals : public Composite {
         Withdrawals(shared_ptr<const Composite> c) : Composite(*c) {}
         virtual ~Withdrawals() {}
 
-        Withdrawal* getWithdrawal(uint64_t index) const {
+        const shared_ptr<const Withdrawal> getWithdrawal(uint64_t index) const {
             auto w = dynamic_pointer_cast<const List>(getItem(index));   
-            return new Withdrawal(w);
+            return make_shared<const Withdrawal>(w);
         }
 };
 
@@ -119,6 +137,12 @@ class Block : public Composite {
             auto block = dynamic_pointer_cast<const List>(getItem(0));
             auto header = dynamic_pointer_cast<const List>(block->getItem(0));
             return make_shared<const BlockHeader>(header);
+        }
+
+          const shared_ptr<const Transactions> getTransactions() const {
+            auto block = dynamic_pointer_cast<const List>(getItem(0));
+            auto tr = dynamic_pointer_cast<const List>(block->getItem(1));
+            return make_shared<const Transactions>(tr);
         }
 
          const shared_ptr<const Withdrawals> getWithdrawals() const {
