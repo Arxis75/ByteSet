@@ -4,7 +4,7 @@
 
 CompositeRLPParsing* CompositeRLPParsing::m_sInstancePtr = nullptr;
 
-void CompositeRLPParsing::parse(ByteSet<8> &b, shared_ptr<FieldList> &f) const
+void CompositeRLPParsing::parse(ByteSet<8> &b, shared_ptr<const FieldList> &f) const
 {
     if(b.byteSize()) {
         ByteSet<8> val;
@@ -14,30 +14,30 @@ void CompositeRLPParsing::parse(ByteSet<8> &b, shared_ptr<FieldList> &f) const
         //Single element
         if(header < 0x80) {
             val = header;
-            f = make_shared<Field>(val);
+            f = make_shared<const Field>(val);
         }
         else if(header < 0xb7) {
             size = header - 0x80;
             val = b.at(1, size);
-            f = make_shared<Field>(val);
+            f = make_shared<const Field>(val);
         }
         else if(header < 0xc0) {
             size_size = header - 0xb7;
             size = b.at(1, size_size).asInteger();
             val = b.at(1 + size_size, size);
-            f = make_shared<Field>(val);
+            f = make_shared<const Field>(val);
         }
         //List
         else if(header < 0xf7) {
             size = header - 0xc0;
             val = b.at(1, size);
-            f = make_shared<List>(val);
+            f = make_shared<const List>(val);
         }
         else {
             size_size = header - 0xf7;
             size = b.at(1, size_size).asInteger();
             val = b.at(1 + size_size, size);
-            f = make_shared<List>(val);
+            f = make_shared<const List>(val);
         }
         
         b.pop_front(1 + size_size + size);
