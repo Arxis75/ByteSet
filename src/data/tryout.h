@@ -12,7 +12,7 @@ class FieldList {
 
         virtual const Composite* getComposite() { return 0; }
 
-        virtual void push_back(FieldList *f) = 0;
+        virtual void push_back(shared_ptr<FieldList> f) = 0;
         //virtual void pop_back() = 0;
 
     protected:
@@ -25,15 +25,15 @@ class Composite : public FieldList {
 
         virtual const Composite* getComposite() override { return this; }
 
-        virtual void push_back(FieldList *f) override { m_fieldlist.push_back(f); }
+        virtual void push_back(shared_ptr<FieldList> f) override { m_fieldlist.push_back(f); }
         //virtual void pop_back() override { m_fieldlist.pop_back(); }
 
-        FieldList* getItem(uint64_t index = 0) { return (index < m_fieldlist.size() ? m_fieldlist[index] : nullptr); }
+        shared_ptr<FieldList> getItem(uint64_t index = 0) { return (index < m_fieldlist.size() ? m_fieldlist[index] : nullptr); }
 
     protected:
         Composite(ByteSet<> &b);   //consumes b
 
-        vector<FieldList*> m_fieldlist;
+        vector<shared_ptr<FieldList>> m_fieldlist;
         const CompositeParsingStrategy *m_parser;
 };
 
@@ -44,7 +44,7 @@ class List : public Composite {
         List(ByteSet<> &b) : Composite(b) {}
         virtual ~List() {};
 
-        virtual void push_back(FieldList *f) override { /*raise exception*/ }
+        virtual void push_back(shared_ptr<FieldList> f) override { /*raise exception*/ }
         //virtual void pop_back() override { /*raise exception*/ }
 };
 
@@ -53,7 +53,7 @@ class Field : public FieldList {
         Field(const ByteSet<> &b) : FieldList(), value(b) {}
         virtual ~Field() {};
 
-        virtual void push_back(FieldList *f) override { /*raise exception*/ }
+        virtual void push_back(shared_ptr<FieldList> f) override { /*raise exception*/ }
         //virtual void pop_back() override { /*raise exception*/ }
 
         const ByteSet<>& getValue() const { return value; }
@@ -66,46 +66,46 @@ class Field : public FieldList {
 
 class BlockHeader : public Composite {
     public:
-        BlockHeader(Composite *c) : Composite(*c) {}
+        BlockHeader(shared_ptr<Composite> c) : Composite(*c) {}
         //BlockHeader(ByteSet<> &b) : Composite(b) {}
         virtual ~BlockHeader() {}
 
         const ByteSet<> *getParentHash() {
-            auto f = dynamic_cast<Field*>(getItem(0));   
+            auto f = dynamic_pointer_cast<Field>(getItem(0));   
             return (f ? &(f->getValue()) : nullptr);
         }
 };
 
 class Withdrawal : public Composite {
     public:
-        Withdrawal(const Composite *c) : Composite(*c) {}
+        Withdrawal(shared_ptr<Composite> c) : Composite(*c) {}
         virtual ~Withdrawal() {};
 
         const ByteSet<>* getIndex() {
-            auto f = dynamic_cast<const Field*>(getItem(0));   
+            auto f = dynamic_pointer_cast<Field>(getItem(0));   
             return (f ? &(f->getValue()) : nullptr);
         }
         const ByteSet<>* getValidatorIndex() {
-            auto f = dynamic_cast<const Field*>(getItem(1));   
+            auto f = dynamic_pointer_cast<Field>(getItem(1));   
             return (f ? &(f->getValue()) : nullptr);
         }
         const ByteSet<>* getAddress() {
-            auto f = dynamic_cast<const Field*>(getItem(2));   
+            auto f = dynamic_pointer_cast<Field>(getItem(2));   
             return (f ? &(f->getValue()) : nullptr);
         }
         const ByteSet<>* getAmount() {
-            auto f = dynamic_cast<const Field*>(getItem(3));   
+            auto f = dynamic_pointer_cast<Field>(getItem(3));   
             return (f ? &(f->getValue()) : nullptr);
         }
 };
 
 class Withdrawals : public Composite {
     public:
-        Withdrawals(const Composite *c) : Composite(*c) {}
+        Withdrawals(shared_ptr<Composite> c) : Composite(*c) {}
         virtual ~Withdrawals() {}
 
         Withdrawal* getWithdrawal(uint64_t index) {
-            List* w = dynamic_cast<List*>(getItem(index));   
+            auto w = dynamic_pointer_cast<List>(getItem(index));   
             return new Withdrawal(w);
         }
 };
@@ -116,14 +116,14 @@ class Block : public Composite {
         virtual ~Block() {};
 
          BlockHeader* getHeader() {
-            List* block = dynamic_cast<List*>(getItem(0));
-            List* header = dynamic_cast<List*>(block->getItem(0));
+            auto block = dynamic_pointer_cast<List>(getItem(0));
+            auto header = dynamic_pointer_cast<List>(block->getItem(0));
             return new BlockHeader(header);
         }
 
          Withdrawals* getWithdrawals() {
-            List* block = dynamic_cast<List*>(getItem(0));
-            List* w = dynamic_cast<List*>(block->getItem(3));
+            auto block = dynamic_pointer_cast<List>(getItem(0));
+            auto w = dynamic_pointer_cast<List>(block->getItem(3));
             return new Withdrawals(w);
         }
 };

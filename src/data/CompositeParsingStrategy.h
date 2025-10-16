@@ -11,7 +11,7 @@ class Field;*/
 
 class CompositeParsingStrategy {
     public:
-        virtual void parse(ByteSet<8> &b, FieldList* &f) const = 0;
+        virtual void parse(ByteSet<8> &b, shared_ptr<FieldList> &f) const = 0;
         //virtual ByteSet<8> serialize() const = 0;
     protected:
         CompositeParsingStrategy() {}
@@ -29,7 +29,7 @@ class CompositeRLPParsing : public CompositeParsingStrategy {
 
         CompositeRLPParsing(const CompositeRLPParsing& obj) = delete;
 
-        virtual void parse(ByteSet<8> &b, FieldList* &f) const override;
+        virtual void parse(ByteSet<8> &b, shared_ptr<FieldList> &f) const override;
         //virtual ByteSet<8> serialize() const { return ByteSet<8>(); /*FIXME*/ }
     private:
         CompositeRLPParsing() {}
