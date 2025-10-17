@@ -1,0 +1,279 @@
+---------------------------------------------------- STRUCTURES USED BY ETH/69 ---------------------------------------------------------
+
+Structure:              Affected Messages:                  EIPs Changing It:                       Forks Introduced:
+
+Header	                0x03, 0x04, 0x05, 0x06, 0x07, 0x11	EIP-1559, 4895, 4844	                London, Shanghai, Dencun
+
+Transaction	            0x02, 0x05, 0x06, 0x08, 0x09, 0x0a	EIP-155, 2718, 2930, 1559, 4844	        Spurious Dragon, Berlin, London, Dencun
+
+Receipt	                0x0f, 0x10	                        EIP-658, 1559, 4844	                    Byzantium, London, Dencun
+
+BlockBody	            0x05, 0x06, 0x07	                (composed of tx + withdrawals + blobs)	Shanghai, Dencun
+
+Fork ID / Status Fields	0x00	                            EIP-2124	                            Istanbul
+
+------------------------------------------------------ ETH/69 MSG REFERENCE ------------------------------------------------------------
+
+Status (0x00):
+    [vsn: P, networkid: P, genesis: B_32, forkid, earliest: P, latest: P, latestHash: B_32]
+
+    vsn:
+        the current protocol version
+    networkid:
+        see https://chainid.network
+    genesis:
+        the hash of the genesis block
+    forkid:
+        [fork-hash, fork-next]
+    earliest:
+        number of the earliest available full block
+    latest:
+        number of the latest available full block number
+    latestHash:
+        hash of the latest available full block
+
+NewBlockHashes (0x01):                                                          //deprecated post-Merge
+    [[blockhash₁: B_32, number₁: P], [blockhash₂: B_32, number₂: P], ...]       //deprecated post-Merge
+
+Transactions (0x02):
+    [tx₁, tx₂, ...]
+
+GetBlockHeaders (0x03):
+    [request-id: P, [startblock: {P, B_32}, limit: P, skip: P, reverse: {0, 1}]]
+
+BlockHeaders (0x04):   
+    [request-id: P, [header₁, header₂, ...]]
+
+GetBlockBodies (0x05):
+    [request-id: P, [blockhash₁: B_32, blockhash₂: B_32, ...]]
+
+BlockBodies (0x06):
+    [request-id: P, [block-body₁, block-body₂, ...]]
+
+NewBlock (0x07):                                                                //deprecated post-Merge
+    [block, td: P]                                                              //deprecated post-Merge
+
+NewPooledTransactionHashes (0x08):
+    [txtypes: B, [txsize₁: P, txsize₂: P, ...], [txhash₁: B_32, txhash₂: B_32, ...]]
+
+    txtypes:
+        byte array containing the announced transaction types, see https://eips.ethereum.org/EIPS/eip-2718
+    txsizeₙ:
+        length of the 'consensus encoding' of a typed transaction, i.e. the byte size of tx-type || tx-data,
+     OR size of the RLP-encoded legacy-tx for non-typed legacy  transactions,
+
+GetPooledTransactions (0x09):
+    [request-id: P, [txhash₁: B_32, txhash₂: B_32, ...]]
+
+PooledTransactions (0x0a):
+    [request-id: P, [tx₁, tx₂...]]
+
+GetReceipts (0x0f):
+    [request-id: P, [blockhash₁: B_32, blockhash₂: B_32, ...]]
+
+Receipts (0x10):
+    [request-id: P, [[receipt₁, receipt₂], ...]]
+
+BlockRangeUpdate (0x11):
+    [earliest: P, latest: P, latestHash: B_32]
+
+---------------------------------------------- Deprecated Messages ---------------------------------------
+
+GetBlockHashes (0x03):                              //overriden
+    [hash: B_32, max-blocks: P]
+
+BlockHashes (0x04):                                  //overriden
+    [hash₁: B_32, hash₂: B_32, ...]
+
+GetBlocks (0x05):                                    //overriden
+    [hash₁: B_32, hash₂: B_32, ...]                  
+
+Blocks (0x06):                                       //overriden
+    [[header, transactions, uncles], ...]
+
+BlockHashesFromNumber (0x08):                        //overriden
+    [number: P, max-blocks: P]
+
+GetNodeData (0x0d):
+    [request-id: P, [hash₁: B_32, hash₂: B_32, ...]]    //suppressed
+
+NodeData (0x0e):
+    [request-id: P, [value₁: B, value₂: B, ...]]        //suppressed
+
+------------------------------------------------ PROTOCOL VERSIONS -----------------------------------------
+
+eth/60:
+    + Status (0x0)
+    + NewBlockHashes (0x01)
+    + Transactions (0x02)
+    + GetBlockHashes (0x03)         //deprecated
+    + BlockHashes (0x04)            //deprecated
+    + GetBlocks (0x05)              //deprecated
+    + Blocks (0x06)                 //deprecated
+    + NewBlock (0x07)
+
+eth/61 (2015):
+    Status (0x0):
+        + latest block number
+    NewBlockHashes (0x01)
+    Transactions (0x02)
+    GetBlockHashes (0x03)           //deprecated
+    BlockHashes (0x04)              //deprecated
+    GetBlocks (0x05)                //deprecated
+    Blocks (0x06)                   //deprecated
+    NewBlock (0x07)
+    + BlockHashesFromNumber (0x08)  //deprecated
+
+eth/62 (2015):
+    Status (0x0):
+        - block number
+    NewBlockHashes (0x01):
+        + block numbers alongside the announced hashes
+    Transactions (0x02)
+    - GetBlockHashes (0x03),        //deprecated
+    - BlockHashes (0x04),           //deprecated
+    - GetBlocks (0x05),             //deprecated
+    - Blocks (0x06),                //deprecated
+    + GetBlockHeaders (0x03):
+    + BlockHeaders (0x04):
+    + GetBlockBodies (0x05):
+    + BlockBodies (0x06):
+    NewBlock (0x07),
+    - BlockHashesFromNumber (0x08)  //deprecated
+
+eth/63 (2016):
+    Status (0x0),
+    NewBlockHashes (0x01),
+    Transactions (0x02),
+    GetBlockHeaders (0x03):
+    BlockHeaders (0x04):
+    GetBlockBodies (0x05):
+    BlockBodies (0x06):
+    NewBlock (0x07),
+    + GetNodeData (0x0d),           //deprecated
+    + NodeData (0x0e),              //deprecated
+    + GetReceipts (0x0f),
+    + Receipts (0x10)
+
+eth/64 (EIP-2364, November 2019):
+    Status (0x0):
+        + ForkID
+    NewBlockHashes (0x01),
+    Transactions (0x02),
+    GetBlockHeaders (0x03):
+    BlockHeaders (0x04):
+    GetBlockBodies (0x05):
+    BlockBodies (0x06):
+    NewBlock (0x07),
+    GetNodeData (0x0d),           //deprecated
+    NodeData (0x0e),              //deprecated
+    GetReceipts (0x0f),
+    Receipts (0x10)
+
+eth/65 (EIP-2464, January 2020):
+    Status (0x0):
+    NewBlockHashes (0x01),
+    Transactions (0x02),
+    GetBlockHeaders (0x03):
+    BlockHeaders (0x04):
+    GetBlockBodies (0x05):
+    BlockBodies (0x06):
+    NewBlock (0x07),
+    + NewPooledTransactionHashes (0x08),
+    + GetPooledTransactions (0x09),
+    + PooledTransactions (0x0a),
+    GetNodeData (0x0d),           //deprecated
+    NodeData (0x0e),              //deprecated
+    GetReceipts (0x0f),
+    Receipts (0x10)
+    two-tier transaction broadcast system similar to block propagation
+
+eth/65 with typed transactions (EIP-2976, April 2021):
+    definitions for the encoding of all consensus objects instead of referring to the Yellow Paper
+
+eth/66 (EIP-2481, April 2021):
+    Status (0x0):
+    NewBlockHashes (0x01),
+    Transactions (0x02),
+    GetBlockHeaders (0x03):
+        + request-id
+    BlockHeaders (0x04):
+        + request-id
+    GetBlockBodies (0x05):
+        + request-id
+    BlockBodies (0x06):
+        + request-id
+    NewBlock (0x07),
+    NewPooledTransactionHashes (0x08)
+    GetPooledTransactions (0x09):
+        + request-id
+    PooledTransactions (0x0a):
+        + request-id
+    GetNodeData (0x0d):             //deprecated
+        + request-id                //deprecated
+    NodeData (0x0e):                //deprecated
+        + request-id                //deprecated
+    GetReceipts (0x0f):
+        + request-id
+    Receipts (0x10):
+        + request-id
+
+eth/67 (EIP-4938, March 2022):
+    Status (0x0):
+    NewBlockHashes (0x01),              //deprecated post-Merge
+    Transactions (0x02),
+    GetBlockHeaders (0x03):
+    BlockHeaders (0x04):
+    GetBlockBodies (0x05):
+    BlockBodies (0x06):
+    NewBlock (0x07),                    //deprecated post-Merge
+    NewPooledTransactionHashes (0x08)
+    GetPooledTransactions (0x09):
+    PooledTransactions (0x0a):
+    - GetNodeData (0x0d):               //deprecated
+    - NodeData (0x0e):                  //deprecated
+    GetReceipts (0x0f):
+    Receipts (0x10):
+
+eth/67 with withdrawals (EIP-4895, March 2022):
+    block header:
+        + withdrawals-root
+    block body:
+        + withdrawals
+
+eth/68 (EIP-5793, October 2022):
+    Status (0x0):
+    NewBlockHashes (0x01),              //deprecated post-Merge
+    Transactions (0x02),
+    GetBlockHeaders (0x03):
+    BlockHeaders (0x04):
+    GetBlockBodies (0x05):
+    BlockBodies (0x06):
+    NewBlock (0x07),                    //deprecated post-Merge
+    NewPooledTransactionHashes (0x08):
+        + types the announced transactions
+        + sizes of the announced transactions
+    GetPooledTransactions (0x09):
+    PooledTransactions (0x0a):
+    GetReceipts (0x0f):
+    Receipts (0x10):
+
+eth/69 (EIP-7642, April 2025):
+    Status (0x0):
+        + information about the available block range
+    NewBlockHashes (0x01),              //deprecated post-Merge
+    Transactions (0x02),
+    GetBlockHeaders (0x03):
+    BlockHeaders (0x04):
+    GetBlockBodies (0x05):
+    BlockBodies (0x06):
+    NewBlock (0x07),                    //deprecated post-Merge
+    NewPooledTransactionHashes (0x08):
+    GetPooledTransactions (0x09):
+    PooledTransactions (0x0a):
+    GetReceipts (0x0f):
+    Receipts (0x10):
+        - old encoding of typed receipts,
+        - new encoding of typed receipts,
+        - bloom filter.
+    + BlockRangeUpdate (0x11)

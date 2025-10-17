@@ -90,9 +90,11 @@ class Transaction : public Composite {
         virtual ~Transaction() {};
     
         const ByteSet<>* getNonce() const {
-            if( auto l = dynamic_pointer_cast<const List>(getItem(0)); l)
+            if( auto f = dynamic_pointer_cast<const Field>(getItem(1)); f)
+                return &f->getValue();                                              //Non Typed-transaction
+            else if( auto l = dynamic_pointer_cast<const List>(getItem(0)); l)
                 if( auto f = dynamic_pointer_cast<const Field>(l->getItem(1)); f)
-                    return &f->getValue();
+                    return &f->getValue();                                          //Typed-transaction
             return nullptr;
         }
 
@@ -106,13 +108,13 @@ class Transactions : public Composite {
         virtual ~Transactions() {}
 
         const shared_ptr<const Transaction> getTransaction(uint64_t index) const {
-            if(auto t = dynamic_pointer_cast<const Field>(getItem(index)); t) {
+            if(auto t = dynamic_pointer_cast<const Field>(getItem(index)); t) {     //Typed-transaction
                 uint8_t type = t->getValue().getElem(0);
                 ByteSet b = t->getValue().at(1, t->getValue().getNbElements() - 1); //copy to be consumed
                 return make_shared<const Transaction>(b, type);
             }
-            else if(auto t = dynamic_pointer_cast<const List>(getItem(index)); t)
-                return make_shared<const Transaction>(t);
+            else if(auto t = dynamic_pointer_cast<const List>(getItem(index)); t)   //Non Typed-transaction
+                return make_shared<const Transaction>(t);       
             return nullptr;
         }
 };
