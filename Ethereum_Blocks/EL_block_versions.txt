@@ -62,12 +62,12 @@ Index   Field	                Type	    Description	                             
 12	    extraData	            bytes	    Arbitrary 32-byte field	                                                            Frontier (still used by validators)
 13	    mixHash	                32 bytes	PoW mixHash (→ now used for randomness after Merge)	                                Frontier (used for randomness post-Merge)
 14	    nonce	                8 bytes	    PoW nonce                   	                                                    Frontier (ignored post-Merge)
-15	    baseFeePerGas	        uint256	    Base fee per gas (EIP-1559)	                                                        London
-16	    withdrawalsRoot	        32 bytes	Root of withdrawals list	                                                        Shanghai / Shapella
+15	    baseFeePerGas	        uint256	    Base fee per gas (EIP-1559)	                                                        London (EIP-1559)
+16	    withdrawalsRoot	        32 bytes	Root of withdrawals list	                                                        Shanghai / Shapella (EIP-4895)
 17	    blobGasUsed	            uint64	    Total blob gas used	                                                                Dencun (EIP-4844)
 18	    excessBlobGas	        uint64	    Excess blob gas from previous block	                                                Dencun (EIP-4844)
-19	    parentBeaconBlockRoot	32 bytes	Hash of parent beacon block	                                                        The Merge
-20      requests-hash           32 bytes    Requests hash from the Execution Layer to the Consensus Layer                       Pectra
+19	    parentBeaconBlockRoot	32 bytes	Hash of parent beacon block	                                                        The Merge (EIP-4788)
+20      requests-hash           32 bytes    Requests hash from the Execution Layer to the Consensus Layer                       Pectra (EIP-7685)
 
 
 --------------------------------- HEADER (source https://github.com/ethereum/devp2p/blob/master/caps/eth.md#blockrangeupdate-0x11) ----------------------------
