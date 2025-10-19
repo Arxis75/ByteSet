@@ -79,6 +79,6 @@ __pycache__
 build*/
 nohup.out
 transactions_signatures.txt
-_*.*
+_*
 *.h_sav
 *.cpp_sav
