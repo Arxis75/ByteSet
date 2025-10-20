@@ -13,13 +13,13 @@ int main(int argc, char *argv[])
     //ByteSet<> block_rlp("0xC381AA02");
     
     Block b(block_rlp);
-    //cout << hex << b.getHeader()->getParentHash()->asString() << endl;
+    cout << hex << b.getHeader()->getParentHash()->asString() << endl;
     //cout << hex << block_rlp << endl;
     //cout << hex << b.getTransactions()->getTransaction(0)->getNonce()->asString() << endl;
     //cout << hex << b.getTransactions()->getTransaction(1)->getNonce()->asString() << endl;
     //cout << hex << b.getTransactions()->getTransaction(2)->getNonce()->asString() << endl;
     //cout << hex << b.getWithdrawals()->getWithdrawal(15)->getAmount()->asString() << endl;
-    cout << hex << b.get<Header>()->get("parentHash")->getValue().asString() << endl;
+    //cout << hex << b.get<Header>()->get("parentHash")->getValue().asString() << endl;
     //cout << hex << b->asString() << endl;
 
     /*Block* b = new Block();

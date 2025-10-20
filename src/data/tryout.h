@@ -21,6 +21,7 @@ class FieldList {
 
 class Composite : public FieldList {
     public:
+        Composite(const Composite&) = default;
         virtual ~Composite() {}
 
         virtual const Composite* getComposite() override { return this; }
@@ -31,7 +32,7 @@ class Composite : public FieldList {
         shared_ptr<const FieldList> getItem(uint64_t index = 0) const { return (index < m_fieldlist.size() ? m_fieldlist[index] : nullptr); }
 
     protected:
-        Composite(ByteSet<> &b);        //consumes b
+        Composite(ByteSet<> &b);        //recursive lookup consuming b
 
     private:
         vector<shared_ptr<const FieldList>> m_fieldlist;
@@ -42,7 +43,7 @@ class Composite : public FieldList {
 
 class List : public Composite {
     public:
-        List(ByteSet<> &b) : Composite(b) {}    //consumes b
+        List(ByteSet<> &b) : Composite(b) {}    //recursive lookup consuming b
         virtual ~List() {};
 
         virtual void push_back(shared_ptr<const FieldList> f) override { /*raise exception*/ }
@@ -67,7 +68,7 @@ class Field : public FieldList {
 
 class BlockHeader : public Composite {
     public:
-        BlockHeader(shared_ptr<const Composite> c) : Composite(*c) {}
+        BlockHeader(shared_ptr<const Composite> c) : Composite(*c) {}   //Copy-constr of Base, no reccursive lookup
         //BlockHeader(ByteSet<> &b) : Composite(b) {}
         virtual ~BlockHeader() {}
 
@@ -85,8 +86,8 @@ class BlockHeader : public Composite {
 
 class Transaction : public Composite {
     public:
-        Transaction(shared_ptr<const Composite> c) : Composite(*c), m_type(0) {}    //Legacy transaction
-        Transaction(ByteSet<> &b, uint8_t type = 0) : Composite(b), m_type(type) {} //Non legacy transaction: consumes b
+        Transaction(shared_ptr<const Composite> c) : Composite(*c), m_type(0) {}    //Legacy transaction: Copy-constr of Base, no reccursive lookup
+        Transaction(ByteSet<> &b, uint8_t type = 0) : Composite(b), m_type(type) {} //Non legacy transaction: reccursive lookup that consumes b
         virtual ~Transaction() {};
     
         const ByteSet<>* getNonce() const {
@@ -104,7 +105,7 @@ class Transaction : public Composite {
 
 class Transactions : public Composite {
     public:
-        Transactions(shared_ptr<const Composite> c) : Composite(*c) {}
+        Transactions(shared_ptr<const Composite> c) : Composite(*c) {}      //Copy-constr of Base, no reccursive lookup
         virtual ~Transactions() {}
 
         const shared_ptr<const Transaction> getTransaction(uint64_t index) const {
@@ -121,7 +122,7 @@ class Transactions : public Composite {
 
 class Withdrawal : public Composite {
     public:
-        Withdrawal(shared_ptr<const Composite> c) : Composite(*c) {}
+        Withdrawal(shared_ptr<const Composite> c) : Composite(*c) {}        //Copy-constr of Base, no reccursive lookup
         virtual ~Withdrawal() {};
 
         const ByteSet<>* getIndex() const {
@@ -144,7 +145,7 @@ class Withdrawal : public Composite {
 
 class Withdrawals : public Composite {
     public:
-        Withdrawals(shared_ptr<const Composite> c) : Composite(*c) {}
+        Withdrawals(shared_ptr<const Composite> c) : Composite(*c) {}   //Copy-constr of Base, no reccursive lookup
         virtual ~Withdrawals() {}
 
         const shared_ptr<const Withdrawal> getWithdrawal(uint64_t index) const {
@@ -155,7 +156,7 @@ class Withdrawals : public Composite {
 
 class Block : public Composite {
     public:
-        Block(ByteSet<> b) : Composite(b) {}    // ByteSet<> is copied here to preserve the original
+        Block(ByteSet<> b) : Composite(b) {}                            //recursive lookup consuming b
         virtual ~Block() {};
 
           const shared_ptr<const BlockHeader> getHeader() const {
