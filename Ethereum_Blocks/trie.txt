@@ -1,0 +1,68 @@
+1. State Trie
+
+Key: keccak256(address) → 32-byte hash (64 nibbles)
+Value: RLP-encoded account (nonce, balance, storageRoot, codeHash)
+
+2. Storage Trie (per account)
+
+Key: keccak256(storage_slot_index)
+Value: RLP-encoded storage value (e.g., uint256)
+
+3. Transaction Trie / Receipt Trie
+
+Key: the RLP-encoded transaction index (an integer like 0, 1, 2, ...), then converted to a byte array (i.e., RLP of the number)
+Value: RLP-encoded transaction object / transaction receipt
+
+🔷 1. State Trie
+
+Key: keccak256(address) (64 hex nibbles)
+
+Value: RLP-encoded account object:
+
+[
+  nonce,
+  balance,
+  storageRoot,
+  codeHash
+]
+
+
+Size: ~100–150 bytes (depends on account complexity)
+
+storageRoot and codeHash are 32-byte hashes.
+
+balance and nonce can be variable-length integers.
+
+🔷 2. Storage Trie (one per account)
+
+Key: keccak256(slot_index)
+
+Value: RLP-encoded storage value (usually a 256-bit integer)
+
+Size: ~1–33 bytes (RLP compresses leading zeros)
+
+But can be more if storing complex packed data manually.
+
+🔷 3. Transaction Trie
+
+Key: RLP(transaction index)
+
+Value: RLP(transaction object)
+
+Legacy transaction: often ~100–200 bytes
+
+EIP-1559 transactions: even larger due to new fields (access lists, etc.)
+
+Can go beyond 500 bytes if calldata is large.
+
+🔷 4. Receipt Trie
+
+Key: RLP(transaction index)
+
+Value: RLP(receipt)
+
+Includes logs, bloom filter, gas used, status
+
+Logs can be deeply nested and data-rich
+
+Size: ~100–1000+ bytes, depending on how many logs were emitted
