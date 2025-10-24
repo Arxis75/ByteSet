@@ -1,44 +1,24 @@
 #pragma once
+#include <data/ByteSet.h>
 
-/*struct node
-{
+class TrieNode {
     public:
-        void add(const ByteSet<> &key, const ByteSet<> &value)
-        {
-            if(m_children.size() == 0) {
-                node* n = new node(key, value);
-            }     
+        TrieNode();
+
+        void update(const ByteSet<4> &key, const ByteSet<> &value);
+        const TrieNode* lookup(const ByteSet<4> &key) const;
+        void del(const ByteSet<4> &key);
+        void iterate() const {}     //TODO
+
+        inline const ByteSet<>& getValue() const { return m_value; }
+        inline bool hasChildren() const {
+            return m_children[0] || m_children[1] || m_children[2] || m_children[3] ||
+                   m_children[4] || m_children[5] || m_children[6] || m_children[7] ||
+                   m_children[8] || m_children[9] || m_children[10] || m_children[11] ||
+                   m_children[12] || m_children[13] || m_children[14] || m_children[15];
         }
 
-        virtual ByteSet<> getHash() const 
-        {
-            ByteSet<> to_hash;
-            for(int i=0;i<m_children.size(); i++)
-                to_hash.push_back(m_children[i]->getHash());
-            return to_hash.keccak256();
-        }
-
-    protected:
-        node(const ByteSet<> &key, const ByteSet<> &value);
-    
     private:
-        node* m_parent;
-        std::map<ByteSet<> key, node* child> m_children;
+        TrieNode* m_children[16];
         ByteSet<> m_value;
 };
-
-struct Trie : public node
-{
-};
-
-struct BrancheNode : public node
-{
-};
-
-struct ExtensionNode : public node
-{
-};
-
-struct LeafNode : public node
-{
-};*/

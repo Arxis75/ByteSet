@@ -8,93 +8,44 @@
 
 using json = nlohmann::json;  
 
-class Node {
-    public:
-        ByteSet<> getValue() const { return m_value; }
-
-        void update(ByteSet<4> key, ByteSet<> value) {
-            if(key.getNbElements()) {
-                if(!m_children[key[0]])
-                    m_children[key[0]] = new Node();
-                m_children[key[0]]->update(key.at(1, key.getNbElements() - 1), value);
-            }
-            else
-                m_value = value;
-        }
-
-        Node* lookup(ByteSet<4> key) {
-            if(key.getNbElements() && m_children[key[0]])
-                return m_children[key[0]]->lookup(key.at(1, key.getNbElements() - 1));
-            else
-                return this;
-        }
-
-        bool hasChildren() const {
-            return m_children[0] || m_children[1] || m_children[2] || m_children[3] ||
-                   m_children[4] || m_children[5] || m_children[6] || m_children[7] ||
-                   m_children[8] || m_children[9] || m_children[10] || m_children[11] ||
-                   m_children[12] || m_children[13] || m_children[14] || m_children[15];
-        }
-
-        void del(ByteSet<4> key) {
-            Node* n = this;
-            vector<std::pair<Node*, uint8_t>> v;
-            uint64_t i = 0;
-            Node* children[16];
-            memcpy(children, m_children, 16*sizeof(Node*));
-            do {
-                memcpy(children, n->m_children, 16*sizeof(Node*));
-                v.push_back(make_pair(n, key.getElem(i)));
-                n = children[key.getElem(i)];
-                i++;
-            } while(n && i < key.getNbElements());
-
-            if(n) {
-                n->m_value.clear();
-                while(v.size()) {
-                    if(!n->hasChildren() && n->m_value.isEmpty()) {
-                        auto parent = v[v.size()-1];
-                        n = parent.first;
-                        delete n;
-                        n->m_children[parent.second] = nullptr;
-                        v.pop_back();
-                    }
-                    else
-                        break;
-                }
-            }
-        }
-
-        //TODO
-        void iterate() const {}
-
-    protected:
-        Node() :  m_children{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}, m_value() {}
-
-        Node* m_children[16];
-        ByteSet<> m_value;
-};
-
-class RootNode : public Node
-{
-    public:
-        RootNode() = default;
-};
-
 int main(int argc, char *argv[])
 {
-    RootNode r;
-    r.update(ByteSet<4>("0xAB"), ByteSet("0xEF"));
-    r.update(ByteSet<4>("0xA"), ByteSet("0xF"));
+    TrieNode r;
+    r.update(ByteSet<4>("0x"), ByteSet("root", UTF8));
+    r.update(ByteSet<4>("0xA"), ByteSet("level 1", UTF8));
+    r.update(ByteSet<4>("0xAB"), ByteSet("level 2", UTF8));
+    r.update(ByteSet<4>("0xABC"), ByteSet("level 3", UTF8));
 
-    cout << hex << r.lookup(ByteSet<4>("0xAB"))->getValue().asString() << endl;
-    cout << hex << r.lookup(ByteSet<4>("0xA"))->getValue().asString() << endl;
+    cout << hex << r.lookup(ByteSet<4>("0x"))->getValue().asString(UTF8) << endl;
+    cout << hex << r.lookup(ByteSet<4>("0xA"))->getValue().asString(UTF8) << endl;
+    cout << hex << r.lookup(ByteSet<4>("0xAB"))->getValue().asString(UTF8) << endl;
+    cout << hex << r.lookup(ByteSet<4>("0xABC"))->getValue().asString(UTF8) << endl;
+    cout << "------------------" << endl;
     
-    r.del(ByteSet<4>("0xAB"));
     r.del(ByteSet<4>("0xA"));
+    r.del(ByteSet<4>("0xAB"));
 
-    cout << hex << r.lookup(ByteSet<4>("0xAB"))->getValue().asString() << endl;
-    cout << hex << r.lookup(ByteSet<4>("0xA"))->getValue().asString() << endl;
+    cout << hex << r.lookup(ByteSet<4>("0x"))->getValue().asString(UTF8) << endl;
+    cout << hex << r.lookup(ByteSet<4>("0xA"))->getValue().asString(UTF8) << endl;
+    cout << hex << r.lookup(ByteSet<4>("0xAB"))->getValue().asString(UTF8) << endl;
+    cout << hex << r.lookup(ByteSet<4>("0xABC"))->getValue().asString(UTF8) << endl;
+    cout << "------------------" << endl;
+
+    r.del(ByteSet<4>("0x"));
+
+    cout << hex << r.lookup(ByteSet<4>("0x"))->getValue().asString(UTF8) << endl;
+    cout << hex << r.lookup(ByteSet<4>("0xA"))->getValue().asString(UTF8) << endl;
+    cout << hex << r.lookup(ByteSet<4>("0xAB"))->getValue().asString(UTF8) << endl;
+    cout << hex << r.lookup(ByteSet<4>("0xABC"))->getValue().asString(UTF8) << endl;
+    cout << "------------------" << endl;
+
+    r.del(ByteSet<4>("0xABC"));
+
+    cout << hex << r.lookup(ByteSet<4>("0x"))->getValue().asString(UTF8) << endl;
+    cout << hex << r.lookup(ByteSet<4>("0xA"))->getValue().asString(UTF8) << endl;
+    cout << hex << r.lookup(ByteSet<4>("0xAB"))->getValue().asString(UTF8) << endl;
+    cout << hex << r.lookup(ByteSet<4>("0xABC"))->getValue().asString(UTF8) << endl;
+    cout << "------------------" << endl;
 
     std::ifstream file("jsonfile.json");
     if (!file) {
