@@ -1,4 +1,6 @@
-struct node
+#pragma once
+
+/*struct node
 {
     public:
         void add(const ByteSet<> &key, const ByteSet<> &value)
@@ -39,4 +41,4 @@ struct ExtensionNode : public node
 
 struct LeafNode : public node
 {
-};
+};*/

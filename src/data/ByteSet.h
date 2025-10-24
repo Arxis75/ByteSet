@@ -82,6 +82,8 @@ class ByteSet
         inline uint8_t getBitsPerElem() const { return BitsPerElement; }
         inline bool isByteAligned() const { return !(getBitsPerElem()%8);}
 
+        inline bool isEmpty() const { return vvalue.size() == 0; }
+
         /// @brief Gets the size in bits of the stored value.
         /// @return The logical size in  bits of the container, not the vector size.
         inline uint64_t bitSize() const { return getNbElements() * getBitsPerElem(); }
