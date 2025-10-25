@@ -47,8 +47,8 @@ void TrieNode::del(const ByteSet<4> &key) {
             //If a parent's child in the path has no child and no value,
             //it needs to be deleted as well as its reference in the parent
             //(first iteration parent's child = target)
-            if(!pnode->m_children[ppair.second]->hasChildren() &&
-                pnode->m_children[ppair.second]->m_value.isEmpty()) {
+            if( !pnode->m_children[ppair.second]->hasChildren() &&
+                 pnode->m_children[ppair.second]->m_value.isEmpty() ) {
                 delete pnode->m_children[ppair.second];
                 pnode->m_children[ppair.second] = nullptr;
                 parents.pop_back();                         //goes 1-level up 
@@ -57,4 +57,17 @@ void TrieNode::del(const ByteSet<4> &key) {
                 parents.clear();                            //no more cleanup allowed
         }
     }
+}
+
+//----------------------------------------------------------------------------------------------------------------
+
+const CompressedTrieNode* CompressedTrieNode::lookup(const ByteSet<4> &key) const {
+    return this;
+}
+
+void CompressedTrieNode::update(const ByteSet<4> &key, const ByteSet<> &value) {
+}
+
+void CompressedTrieNode::del(const ByteSet<4> &key) {
+
 }

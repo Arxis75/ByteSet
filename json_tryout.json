@@ -1,0 +1,42 @@
+{
+    "name": "transaction",
+    "type": "List",
+    "Fields": [
+    {
+        "name": "nonce",
+        "type": "Integer"
+    },
+    {
+        "name": "gasprice",
+        "type": "Integer"
+    },
+    {
+        "name": "gaslimit",
+        "type": "Integer"
+    },
+    {
+        "name": "to",
+        "type": "ByteSet"
+    },
+    {
+        "name": "eth",
+        "type": "Integer"
+    },
+    {
+        "name": "data",
+        "type": "ByteSet"
+    },
+    {
+        "name": "v",
+        "type": "Integer"
+    },
+    {
+        "name": "r",
+        "type": "ByteSet"
+    },
+    {
+        "name": "s",
+        "type": "ByteSet"
+    }
+  ]
+}

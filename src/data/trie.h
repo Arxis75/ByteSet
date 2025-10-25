@@ -5,10 +5,10 @@ class TrieNode {
     public:
         TrieNode();
 
-        void update(const ByteSet<4> &key, const ByteSet<> &value);
-        const TrieNode* lookup(const ByteSet<4> &key) const;
-        void del(const ByteSet<4> &key);
-        void iterate() const {}     //TODO
+        virtual void update(const ByteSet<4> &key, const ByteSet<> &value);
+        virtual const TrieNode* lookup(const ByteSet<4> &key) const;
+        virtual void del(const ByteSet<4> &key);
+        virtual void iterate() const {}     //TODO
 
         inline const ByteSet<>& getValue() const { return m_value; }
         inline bool hasChildren() const {
@@ -20,5 +20,20 @@ class TrieNode {
 
     private:
         TrieNode* m_children[16];
+        ByteSet<> m_value;
+};
+
+class CompressedTrieNode
+{
+    public:
+        CompressedTrieNode() = default;
+
+        virtual void update(const ByteSet<4> &key, const ByteSet<> &value);
+        virtual const CompressedTrieNode* lookup(const ByteSet<4> &key) const;
+        virtual void del(const ByteSet<4> &key);
+        virtual void iterate() const {}     //TODO
+
+    private:
+        CompressedTrieNode* m_children[16];
         ByteSet<> m_value;
 };

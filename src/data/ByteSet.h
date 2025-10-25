@@ -15,7 +15,8 @@ class ByteSet
         
         /// @brief Should only be used when calling third-party cryptographic functions (OpenSSL, etc...),
         /// thus f.getBitsPerElem() = 8 is required.
-        inline operator unsigned char* () { assert(isByteAligned()); return vvalue.data(); }
+        inline operator const unsigned char*() const { assert(isByteAligned()); return reinterpret_cast<const unsigned char*>(vvalue.data()); } 
+        inline operator unsigned char*() { assert(isByteAligned()); return reinterpret_cast<unsigned char*>(vvalue.data()); } 
 
         //******************************* Int Constructors/Operators ***************************************//
 
@@ -80,6 +81,7 @@ class ByteSet
         inline uint8_t getIntElem(const Integer &val, uint64_t elem_offset) const { return uint8_t((Givaro::pow(2, getBitsPerElem()) - 1) & (val >> (getIntNbElem(val) - 1 - elem_offset) * getBitsPerElem())); }
 
         inline uint8_t getBitsPerElem() const { return BitsPerElement; }
+        inline uint8_t getNbElemPerByte() const { return 8/BitsPerElement; }
         inline bool isByteAligned() const { return !(getBitsPerElem()%8);}
 
         inline bool isEmpty() const { return vvalue.size() == 0; }
@@ -98,6 +100,7 @@ class ByteSet
 
         inline void clear() { vvalue.clear(); }
 
+        ByteSet RLPserialize(bool as_integer = false) const;
         ByteSet keccak256() const;
         ByteSet sha256() const;
 

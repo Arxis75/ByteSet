@@ -166,13 +166,42 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::at(const uint64_t elem_offset, 
 }
 
 template <uint8_t BitsPerElement>
+ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPserialize(bool as_integer) const {
+    ByteSet rlp(*this);
+
+    //If Integer, removes extra front 0-padding
+    if(as_integer)
+        while(rlp.getNbElements() && !rlp.getElem(0))
+            rlp.pop_front_elem();
+
+    //Needs to be byte-aligned for RLP
+    // => adds front 0-padding if necessary
+    while(rlp.getNbElements() % (8/rlp.getBitsPerElem()))
+        rlp.push_front_elem(0);
+
+    if(!rlp.getNbElements())
+        rlp.push_back(ByteSet(0x80));
+    else if(rlp.asInteger() < 0x80) {
+        //rlp encoded as is
+    }
+    else if(rlp.byteSize() < 56)
+        rlp.push_front(ByteSet(0x80 + rlp.byteSize()));
+    else {
+        uint64_t size = rlp.byteSize();
+        uint64_t size_size = ByteSet(size).byteSize();
+        rlp.push_front(ByteSet(size, size_size * getNbElemPerByte()));   // the size needs to be byte-aligned
+        rlp.push_front(ByteSet(0xb7 + size_size));
+    }
+    return rlp;
+}
+
+template <uint8_t BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::keccak256() const
 {
     ByteSet<BitsPerElement> result;
     if(BitsPerElement == 8)
-        result = ByteSet(ethash::keccak256((unsigned char*)this, byteSize()).bytes, 32);
+        result = ByteSet(ethash::keccak256(*this, byteSize()).bytes, 32);
     else {
-        assert(!bitSize()%8);
         ByteSet<8> this_8(asInteger(), byteSize());
         ByteSet<8> digest_8(ethash::keccak256(this_8, this_8.byteSize()).bytes, 32);
         result = ByteSet<BitsPerElement>(digest_8.asInteger(), 256/BitsPerElement);
@@ -185,12 +214,11 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::sha256() const
 {
     ByteSet<BitsPerElement> result(0, 32);
     if(BitsPerElement == 8)
-        SHA256((unsigned char*)this, byteSize(), result);   //result needs to be already initialized at 32 Bytes
+        SHA256(*this, byteSize(), result);              //result needs to be already initialized at 32 Bytes
     else {
-        assert(!bitSize()%8);
         ByteSet<8> this_8(asInteger(), byteSize());
         ByteSet<8> digest_8(0, 32);
-        SHA256((unsigned char*)this_8, this_8.byteSize(), digest_8);
+        SHA256(this_8, this_8.byteSize(), digest_8);
         result = ByteSet<BitsPerElement>(digest_8.asInteger(), 256/BitsPerElement);
     }
     return result;
