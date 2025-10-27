@@ -106,7 +106,6 @@ class ByteSet
         void setRLPType(RLPType t) { if(t == RLPType::INT) removefront0padding(); m_rlp_type = t; }
         inline void removefront0padding() { while(getNbElements() && !getElem(0)) pop_front_elem(); }
         bool hasRLPListHeader() const { return getNbElements() && at(0, 8/getBitsPerElem()).asInteger() >= 0xC0; }
-        void add_RLPHeader(bool as_list);
         ByteSet buildRLPSizeHeader() const { return ByteSet(byteSize(), ByteSet(byteSize()).byteSize() * getNbElemPerByte()); }   // the size needs to be byte-aligned
 
         //********************************** Container manipulation interface ***************************************//
