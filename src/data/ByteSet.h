@@ -3,7 +3,7 @@
 #include <data/System.h>
 #include <data/ByteSetFormat.h>
 
-enum RLPType {INT = -1, BYTE = 0, STR = 1};
+enum RLPType {LIST, INT, BYTE, STR};
 
 template <uint8_t BitsPerElement = 8>   //Should work for 1, 2, 4, 8 only
 class ByteSet

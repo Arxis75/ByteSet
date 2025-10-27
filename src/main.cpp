@@ -1,5 +1,4 @@
-#include <data/ByteSet.h>
-#include <data/ByteSetComposite.h>
+#include <data/EthComposite.h>
 #include <data/trie.h>
 
 #include <iostream>
@@ -15,9 +14,10 @@ int main(int argc, char *argv[])
     //ByteSet<> block_rlp("E1A0EB4B643299F51E767DA83AD61757C5584966104AB32FE169789EF1DEFCB6C7A6");
     //ByteSet block_rlp("0xC281AA");
     //ByteSet block_rlp("0x81AA");
+    //ByteSet block_rlp("0x817F");
     ByteSet block_rlp1(block_rlp);
 
-    ByteSetList b;
+    Block b;
     b.RLPparse(block_rlp1);
 
     ByteSet block_rlp2;

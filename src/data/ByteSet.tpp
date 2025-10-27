@@ -191,46 +191,20 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPparse()
     assert(byteSize());
     
     uint8_t header = (isByteAligned() ? getElem(0) : uint8_t(at(0, 1*getNbElemPerByte()).asInteger()));
-    bool is_header = (header >= 0x80);
+    bool has_header = (header >= 0x80);
     bool is_list = (header >= 0xC0);
     uint8_t list_modifier = 0x40 * is_list;
     bool is_long = (header > 0xB7 + list_modifier);
     uint64_t size_size = is_long ? header - 0xB7 - list_modifier : 0;
-    uint64_t size = is_long ? uint64_t(at(1*getNbElemPerByte(), size_size*getNbElemPerByte()).asInteger()) : (is_header ? header - 0x80 - list_modifier : 1);
+    uint64_t size = is_long ? uint64_t(at(1*getNbElemPerByte(), size_size*getNbElemPerByte()).asInteger()) : (has_header ? header - 0x80 - list_modifier : 1);
 
     uint64_t total_header_size = header > 0x7F ? 1 + size_size : 0;
     pop_front(8*total_header_size/getBitsPerElem());
-        
-    return pop_front(size*getNbElemPerByte());
+
+    ByteSet<BitsPerElement> result = pop_front(size*getNbElemPerByte());
+    result.setRLPType(is_list ? RLPType::LIST : (has_header && result.byteSize() == 1 && result.asInteger() < 0x80 ? RLPType::STR : RLPType::BYTE));
+    return result;
 }
-
-/*template <uint8_t BitsPerElement>
-const ByteSet<BitsPerElement>& ByteSet<BitsPerElement>::RLPparse()
-{
-    assert(byteSize());
-
-    uint16_t header = (isByteAligned() ? getElem(0) : uint8_t(at(0, 8/getBitsPerElem()).asInteger()));
-    uint16_t list_modifier = (header >= 0xC0 ? 0x40 : 0);
-    uint64_t size = 0, size_size = 0;
-
-    if(header < 0x80) {
-        size = 1;
-        assert(byteSize() >= size);
-    }
-    else if(header < 0xb8 + list_modifier) {
-        size = header - 0x80 - list_modifier;
-        assert(byteSize() >= 1 + size);
-        pop_front(8/getBitsPerElem());
-    }
-    else if(header < 0xC0 + list_modifier) {
-        size_size = header - 0xB7 - list_modifier;
-        assert(byteSize() > 1 + size_size);
-        size = at(8/getBitsPerElem(), size_size).asInteger();
-        assert(byteSize() >= 1 + size_size + size);
-        pop_front(8*(1+size_size)/getBitsPerElem());
-    }
-    return pop_front(8*size/getBitsPerElem());
-}*/
 
 template <uint8_t BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::keccak256() const
