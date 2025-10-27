@@ -176,7 +176,7 @@ const ByteSet<BitsPerElement>& ByteSet<BitsPerElement>::RLPserialize(bool as_lis
         // => adds front 0-padding if necessary
         push_front_elem(0);
 
-    if(as_list || bitSize() != 8 || (bitSize() == 8 && getRLPType() != RLPType::STR && asInteger() > 0x7F)) {
+    if(as_list || byteSize() != 1 || (bitSize() == 8 && getRLPType() != RLPType::STR && asInteger() > 0x7F)) {
         ByteSet header(byteSize() < 56 ? 0x80 + 0x40*as_list + byteSize() : 0xB7 + 0x40*as_list + buildRLPSizeHeader().byteSize());
         if(byteSize() >= 56)
             header.push_back(buildRLPSizeHeader());
@@ -199,7 +199,8 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPparse()
     uint64_t size = is_long ? uint64_t(at(1*getNbElemPerByte(), size_size*getNbElemPerByte()).asInteger()) : (has_header ? header - 0x80 - list_modifier : 1);
 
     uint64_t total_header_size = header > 0x7F ? 1 + size_size : 0;
-    pop_front(8*total_header_size/getBitsPerElem());
+    assert(byteSize() >= (total_header_size + size) * getNbElemPerByte());
+    pop_front(total_header_size*getNbElemPerByte());
 
     ByteSet<BitsPerElement> result = pop_front(size*getNbElemPerByte());
     result.setRLPType(is_list ? RLPType::LIST : (has_header && result.byteSize() == 1 && result.asInteger() < 0x80 ? RLPType::STR : RLPType::BYTE));
