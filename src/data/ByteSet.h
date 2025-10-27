@@ -3,11 +3,14 @@
 #include <data/System.h>
 #include <data/ByteSetFormat.h>
 
+enum RLPType {INT = -1, BYTE = 0, STR = 1};
+
 template <uint8_t BitsPerElement = 8>   //Should work for 1, 2, 4, 8 only
 class ByteSet
 {
     public: 
-        inline ByteSet() = default;
+        ByteSet() = default;
+        ~ByteSet() = default;
 
         //****************************** Array Constructors/Operators ****************************************//
 
@@ -35,6 +38,7 @@ class ByteSet
         inline ByteSet& operator=(const Integer &val) { ByteSet b(val); swap(vvalue, b.vvalue); return *this; }
 
         //******************************* String Constructors/Operators *************************************//
+        
         inline explicit ByteSet(const string &str, const ByteSetFormat &f = Hex, uint64_t target_nb_elem = 0) : ByteSet(str.c_str(), f, target_nb_elem) {}
         explicit ByteSet(const char *str, const ByteSetFormat &f = Hex, uint64_t target_nb_elem = 0);
 
@@ -96,17 +100,28 @@ class ByteSet
         /// @return the size of the underlying vector
         inline uint64_t getNbElements() const { return vvalue.size(); }
 
+        //********************************************* RLP  Helpers *************************************************/
+
+        RLPType getRLPType() const { return m_rlp_type; }
+        void setRLPType(RLPType t) { if(t == RLPType::INT) removefront0padding(); m_rlp_type = t; }
+        inline void removefront0padding() { while(getNbElements() && !getElem(0)) pop_front_elem(); }
+        bool hasRLPListHeader() const { return getNbElements() && at(0, 8/getBitsPerElem()).asInteger() >= 0xC0; }
+        void add_RLPHeader(bool as_list);
+        ByteSet buildRLPSizeHeader() const { return ByteSet(byteSize(), ByteSet(byteSize()).byteSize() * getNbElemPerByte()); }   // the size needs to be byte-aligned
+
         //********************************** Container manipulation interface ***************************************//
 
         inline void clear() { vvalue.clear(); }
 
-        ByteSet RLPserialize(bool as_integer = false) const;
+        const ByteSet& RLPserialize(bool as_list);
+        ByteSet RLPparse();
         ByteSet keccak256() const;
         ByteSet sha256() const;
 
     private:
         /// @brief Vector is used to store the data with the Big-Endian convention
         vector<uint8_t> vvalue;
+        RLPType m_rlp_type;
 };
 
 #include "data/ByteSet.tpp"

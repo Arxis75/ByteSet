@@ -3,6 +3,7 @@
 
 template <uint8_t BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const unsigned char *p, uint64_t source_nb_bytes)
+    : m_rlp_type(BYTE)
 { 
     assert(isByteAligned());
 
@@ -12,6 +13,7 @@ ByteSet<BitsPerElement>::ByteSet(const unsigned char *p, uint64_t source_nb_byte
    
 template <uint8_t BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const Integer &val, uint64_t nb_elem)
+    : m_rlp_type(BYTE)
 {
     if(val >= 0)   //-1 is the conventional value for an empty ByteSet
     {
@@ -27,6 +29,7 @@ ByteSet<BitsPerElement>::ByteSet(const Integer &val, uint64_t nb_elem)
 
 template <uint8_t BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const char *str, const ByteSetFormat &f, uint64_t target_nb_elem)
+    : m_rlp_type(BYTE)
 {
     string s = f.toCanonicalString(str);
     if(s.size()) {
@@ -166,34 +169,68 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::at(const uint64_t elem_offset, 
 }
 
 template <uint8_t BitsPerElement>
-ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPserialize(bool as_integer) const {
-    ByteSet rlp(*this);
+const ByteSet<BitsPerElement>& ByteSet<BitsPerElement>::RLPserialize(bool as_list)
+{
+    while(getNbElements() % (getNbElemPerByte()))
+        //May need to be byte-aligned for RLP
+        // => adds front 0-padding if necessary
+        push_front_elem(0);
 
-    //If Integer, removes extra front 0-padding
-    if(as_integer)
-        while(rlp.getNbElements() && !rlp.getElem(0))
-            rlp.pop_front_elem();
-
-    //Needs to be byte-aligned for RLP
-    // => adds front 0-padding if necessary
-    while(rlp.getNbElements() % (8/rlp.getBitsPerElem()))
-        rlp.push_front_elem(0);
-
-    if(!rlp.getNbElements())
-        rlp.push_back(ByteSet(0x80));
-    else if(rlp.asInteger() < 0x80) {
-        //rlp encoded as is
+    if(as_list || bitSize() != 8 || (bitSize() == 8 && getRLPType() != RLPType::STR && asInteger() > 0x7F)) {
+        ByteSet header(byteSize() < 56 ? 0x80 + 0x40*as_list + byteSize() : 0xB7 + 0x40*as_list + buildRLPSizeHeader().byteSize());
+        if(byteSize() >= 56)
+            header.push_back(buildRLPSizeHeader());
+        push_front(header);
     }
-    else if(rlp.byteSize() < 56)
-        rlp.push_front(ByteSet(0x80 + rlp.byteSize()));
-    else {
-        uint64_t size = rlp.byteSize();
-        uint64_t size_size = ByteSet(size).byteSize();
-        rlp.push_front(ByteSet(size, size_size * getNbElemPerByte()));   // the size needs to be byte-aligned
-        rlp.push_front(ByteSet(0xb7 + size_size));
-    }
-    return rlp;
+    return *this;
 }
+
+template <uint8_t BitsPerElement>
+ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPparse()
+{
+    assert(byteSize());
+    
+    uint8_t header = (isByteAligned() ? getElem(0) : uint8_t(at(0, 1*getNbElemPerByte()).asInteger()));
+    bool is_header = (header >= 0x80);
+    bool is_list = (header >= 0xC0);
+    uint8_t list_modifier = 0x40 * is_list;
+    bool is_long = (header > 0xB7 + list_modifier);
+    uint64_t size_size = is_long ? header - 0xB7 - list_modifier : 0;
+    uint64_t size = is_long ? uint64_t(at(1*getNbElemPerByte(), size_size*getNbElemPerByte()).asInteger()) : (is_header ? header - 0x80 - list_modifier : 1);
+
+    uint64_t total_header_size = header > 0x7F ? 1 + size_size : 0;
+    pop_front(8*total_header_size/getBitsPerElem());
+        
+    return pop_front(size*getNbElemPerByte());
+}
+
+/*template <uint8_t BitsPerElement>
+const ByteSet<BitsPerElement>& ByteSet<BitsPerElement>::RLPparse()
+{
+    assert(byteSize());
+
+    uint16_t header = (isByteAligned() ? getElem(0) : uint8_t(at(0, 8/getBitsPerElem()).asInteger()));
+    uint16_t list_modifier = (header >= 0xC0 ? 0x40 : 0);
+    uint64_t size = 0, size_size = 0;
+
+    if(header < 0x80) {
+        size = 1;
+        assert(byteSize() >= size);
+    }
+    else if(header < 0xb8 + list_modifier) {
+        size = header - 0x80 - list_modifier;
+        assert(byteSize() >= 1 + size);
+        pop_front(8/getBitsPerElem());
+    }
+    else if(header < 0xC0 + list_modifier) {
+        size_size = header - 0xB7 - list_modifier;
+        assert(byteSize() > 1 + size_size);
+        size = at(8/getBitsPerElem(), size_size).asInteger();
+        assert(byteSize() >= 1 + size_size + size);
+        pop_front(8*(1+size_size)/getBitsPerElem());
+    }
+    return pop_front(8*size/getBitsPerElem());
+}*/
 
 template <uint8_t BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::keccak256() const
