@@ -199,7 +199,7 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPparse()
     uint64_t size = is_long ? uint64_t(at(1*getNbElemPerByte(), size_size*getNbElemPerByte()).asInteger()) : (has_header ? header - 0x80 - list_modifier : 1);
 
     uint64_t total_header_size = header > 0x7F ? 1 + size_size : 0;
-    assert(byteSize() >= (total_header_size + size) * getNbElemPerByte());
+    assert(getNbElements() >= (total_header_size + size) * getNbElemPerByte());
     pop_front(total_header_size*getNbElemPerByte());
 
     ByteSet<BitsPerElement> result = pop_front(size*getNbElemPerByte());
