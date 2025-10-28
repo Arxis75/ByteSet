@@ -53,13 +53,3 @@ class ByteSetField : public IByteSetContainer {
         private:
         ByteSet<8> m_value;
 };
-
-inline shared_ptr<IByteSetContainer>ByteSetComposite::Factory(ByteSetComposite *parent, bool is_composite) {
-    shared_ptr<IByteSetContainer> child;
-    if(is_composite)
-        child = std::shared_ptr<ByteSetComposite>(new ByteSetComposite(parent));
-    else
-        child = make_shared<ByteSetField>(parent);
-    parent->push_back(child);
-    return child;
-}
