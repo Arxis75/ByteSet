@@ -14,7 +14,10 @@ class IByteSetContainer
         virtual ByteSet<8> RLPserialize() const = 0;
 
     protected:
-        IByteSetContainer() = default;
+        IByteSetContainer(ByteSetComposite* p) : m_parent(p) {}
+
+    private:
+        ByteSetComposite* m_parent;
 };
 
 class ByteSetComposite : public IByteSetContainer
@@ -22,17 +25,15 @@ class ByteSetComposite : public IByteSetContainer
     public:
         virtual ~ByteSetComposite() = default;
 
-        static shared_ptr<IByteSetContainer> Factory(ByteSetComposite &parent, bool is_composite);
+        static shared_ptr<IByteSetContainer> Factory(ByteSetComposite *parent, bool is_composite);
 
         virtual const ByteSetComposite* getComposite() const override { return this; }
         virtual void push_back(shared_ptr<const IByteSetContainer> f) override { m_children.push_back(f); }
         virtual void RLPparse(ByteSet<8> &b) override;
         virtual ByteSet<8> RLPserialize() const override;
 
-        shared_ptr<const IByteSetContainer> getItem(uint64_t index = 0) const { return (index < m_children.size() ? m_children[index] : nullptr); }
-
     protected:
-        ByteSetComposite() = default; 
+        ByteSetComposite(ByteSetComposite* p) : IByteSetContainer(p) {}
 
     private:
         vector<shared_ptr<const IByteSetContainer>> m_children;
@@ -42,31 +43,23 @@ class ByteSetComposite : public IByteSetContainer
 
 class ByteSetField : public IByteSetContainer {
     public:
-        ByteSetField() = default;
-        ByteSetField(ByteSet<8> b) : IByteSetContainer(), m_value(b) {}
+        ByteSetField(ByteSetComposite* p) : IByteSetContainer(p) {}
         virtual ~ByteSetField() = default;
 
         inline virtual void push_back(shared_ptr<const IByteSetContainer> f) override { /*raise exception*/ }
         inline virtual void RLPparse(ByteSet<8> &b) override { m_value = b; }
         inline virtual ByteSet<8> RLPserialize() const override { return ByteSet<8>(m_value).RLPserialize(false); } //by copy
 
-        //------------------------------------ Accessors ------------------------------------------
-
-        /*inline const ByteSet<8>& getStrValue() const { return m_value; }
-        inline const Integer getIntValue() const { return m_value.getNbElements() ? m_value.asInteger() : Integer::zero; }
-        inline virtual void setStrValue(const ByteSet<8> &b) { m_value = b; }
-        inline virtual void setIntValue(const Integer &i) { m_value = (i == Integer::zero ? ByteSet<8>() : ByteSet<8>(i)); }*/
-
         private:
         ByteSet<8> m_value;
 };
 
-inline shared_ptr<IByteSetContainer>ByteSetComposite::Factory(ByteSetComposite &parent, bool is_composite) {
+inline shared_ptr<IByteSetContainer>ByteSetComposite::Factory(ByteSetComposite *parent, bool is_composite) {
     shared_ptr<IByteSetContainer> child;
     if(is_composite)
-        child = std::shared_ptr<ByteSetComposite>(new ByteSetComposite());
+        child = std::shared_ptr<ByteSetComposite>(new ByteSetComposite(parent));
     else
-        child = make_shared<ByteSetField>();
-    parent.push_back(child);
+        child = make_shared<ByteSetField>(parent);
+    parent->push_back(child);
     return child;
 }

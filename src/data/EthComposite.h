@@ -3,6 +3,6 @@
 
 class Block : public ByteSetComposite {
     public:
-        Block() = default;
+        Block() : ByteSetComposite(nullptr) {}
         virtual ~Block() = default;
 };
