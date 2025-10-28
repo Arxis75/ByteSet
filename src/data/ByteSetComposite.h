@@ -22,7 +22,7 @@ class ByteSetComposite : public IByteSetContainer
     public:
         virtual ~ByteSetComposite() = default;
 
-        static shared_ptr<IByteSetContainer> Factory(bool is_composite);
+        static shared_ptr<IByteSetContainer> Factory(ByteSetComposite &parent, bool is_composite);
 
         virtual const ByteSetComposite* getComposite() const override { return this; }
         virtual void push_back(shared_ptr<const IByteSetContainer> f) override { m_children.push_back(f); }
@@ -61,9 +61,12 @@ class ByteSetField : public IByteSetContainer {
         ByteSet<8> m_value;
 };
 
-inline shared_ptr<IByteSetContainer>ByteSetComposite::Factory(bool is_composite) {
+inline shared_ptr<IByteSetContainer>ByteSetComposite::Factory(ByteSetComposite &parent, bool is_composite) {
+    shared_ptr<IByteSetContainer> child;
     if(is_composite)
-        return std::shared_ptr<ByteSetComposite>(new ByteSetComposite());
+        child = std::shared_ptr<ByteSetComposite>(new ByteSetComposite());
     else
-        return make_shared<ByteSetField>();
+        child = make_shared<ByteSetField>();
+    parent.push_back(child);
+    return child;
 }

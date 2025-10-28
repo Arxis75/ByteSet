@@ -4,9 +4,8 @@ void ByteSetComposite::RLPparse(ByteSet<8> &b)
 {
     while(b.byteSize()) {
         ByteSet payload = b.RLPparse();
-        auto child = Factory(payload.getRLPType() == RLPType::LIST);
+        auto child = Factory(*this, payload.getRLPType() == RLPType::LIST);
         child->RLPparse(payload);
-        push_back(child);
     }
 }
 
