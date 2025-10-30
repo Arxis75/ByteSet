@@ -1,20 +1,5 @@
 #include <data/ByteSetComposite.h>
 
-ByteSetComposite::ByteSetComposite(const ByteSetComposite &other) {
-    // optional optimization
-    m_children.reserve(other.m_children.size());
-    for (const auto& item : other.m_children) {
-        if(item) {
-            // std::unique_ptr<IByteSetContainer>
-            auto tmp = item->clone();                                                   
-            // wrap in unique_ptr<const IByteSetContainer>
-            m_children.push_back(unique_ptr<const IByteSetContainer>(std::move(tmp)));
-        }
-        else
-            m_children.emplace_back(nullptr); // preserve null entries
-    }
-}
-
 IByteSetContainer* ByteSetComposite::makeChild(bool is_composite) {
     IByteSetContainer* child;
     if(is_composite)
@@ -25,24 +10,11 @@ IByteSetContainer* ByteSetComposite::makeChild(bool is_composite) {
     return child;
 }
 
-/*void ByteSetComposite::deleteChildren() {
-    while(m_children.size()) {
-        //DumpChildren();
-        auto cchild = dynamic_cast<const ByteSetComposite*>(m_children[m_children.size()-1].get());
-        if(cchild) {
-            if(cchild->getChildrenCount()) 
-                const_cast<ByteSetComposite*>(cchild)->deleteChildren();
-            else {
-                delete cchild;
-                m_children.pop_back();
-            }
-        }
-        else {
-            if(m_children[m_children.size()-1])         //test if nullptr in the vector
-                delete m_children[m_children.size()-1].get();
-            m_children.pop_back();
-        }
-    }
+/*std::unique_ptr<const IByteSetContainer> ByteSetComposite::clone() const { 
+    auto copy = std::unique_ptr<ByteSetComposite>(new ByteSetComposite());
+    for(const auto& child : m_children)
+        copy->m_children.push_back(child->clone());
+    return copy;
 }*/
 
 void ByteSetComposite::RLPparse(ByteSet<8> &b)

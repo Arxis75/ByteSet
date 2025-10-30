@@ -15,10 +15,11 @@ class IByteSetContainer
         const ByteSetComposite* getParent() const { return m_parent; }
         void setParent(const ByteSetComposite* p) { m_parent = p; }
 
-        virtual void push_back(const IByteSetContainer *f) = 0;
-        virtual unique_ptr<const IByteSetContainer> clone() const = 0;
+        //virtual unique_ptr<const IByteSetContainer> clone() const = 0;
     protected:
         IByteSetContainer() = default;
+
+        virtual void push_back(const IByteSetContainer *f) = 0;
 
     private:
         const ByteSetComposite* m_parent;
@@ -27,27 +28,28 @@ class IByteSetContainer
 class ByteSetComposite : public virtual IByteSetContainer
 {
     public:
-        ByteSetComposite(const ByteSetComposite &other);
+        ByteSetComposite(const ByteSetComposite&) = delete;
+        ByteSetComposite& operator=(const ByteSetComposite&) = delete;
+
         virtual ~ByteSetComposite() { DumpChildren(); };
 
-        virtual const ByteSetComposite* getComposite() const override { return this; }
-        const IByteSetContainer* getItem(uint64_t index = 0) const { return (index < m_children.size() ? m_children[index].get() : nullptr); }
+        inline virtual const ByteSetComposite* getComposite() const override { return this; }
+        inline const IByteSetContainer* getItem(uint64_t index = 0) const { return (index < m_children.size() ? m_children[index].get() : nullptr); }
 
         virtual void RLPparse(ByteSet<8> &b) override;
         virtual const ByteSet<8> RLPserialize() const override;
 
     protected:
         ByteSetComposite() = default;
+        ByteSetComposite(ByteSetComposite&&) noexcept = default;
+        ByteSetComposite& operator=(ByteSetComposite&&) noexcept = default;
 
-        IByteSetContainer* makeChild(bool is_composite);
-        uint64_t getChildrenCount() const { return m_children.size(); }
+        inline IByteSetContainer* makeChild(bool is_composite);
+        inline virtual void push_back(const IByteSetContainer *f) override { m_children.emplace_back(std::move(f)); }
+        inline uint64_t getChildrenCount() const { return m_children.size(); }
         void DumpChildren() const;
-        //void deleteChildren();
 
-        virtual void push_back(const IByteSetContainer *f) override { m_children.push_back(f->clone()); }
-    
-        //virtual unique_ptr<const IByteSetContainer> clone() const override { return nullptr; }
-        virtual unique_ptr<const IByteSetContainer> clone() const override { return make_unique<const ByteSetComposite>(*this); }
+        //virtual unique_ptr<const IByteSetContainer> clone() const override;
 
     private:
         vector<unique_ptr<const IByteSetContainer>> m_children;
@@ -75,7 +77,7 @@ class ByteSetField : public virtual IByteSetContainer {
 
     protected:
         inline virtual void push_back(const IByteSetContainer *f) override { /*raise exception*/ }
-        virtual unique_ptr<const IByteSetContainer> clone() const override  { return make_unique<ByteSetField>(*this); /*deep copy*/ }
+        //virtual unique_ptr<const IByteSetContainer> clone() const override  { return make_unique<ByteSetField>(*this); /*deep copy*/ }
 
     private:
         ByteSet<8> m_value;
