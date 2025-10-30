@@ -112,7 +112,7 @@ class ByteSet
 
         inline void clear() { vvalue.clear(); }
 
-        const ByteSet& RLPserialize(bool as_list);
+        ByteSet RLPserialize(bool as_list) const;
         ByteSet RLPparse();
         ByteSet keccak256() const;
         ByteSet sha256() const;

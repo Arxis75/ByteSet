@@ -169,20 +169,21 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::at(const uint64_t elem_offset, 
 }
 
 template <uint8_t BitsPerElement>
-const ByteSet<BitsPerElement>& ByteSet<BitsPerElement>::RLPserialize(bool as_list)
+ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPserialize(bool as_list) const
 {
-    while(getNbElements() % (getNbElemPerByte()))
+    ByteSet result(*this);
+    while(result.getNbElements() % (result.getNbElemPerByte()))
         //May need to be byte-aligned for RLP
         // => adds front 0-padding if necessary
-        push_front_elem(0);
+        result.push_front_elem(0);
 
-    if(as_list || byteSize() != 1 || (bitSize() == 8 && getRLPType() != RLPType::STR && asInteger() > 0x7F)) {
-        ByteSet header(byteSize() < 56 ? 0x80 + 0x40*as_list + byteSize() : 0xB7 + 0x40*as_list + buildRLPSizeHeader().byteSize());
-        if(byteSize() >= 56)
-            header.push_back(buildRLPSizeHeader());
-        push_front(header);
+    if(as_list || result.byteSize() != 1 || (result.bitSize() == 8 && result.getRLPType() != RLPType::STR && result.asInteger() > 0x7F)) {
+        ByteSet header(result.byteSize() < 56 ? 0x80 + 0x40*as_list + result.byteSize() : 0xB7 + 0x40*as_list + result.buildRLPSizeHeader().byteSize());
+        if(result.byteSize() >= 56)
+            header.push_back(result.buildRLPSizeHeader());
+        result.push_front(header);
     }
-    return *this;
+    return result;
 }
 
 template <uint8_t BitsPerElement>

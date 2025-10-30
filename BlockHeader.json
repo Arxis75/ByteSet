@@ -1,0 +1,29 @@
+
+{
+    "name": "BlockHeader",
+    "type": "array",
+    "fields": [
+        { "name": "ParentHash", "type": "string", "rank": 0 },
+        { "name": "UnclesHash", "type": "string", "rank": 1 },
+        { "name": "Coinbase", "type": "string", "rank": 2 },
+        { "name": "StateRoot", "type": "string", "rank": 3 },
+        { "name": "TransactionRoot", "type": "string", "rank": 4 },
+        { "name": "ReceiptRoot", "type": "string", "rank": 5 },
+        { "name": "BloomFilter", "type": "string", "rank": 6 },
+        { "name": "Difficulty", "type": "integer", "rank": 7 },
+        { "name": "BlockNb", "type": "integer", "rank": 8 },
+        { "name": "GasLimit", "type": "integer", "rank": 9 },
+        { "name": "GasUsed", "type": "integer", "rank": 10 },
+        { "name": "Time", "type": "integer", "rank": 11 },
+        { "name": "Data", "type": "string", "rank": 12 },
+        { "name": "MixHash", "type": "string", "rank": 13 },
+        { "name": "Nonce", "type": "string", "rank": 14 },
+        { "name": "BaseFeePerGas", "type": "integer", "rank": 15 },
+        { "name": "WithdrawalRoot", "type": "string", "rank": 16 }, 
+        { "name": "BlobGasUsed", "type": "integer", "rank": 17 },
+        { "name": "ExcessBlobGas", "type": "integer", "rank": 18 },
+        { "name": "ParentBeaconRoot", "type": "string", "rank": 19 },
+        { "name": "RequestHash", "type": "string", "rank": 20 }
+    ]
+}
+
