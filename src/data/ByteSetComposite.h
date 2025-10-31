@@ -2,6 +2,7 @@
 #include <data/ByteSet.h>
 
 class ByteSetComposite;
+class ByteSetField;
 
 class IByteSetContainer
 {
@@ -35,19 +36,24 @@ class ByteSetComposite : public virtual IByteSetContainer
 
         inline virtual const ByteSetComposite* getComposite() const override { return this; }
         inline const IByteSetContainer* getItem(uint64_t index = 0) const { return (index < m_children.size() ? m_children[index].get() : nullptr); }
+        inline unique_ptr<const IByteSetContainer> takeItem(uint64_t index = 0) { return (index < m_children.size() ? std::move(m_children[index]) : nullptr); }
 
         virtual void RLPparse(ByteSet<8> &b) override;
         virtual const ByteSet<8> RLPserialize() const override;
+
+        inline IByteSetContainer* makeChild(bool is_composite);
+        inline virtual void push_back(const IByteSetContainer *f) override { m_children.emplace_back(f); }
+        inline void move_back(unique_ptr<const IByteSetContainer> p) { m_children.emplace_back(std::move(p)); }
+        inline uint64_t getChildrenCount() const { return m_children.size(); }
+        void DumpChildren() const;
 
     protected:
         ByteSetComposite() = default;
         ByteSetComposite(ByteSetComposite&&) noexcept = default;
         ByteSetComposite& operator=(ByteSetComposite&&) noexcept = default;
 
-        inline IByteSetContainer* makeChild(bool is_composite);
-        inline virtual void push_back(const IByteSetContainer *f) override { m_children.emplace_back(std::move(f)); }
-        inline uint64_t getChildrenCount() const { return m_children.size(); }
-        void DumpChildren() const;
+        template<typename T> std::unique_ptr<T> takeChildrenAs(uint list_index);
+        std::unique_ptr<ByteSetField> takeField(uint field_index);
 
         //virtual unique_ptr<const IByteSetContainer> clone() const override;
 
@@ -56,12 +62,6 @@ class ByteSetComposite : public virtual IByteSetContainer
 };
 
 //----------------------------------------------- LEAF ---------------------------------------------------
-
-class List : public ByteSetComposite {
-    public:
-        List() = default;
-        virtual ~List() = default;
-};
 
 class ByteSetField : public virtual IByteSetContainer {
     public:
@@ -82,3 +82,5 @@ class ByteSetField : public virtual IByteSetContainer {
     private:
         ByteSet<8> m_value;
 };
+
+#include <data/ByteSetComposite.tpp>

@@ -1,4 +1,4 @@
-#include <data/ByteSetComposite.h>
+#include <data/EthComposite.h>
 #include <data/trie.h>
 
 #include <iostream>
@@ -18,11 +18,11 @@ int main(int argc, char *argv[])
     //ByteSet block_rlp("0x817F");
     ByteSet block_rlp1(block_rlp);
 
-    List b;
+    Block b;
     b.RLPparse(block_rlp1);
-    /*BlockChain bl;
-    auto b = bl.buildBlockFromRawRLP(block_rlp1, 1413507);
-    b->DumpChildren();
+    //BlockChain bl;
+    //auto b = bl.buildBlockFromRawRLP(block_rlp1, 1413507);
+    /*b->DumpChildren();
     auto ws = b->make<Withdrawals>();
     ws->DumpChildren();
     auto w = ws->make<Withdrawal>(15);
