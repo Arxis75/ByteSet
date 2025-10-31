@@ -23,9 +23,13 @@ int main(int argc, char *argv[])
 
     auto b = bl.getBlock(1413507);
     auto h = b->getHeader();
-    h->DumpChildren();
     auto f = h->getField(0);
     cout << f->getValue() << endl;
+
+   /* auto ws = b->getWithdrawals();
+    ws->DumpFields();
+    auto w = ws->getWithdrawal(15);
+    cout << w->getField(0)->getValue() << endl;*/
     //BlockChain bl;
     //auto b = bl.buildBlockFromRawRLP(block_rlp1, 1413507);
     /*b->DumpChildren();

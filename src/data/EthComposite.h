@@ -1,86 +1,33 @@
 #pragma once
 #include <data/ByteSetComposite.h>
 
-class BlockHeader : public ByteSetComposite {
+class EthContainer : public ByteSetComposite {
     public:
-        BlockHeader() = default;
-        virtual ~BlockHeader() = default;
+        EthContainer() = default;
+        virtual ~EthContainer() = default;
 
-        void buildStructure() {
-            auto nest = getItem(0);
-            if(nest && nest->getComposite()) {
-                auto raw_nest = const_cast<ByteSetComposite*>(dynamic_cast<const ByteSetComposite*>(nest));
-                uint64_t nb_fields = raw_nest->getChildrenCount();
-                m_field = unique_arr<unique_ptr<const ByteSetField>>(nb_fields);
-                for(int i =0;i<nb_fields;i++) {
-                    if(auto raw_item = raw_nest->takeItem(i).release(); raw_item) {
-                        if(raw_item->getComposite()) {
-                            //TODO
-                        }
-                        else {
-                            //NOT make_unique(): It would leak raw_item!
-                            m_field[i] = unique_ptr<const ByteSetField>(dynamic_cast<const ByteSetField*>(raw_item));
-                        }
-                    }
-                }
-                deleteChildren();
-            }
-        }
+        virtual const ByteSet<8> RLPserialize() const override;
+        
+        void buildStructure();
+        inline const ByteSetField* getField(uint64_t index = 0) const { return dynamic_cast<const ByteSetField*>(m_field[index].get()); }
+    
+        void DumpFields() const;
 
-        const ByteSet<8> RLPserialize() const override
-        {
-            ByteSet<8> rlp;
-            for(uint64_t i=0; i<m_field.size(); i++) {
-                if(m_field[i])
-                    rlp.push_back(m_field[i]->RLPserialize());
-            }               
-            return rlp =  rlp.RLPserialize(true);
-        }
-
-        inline const ByteSetField* getField(uint64_t index = 0) const { return m_field[index].get(); }
-
-    private:
-        unique_arr<unique_ptr<const ByteSetField>> m_field;
+    protected:
+        unique_arr<unique_ptr<const IByteSetContainer>> m_field;
 };
 
-class BlockTransaction : public ByteSetComposite {
-    public:
-        BlockTransaction() = default;
-        virtual ~BlockTransaction() = default;
-    private:
-        unique_arr<unique_ptr<const ByteSetField>> m_field;
+struct BlockHeader : public EthContainer {};
+struct BlockTransaction : public EthContainer {};
+struct BlockTransactions : public EthContainer {
+    inline const BlockTransaction* getTransaction(uint64_t index = 0) const { return dynamic_cast<const BlockTransaction*>(m_field[index].get()); }
 };
-
-class BlockTransactions : public ByteSetComposite {
-    public:
-        BlockTransactions() = default;
-        virtual ~BlockTransactions() = default;
-    private:
-        unique_arr<unique_ptr<const BlockTransaction>> m_transaction;
+struct BlockUncles : public EthContainer {
+    inline const BlockHeader* getHeader(uint64_t index = 0) const { return dynamic_cast<const BlockHeader*>(m_field[index].get()); }
 };
-
-class BlockUncles : public ByteSetComposite {
-    public:
-        BlockUncles() = default;
-        virtual ~BlockUncles() = default;
-    private:
-        unique_arr<unique_ptr<const BlockHeader>> m_uncle;
-};
-
-class BlockWithdrawal : public ByteSetComposite {
-    public:
-        BlockWithdrawal() = default;
-        virtual ~BlockWithdrawal() = default;
-    private:
-        unique_arr<unique_ptr<const ByteSetField>> m_field;
-};
-
-class BlockWithdrawals : public ByteSetComposite {
-    public:
-        BlockWithdrawals() = default;
-        virtual ~BlockWithdrawals() = default;
-    private:
-        unique_arr<unique_ptr<const BlockWithdrawal>> m_withdrawal;
+struct BlockWithdrawal : public EthContainer {};
+struct BlockWithdrawals : public EthContainer {
+    inline const BlockWithdrawal* getWithdrawal(uint64_t index = 0) const { return dynamic_cast<const BlockWithdrawal*>(m_field[index].get()); }
 };
 
 class Block : public ByteSetComposite {
@@ -95,22 +42,17 @@ class Block : public ByteSetComposite {
             setHeight(block_height);
             RLPparse(b);
 
-            m_header.reset(takeChildrenAs<BlockHeader>(0).release());
-            m_transactions.reset(takeChildrenAs<BlockTransactions>(1).release());
-            m_uncles.reset(takeChildrenAs<BlockUncles>(2).release());
-            m_withdrawals.reset(takeChildrenAs<BlockWithdrawals>(3).release());
+            m_header.reset(newChildrenAs<BlockHeader>(0));
+            m_transactions.reset(newChildrenAs<BlockTransactions>(1));
+            m_uncles.reset(newChildrenAs<BlockUncles>(2));
+            m_withdrawals.reset(newChildrenAs<BlockWithdrawals>(3));
 
             deleteChildren();
 
             m_header->buildStructure();
-            /*m_transactions->buildStructure();
+            m_transactions->buildStructure();
             m_uncles->buildStructure();
-            m_withdrawals->buildStructure();*/
-
-            m_header->DumpChildren();
-            /*m_transactions->DumpChildren();
-            m_uncles->DumpChildren();
-            m_withdrawals->DumpChildren();*/
+            m_withdrawals->buildStructure();
         }
 
         virtual const ByteSet<8> RLPserialize() const override {

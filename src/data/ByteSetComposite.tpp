@@ -1,6 +1,6 @@
 #include <data/ByteSetComposite.h>
 
-IByteSetContainer* ByteSetComposite::makeChild(bool is_composite) {
+IByteSetContainer* ByteSetComposite::newChild(bool is_composite) {
     IByteSetContainer* child;
     if(is_composite)
         child = new ByteSetComposite();
@@ -19,7 +19,7 @@ IByteSetContainer* ByteSetComposite::makeChild(bool is_composite) {
 
 void ByteSetComposite::deleteChildren() {
     while(m_children.size()) {
-        //DumpChildren();
+        DumpChildren();
         unique_ptr<const IByteSetContainer> uchild = std::move(m_children[m_children.size()-1]);
         if(uchild) {
             auto cchild = dynamic_cast<const ByteSetComposite*>(uchild.get());
@@ -43,9 +43,9 @@ void ByteSetComposite::RLPparse(ByteSet<8> &b)
 {
     while(b.byteSize()) {
         ByteSet payload = b.RLPparse();
-        auto child = makeChild(payload.getRLPType() == RLPType::LIST);
+        IByteSetContainer* child = newChild(payload.getRLPType() == RLPType::LIST); //polymorphic
         child->RLPparse(payload);
-        push_back(child);
+        push_back(child);   //implicit call of unique_ptr ctor
     }
 }
 
@@ -63,10 +63,20 @@ const ByteSet<8> ByteSetComposite::RLPserialize() const
 }
 
 template<typename T>
-std::unique_ptr<T> ByteSetComposite::takeChildrenAs(uint list_index) {
-    auto list = make_unique<T>();
-    auto list_children = const_cast<ByteSetComposite*>(dynamic_cast<const ByteSetComposite*>(getItem(0)))->takeItem(list_index);
-    list->move_back(std::move(list_children));
+const T* ByteSetComposite::getChildrenAs(uint children_index) {
+    T* children = nullptr;
+    if(auto nest = dynamic_cast<const ByteSetComposite*>(getItem(0)); nest && nest->getComposite())
+        children = nest->getItem(children_index);
+    return children;
+}
+template<typename T>
+T* ByteSetComposite::newChildrenAs(uint children_index) {
+    T* list = nullptr;
+    if(auto nest = dynamic_cast<const ByteSetComposite*>(getItem(0)); nest && nest->getComposite())
+        if(auto children = const_cast<ByteSetComposite*>(nest)->takeItem(children_index); children) {
+            list = new T();
+            list->push_back(children.release());
+        }
     return list;
 }
 
