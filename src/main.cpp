@@ -18,8 +18,14 @@ int main(int argc, char *argv[])
     //ByteSet block_rlp("0x817F");
     ByteSet block_rlp1(block_rlp);
 
-    Block b;
-    b.RLPparse(block_rlp1);
+    BlockChain bl;
+    bl.addBlockFromRawRLP(block_rlp1, 1413507);
+
+    auto b = bl.getBlock(1413507);
+    auto h = b->getHeader();
+    h->DumpChildren();
+    auto f = h->getField(0);
+    cout << f->getValue() << endl;
     //BlockChain bl;
     //auto b = bl.buildBlockFromRawRLP(block_rlp1, 1413507);
     /*b->DumpChildren();
@@ -37,7 +43,9 @@ int main(int argc, char *argv[])
 
     //cout << "WithdrawalRoot = " << hex << b.get(Block::Header) << endl;
 
-    ByteSet block_rlp2 = b.RLPserialize();
+    cout << h->RLPserialize().asString() << endl;
+    
+    ByteSet block_rlp2 = b->RLPserialize();
     
     cout << "initial = " << hex << block_rlp.asString() << endl;
     cout << "final = " << hex << block_rlp2.asString() << endl;

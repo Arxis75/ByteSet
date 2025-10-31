@@ -31,12 +31,13 @@ class ByteSetComposite : public virtual IByteSetContainer
     public:
         ByteSetComposite(const ByteSetComposite&) = delete;
         ByteSetComposite& operator=(const ByteSetComposite&) = delete;
-
-        virtual ~ByteSetComposite() { DumpChildren(); };
+        virtual ~ByteSetComposite() = default;
 
         inline virtual const ByteSetComposite* getComposite() const override { return this; }
-        inline const IByteSetContainer* getItem(uint64_t index = 0) const { return (index < m_children.size() ? m_children[index].get() : nullptr); }
-        inline unique_ptr<const IByteSetContainer> takeItem(uint64_t index = 0) { return (index < m_children.size() ? std::move(m_children[index]) : nullptr); }
+
+        inline virtual const IByteSetContainer* getItem(uint64_t index = 0) const { return (index < m_children.size() ? m_children[index].get() : nullptr); }
+        inline unique_ptr<const IByteSetContainer> takeItem(uint64_t index = 0)
+            { return (index < m_children.size() ? std::move(m_children[index]) : nullptr); }
 
         virtual void RLPparse(ByteSet<8> &b) override;
         virtual const ByteSet<8> RLPserialize() const override;
@@ -46,6 +47,7 @@ class ByteSetComposite : public virtual IByteSetContainer
         inline void move_back(unique_ptr<const IByteSetContainer> p) { m_children.emplace_back(std::move(p)); }
         inline uint64_t getChildrenCount() const { return m_children.size(); }
         void DumpChildren() const;
+        void deleteChildren();
 
     protected:
         ByteSetComposite() = default;
