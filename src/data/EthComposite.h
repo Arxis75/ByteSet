@@ -6,7 +6,6 @@ using Withdrawal = const BlockWithdrawal;
 
 class EthContainer : public ByteSetComposite {
     public:
-        EthContainer() = default;
         virtual ~EthContainer() = default;
 
         virtual const ByteSet<8> RLPserialize() const override;
@@ -24,6 +23,7 @@ class EthContainer : public ByteSetComposite {
         inline uint64_t getType() const { return m_type; }
     
     protected:
+        EthContainer() = default;
         inline void setType(uint64_t type) { m_type = type; }
 
     protected:
