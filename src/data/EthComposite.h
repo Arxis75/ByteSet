@@ -37,10 +37,19 @@ struct BlockField : public ByteSetField {
 struct BlockHeader : public EthContainer {
     virtual void buildStructure(uint64_t) override { buildAllItems<BlockField>(); }
 };
+
+struct BlockAuthorization : public EthContainer {
+    virtual void buildStructure(uint64_t) override { buildAllItems<BlockField>(); }
+};
+struct BlockAuthorizationList : public EthContainer {
+    virtual void buildStructure(uint64_t) override { buildAllItems<BlockAuthorization>(); }
+};
+
 struct BlockBlobVersionHashes : public EthContainer {
     virtual const ByteSet<8> RLPserialize() const override { return EthContainer::RLPserialize(); }
     virtual void buildStructure(uint64_t) override { buildAllItems<BlockField>(); }
 };
+
 struct BlockStorageKeys : public EthContainer {
     virtual const ByteSet<8> RLPserialize() const override { return EthContainer::RLPserialize(); }
     virtual void buildStructure(uint64_t) override { buildAllItems<BlockField>(); }
@@ -54,12 +63,11 @@ struct BlockAccessList : public EthContainer {
     }
 };
 struct BlockAccessLists : public EthContainer {
-    virtual const ByteSet<8> RLPserialize() const override { return EthContainer::RLPserialize(); }
     virtual void buildStructure(uint64_t) override { buildAllItems<BlockAccessList>(); }
 };
+
 struct BlockTransaction : public EthContainer {
-        virtual const ByteSet<8> RLPserialize() const override { return EthContainer::RLPserialize(); }
-        virtual void buildStructure(uint64_t type) override;
+    virtual void buildStructure(uint64_t type) override;
 };
 struct BlockTransactions : public EthContainer { 
      virtual void buildStructure(uint64_t) override { buildAllItems<BlockTransaction>(true); }

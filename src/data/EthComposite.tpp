@@ -11,19 +11,6 @@ void EthContainer::buildItem(uint64_t index, uint64_t type) {
     }
 }
 
-/*template<typename T>
-void EthContainer::buildAllItems() {
-    DumpChildren();
-    if(auto nest = const_cast<ByteSetComposite*>(dynamic_cast<const ByteSetComposite*>(getChildAt(0))); nest) {
-         nest->DumpChildren();
-        if(!m_items)
-            m_items = unique_arr<unique_ptr<IByteSetContainer>>(nest->getChildrenCount());
-        for(uint i = 0; i<m_items.size(); i++)
-            buildItem<T>(i);
-        deleteChildren();
-    }
-}*/
-
 template<typename T>
 void EthContainer::buildAllItems(bool typed) {
     DumpChildren();
@@ -97,40 +84,24 @@ void Block::buildStructure(uint64_t) {
     setHeight(getHeader()->get<const BlockField>(8)->getIntValue());
 }
 
-/*void BlockTransactions::buildStructure(uint64_t type) {
-    if(auto nest = const_cast<ByteSetComposite*>(dynamic_cast<const ByteSetComposite*>(getChildAt(0))); nest) {
-        if(!m_items)
-            m_items = unique_arr<unique_ptr<IByteSetContainer>>(nest->getChildrenCount());
-        for(uint i = 0; i<m_items.size(); i++) {
-            uint64_t type =  nest->RLPparseTypedChildAt(i);
-            buildItem<BlockTransaction>(i, type);
-        }
-        deleteChildren();
-    }
-}*/
-
 void BlockTransaction::buildStructure(uint64_t type)
 {
     setType(type);
 
     switch(getType()) {
-        case 1: //EIP-2930
+        case 1: //EIP-2930 (11 fields)
             //chain_id, nonce, gas_price, gas_limit, to, value, data, access_list, signature_y_parity, signature_r, signature_s
             for(uint i = 0; i < 7; i++) buildItem<BlockField>(i);
             buildItem<BlockAccessLists>(7);
             for(uint i = 8; i < m_items.size(); i++) buildItem<BlockField>(i);
             break;
-        case 2: //EIP-1559
+        case 2: //EIP-1559 (12 fields)
             //chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, destination, amount, data, access_list, signature_y_parity, signature_r, signature_s
             for(uint i = 0; i < 8; i++) buildItem<BlockField>(i);
             buildItem<BlockAccessLists>(8);
             for(uint i = 9; i < m_items.size(); i++) buildItem<BlockField>(i);
             break;
-        case 3: //EIP-3074
-            //chain_id, nonce, invoker_address, commit, signature_y_parity, signature_r, signature_s
-            buildAllItems<BlockField>();
-            break;
-        case 4: //EIP-4844
+        case 3: //EIP-4844 (14 fields)
             //chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, to, value, data, access_list, max_fee_per_blob_gas, blob_versioned_hashes, y_parity, r, s
             for(uint i = 0; i < 8; i++) buildItem<BlockField>(i);
             buildItem<BlockAccessLists>(8);
@@ -138,8 +109,18 @@ void BlockTransaction::buildStructure(uint64_t type)
             buildItem<BlockBlobVersionHashes>(10);
             for(uint i = 11; i < m_items.size(); i++) buildItem<BlockField>(i);
             break;
-        default: //Legacy + EIP-155
+        case 4: //EIP-7702 (13 fields)
+            //chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, to, value, data, access_list, authorization_list, signature_y_parity, signature_r, signature_s
+            for(uint i = 0; i < 8; i++) buildItem<BlockField>(i);
+            buildItem<BlockAccessLists>(8);
+            buildItem<BlockAuthorizationList>(9);
+            for(uint i = 10; i < m_items.size(); i++) buildItem<BlockField>(i);
+            break;
+        default: //Legacy/EIP-155 (9 fields)
+            //nonce, gas_price, gas_limit, to, value, data, v, signature_r, signature_s
             buildAllItems<BlockField>();
             break;
     }
+
+    deleteChildren();
 }
