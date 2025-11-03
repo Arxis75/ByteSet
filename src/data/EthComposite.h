@@ -1,91 +1,91 @@
 #pragma once
 #include <data/ByteSetComposite.h>
 
+class BlockWithdrawal;
+using Withdrawal = const BlockWithdrawal;
+
 class EthContainer : public ByteSetComposite {
     public:
         EthContainer() = default;
         virtual ~EthContainer() = default;
 
         virtual const ByteSet<8> RLPserialize() const override;
-        
-        void buildStructure();
-        inline const ByteSetField* getField(uint64_t index = 0) const { return dynamic_cast<const ByteSetField*>(m_field[index].get()); }
-    
+
+        virtual void buildStructure() = 0;
+        template<typename T>
+            void buildItem(uint64_t index);
+        template<typename T>
+            void buildAllItems();
+        template<typename T>
+            inline const T* get(uint64_t index) const { return (index < m_items.size() ? dynamic_cast<const T*>(m_items[index].get()) : nullptr); }
+
         void DumpFields() const;
 
     protected:
-        unique_arr<unique_ptr<const IByteSetContainer>> m_field;
+        unique_arr<unique_ptr<IByteSetContainer>> m_items;
+};
+struct BlockField : public ByteSetField {
+    inline virtual void buildStructure() {}
 };
 
-struct BlockHeader : public EthContainer {};
-struct BlockTransaction : public EthContainer {};
-struct BlockTransactions : public EthContainer {
-    inline const BlockTransaction* getTransaction(uint64_t index = 0) const { return dynamic_cast<const BlockTransaction*>(m_field[index].get()); }
+struct BlockHeader : public EthContainer {
+    virtual void buildStructure() override { buildAllItems<BlockField>(); }
+};
+struct BlockTransaction : public EthContainer {
+    virtual void buildStructure() override { buildAllItems<BlockField>(); /*FIXME*/ }
+};
+struct BlockTransactions : public EthContainer { 
+     virtual void buildStructure() override { buildAllItems<BlockField>(); /*FIXME*/ }
 };
 struct BlockUncles : public EthContainer {
-    inline const BlockHeader* getHeader(uint64_t index = 0) const { return dynamic_cast<const BlockHeader*>(m_field[index].get()); }
+    virtual void buildStructure() override { buildAllItems<BlockHeader>(); }
 };
-struct BlockWithdrawal : public EthContainer {};
+struct BlockWithdrawal : public EthContainer {
+    virtual void buildStructure() override { buildAllItems<BlockField>(); }
+};
 struct BlockWithdrawals : public EthContainer {
-    inline const BlockWithdrawal* getWithdrawal(uint64_t index = 0) const { return dynamic_cast<const BlockWithdrawal*>(m_field[index].get()); }
+    virtual void buildStructure() override { buildAllItems<BlockWithdrawal>(); }
 };
 
-class Block : public ByteSetComposite {
+class Block : public EthContainer {
     public:
-        Block() : ByteSetComposite(), m_header(nullptr) {}
+        Block() : EthContainer(), m_block_height(-1) {}
         virtual ~Block() = default;
       
-        inline uint64_t getHeight() const { return m_block_height; }
-        inline void setHeight(uint64_t height) { m_block_height = height; }
-        
-        void buildFromRLP(ByteSet<8> &b, uint64_t block_height) {
-            setHeight(block_height);
-            RLPparse(b);
-
-            m_header.reset(newChildrenAs<BlockHeader>(0));
-            m_transactions.reset(newChildrenAs<BlockTransactions>(1));
-            m_uncles.reset(newChildrenAs<BlockUncles>(2));
-            m_withdrawals.reset(newChildrenAs<BlockWithdrawals>(3));
-
+        virtual void buildStructure() override {
+            buildItem<BlockHeader>(0);
+            buildItem<BlockTransactions>(1);
+            buildItem<BlockUncles>(2);
+            buildItem<BlockWithdrawals>(3);
+            
             deleteChildren();
 
-            m_header->buildStructure();
-            m_transactions->buildStructure();
-            m_uncles->buildStructure();
-            m_withdrawals->buildStructure();
+            setHeight(getHeader()->get<const BlockField>(8)->getIntValue());
         }
 
-        virtual const ByteSet<8> RLPserialize() const override {
-            ByteSet<8> rlp;
-            rlp.push_back(m_header->RLPserialize());
-            rlp.push_back(m_transactions->RLPserialize());
-            rlp.push_back(m_uncles->RLPserialize());
-            rlp.push_back(m_withdrawals->RLPserialize());
-            return rlp.RLPserialize(true);
-        }
+        const BlockHeader* getHeader() const { return get<const BlockHeader>(0); }
+        const BlockTransactions* getTransactions() const { return get<const BlockTransactions>(1); }
+        const BlockUncles* getUncles() const { return get<const BlockUncles>(2); }
+        const BlockWithdrawals* getWithdrawals() const { return get<const BlockWithdrawals>(3); }
 
-        inline const BlockHeader* getHeader() const { return m_header.get(); }
-        inline const BlockTransactions* getTransactions() const { return m_transactions.get(); }
-        inline const BlockUncles* getUncles() const { return m_uncles.get(); }
-        inline const BlockWithdrawals* getWithdrawals() const { return m_withdrawals.get(); }
+        inline void setHeight(uint64_t height) { m_block_height = height; }
+        inline uint64_t getHeight() const { return m_block_height; }
 
     private:
-        uint64_t m_block_height;
-        unique_ptr<BlockHeader> m_header;
-        unique_ptr<BlockTransactions> m_transactions;
-        unique_ptr<BlockUncles> m_uncles;
-        unique_ptr<BlockWithdrawals> m_withdrawals;
+        int64_t m_block_height;
 };
 
 class BlockChain {
     public:
         BlockChain() = default;
 
-        const Block* addBlockFromRawRLP(ByteSet<8> &b, uint64_t block_height) {
+        const Block* newBlockFromRawRLP(ByteSet<8> &b) {
             auto block = make_unique<Block>();
-            block->buildFromRLP(b, block_height);
-            m_blocks.insert({block_height, std::move(block)});
-            return getBlock(block_height);
+            block->RLPparse(b);
+            block->buildStructure();
+            auto result= block.get();
+            m_blocks.insert({block->getHeight(), std::move(block)});
+            return result;
         } 
     
         inline const Block* getBlock(uint64_t block_height) const { return m_blocks.find(block_height)->second.get(); };
@@ -93,5 +93,13 @@ class BlockChain {
     private:
         std::map<uint64_t, unique_ptr<const Block>> m_blocks;
 };
+
+using Header = const BlockHeader;
+using Transactions = const BlockTransactions;
+using Transactions = const BlockTransactions;
+using Uncles = const BlockUncles;
+using Withdrawals = const BlockWithdrawals;
+using Withdrawal = const BlockWithdrawal;
+using Field = const BlockField;
 
 #include <data/EthComposite.tpp>

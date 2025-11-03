@@ -1,42 +1,50 @@
 #include <data/EthComposite.h>
 
-void EthContainer::buildStructure() {
-    auto nest = getItem(0);
-    if(nest && nest->getComposite()) {
-        auto raw_nest = const_cast<ByteSetComposite*>(dynamic_cast<const ByteSetComposite*>(nest));
-        uint64_t nb_fields = raw_nest->getChildrenCount();
-        m_field = unique_arr<unique_ptr<const IByteSetContainer>>(nb_fields);
-        for(int i =0;i<nb_fields;i++) {
-            if(auto item = raw_nest->takeItem(i); item)
-                m_field[i] = std::move(item);
-        }
+template<typename T>
+void EthContainer::buildItem(uint64_t index) {
+    if(auto nest = const_cast<ByteSetComposite*>(dynamic_cast<const ByteSetComposite*>(getChildAt(0))); nest) {
+        if(!m_items)
+            m_items = unique_arr<unique_ptr<IByteSetContainer>>(nest->getChildrenCount());
+        m_items[index] = make_unique<T>();
+        nest->moveChildAt_To(index, m_items[index]);
+        const_cast<T*>(dynamic_cast<const T*>(m_items[index].get()))->buildStructure();
+    }
+}
+
+template<typename T>
+void EthContainer::buildAllItems() {
+    if(auto nest = const_cast<ByteSetComposite*>(dynamic_cast<const ByteSetComposite*>(getChildAt(0))); nest) {
+        if(!m_items)
+            m_items = unique_arr<unique_ptr<IByteSetContainer>>(nest->getChildrenCount());
+        for(uint i = 0; i<m_items.size(); i++)
+            buildItem<T>(i);
         deleteChildren();
     }
 }
 
 const ByteSet<8> EthContainer::RLPserialize() const {
     ByteSet<8> rlp;
-    for(uint64_t i=0; i<m_field.size(); i++) {
-        if(m_field[i])
-            rlp.push_back(m_field[i]->RLPserialize());
+    for(uint64_t i=0; i<m_items.size(); i++) {
+        if(m_items[i])
+            rlp.push_back(m_items[i]->RLPserialize());
     }               
     return rlp =  rlp.RLPserialize(true);
 }
 
 void EthContainer::DumpFields() const
 {
-    if(m_field.size())
-        for(int i=0;i<m_field.size();i++) {
-            cout << hex << m_field[i].get() << " (";
-            if(!m_field[i])
+    if(m_items.size())
+        for(int i=0;i<m_items.size();i++) {
+            cout << hex << m_items[i].get() << " (";
+            if(!m_items[i])
                 cout << "nullptr";
             else {
-                if(!m_field[i]->getComposite())
+                if(!m_items[i]->getComposite())
                     cout << "F";
                 else {
-                    cout << "C:" << dec << dynamic_cast<const ByteSetComposite*>(m_field[i].get())->getChildrenCount();
+                    cout << "C:" << dec << dynamic_cast<const ByteSetComposite*>(m_items[i].get())->getChildrenCount();
                 }
-                cout << " P:" << hex << m_field[i]->getParent();
+                cout << " P:" << hex << m_items[i]->getParent();
             }
             cout << ") ";
         }

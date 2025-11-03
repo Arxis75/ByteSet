@@ -10,13 +10,6 @@ IByteSetContainer* ByteSetComposite::newChild(bool is_composite) {
     return child;
 }
 
-/*std::unique_ptr<const IByteSetContainer> ByteSetComposite::clone() const { 
-    auto copy = std::unique_ptr<ByteSetComposite>(new ByteSetComposite());
-    for(const auto& child : m_children)
-        copy->m_children.push_back(child->clone());
-    return copy;
-}*/
-
 void ByteSetComposite::deleteChildren() {
     while(m_children.size()) {
         DumpChildren();
@@ -62,22 +55,12 @@ const ByteSet<8> ByteSetComposite::RLPserialize() const
     return rlp;
 }
 
-template<typename T>
-const T* ByteSetComposite::getChildrenAs(uint children_index) {
-    T* children = nullptr;
-    if(auto nest = dynamic_cast<const ByteSetComposite*>(getItem(0)); nest && nest->getComposite())
-        children = nest->getItem(children_index);
-    return children;
-}
-template<typename T>
-T* ByteSetComposite::newChildrenAs(uint children_index) {
-    T* list = nullptr;
-    if(auto nest = dynamic_cast<const ByteSetComposite*>(getItem(0)); nest && nest->getComposite())
-        if(auto children = const_cast<ByteSetComposite*>(nest)->takeItem(children_index); children) {
-            list = new T();
-            list->push_back(children.release());
-        }
-    return list;
+void ByteSetComposite::moveChildAt_To(uint64_t child_index, unique_ptr<IByteSetContainer>& target) {
+    assert(target);
+    if(auto uptr = takeChildAt(child_index); uptr) {
+        if(uptr->isComposite() == target->isComposite())
+            target->push_back(uptr.release());
+    }
 }
 
 void ByteSetComposite::DumpChildren() const
@@ -100,4 +83,11 @@ void ByteSetComposite::DumpChildren() const
     else
         cout << "None ()";
     cout << endl;
+}
+
+void ByteSetField::push_back(const IByteSetContainer *b)
+{
+    if(auto f = dynamic_cast<const ByteSetField*>(b); f)
+        if(auto v = const_cast<ByteSetField*>(f)->takeValue(); v)
+            m_value.reset(v.release());
 }
