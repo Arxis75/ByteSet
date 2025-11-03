@@ -63,6 +63,22 @@ void ByteSetComposite::moveChildAt_To(uint64_t child_index, unique_ptr<IByteSetC
     }
 }
 
+uint64_t ByteSetComposite::RLPparseTypedChildAt(uint64_t child_index) {
+    uint64_t type = 0;
+    if(auto f = dynamic_cast<const ByteSetField*>(getChildAt(child_index)); f) {
+        ByteSet<8> typed_field = f->getValue();
+        type = typed_field.pop_front_elem();  //assume here type = 8 bits
+        ByteSetComposite* typed_composite = new ByteSetComposite;;
+        typed_composite->setParent(f->getParent());
+        typed_composite->RLPparse(typed_field);
+        if(auto ptr = dynamic_cast<const ByteSetComposite*>(typed_composite->getChildAt(0)); ptr)
+            m_children[child_index].reset(ptr);          //skip the list wrapper (nest)
+        else
+            delete typed_composite;
+    }
+    return type;
+}
+
 void ByteSetComposite::DumpChildren() const
 {
     if(m_children.size())

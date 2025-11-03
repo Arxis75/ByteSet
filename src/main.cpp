@@ -32,6 +32,9 @@ int main(int argc, char *argv[])
     auto v = w->get<Field>(0);
     cout << v->getValue() << endl;
 
+    auto tx = b->getTransactions()->get<Transaction>(0);
+    cout << tx->get<Field>(0)->getValue() << endl;
+
     //BlockChain bl;
     //auto b = bl.buildBlockFromRawRLP(block_rlp1, 1413507);
     /*b->DumpChildren();

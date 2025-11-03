@@ -11,40 +11,67 @@ class EthContainer : public ByteSetComposite {
 
         virtual const ByteSet<8> RLPserialize() const override;
 
-        virtual void buildStructure() = 0;
+        virtual void buildStructure(uint64_t type = 0) = 0;
         template<typename T>
-            void buildItem(uint64_t index);
+            void buildItem(uint64_t index, uint64_t type = 0);
         template<typename T>
-            void buildAllItems();
+            void buildAllItems(bool typed = false);
         template<typename T>
             inline const T* get(uint64_t index) const { return (index < m_items.size() ? dynamic_cast<const T*>(m_items[index].get()) : nullptr); }
 
         void DumpFields() const;
 
+        inline uint64_t getType() const { return m_type; }
+    
+    protected:
+        inline void setType(uint64_t type) { m_type = type; }
+
     protected:
         unique_arr<unique_ptr<IByteSetContainer>> m_items;
+        int64_t m_type;
 };
 struct BlockField : public ByteSetField {
-    inline virtual void buildStructure() {}
+    inline virtual void buildStructure(uint64_t type = 0) {}
 };
 
 struct BlockHeader : public EthContainer {
-    virtual void buildStructure() override { buildAllItems<BlockField>(); }
+    virtual void buildStructure(uint64_t) override { buildAllItems<BlockField>(); }
+};
+struct BlockBlobVersionHashes : public EthContainer {
+    virtual const ByteSet<8> RLPserialize() const override { return EthContainer::RLPserialize(); }
+    virtual void buildStructure(uint64_t) override { buildAllItems<BlockField>(); }
+};
+struct BlockStorageKeys : public EthContainer {
+    virtual const ByteSet<8> RLPserialize() const override { return EthContainer::RLPserialize(); }
+    virtual void buildStructure(uint64_t) override { buildAllItems<BlockField>(); }
+};
+struct BlockAccessList : public EthContainer {
+    virtual const ByteSet<8> RLPserialize() const override { return EthContainer::RLPserialize(); }
+    virtual void buildStructure(uint64_t) override {
+        buildItem<BlockField>(0);
+        buildItem<BlockStorageKeys>(1);
+        deleteChildren();
+    }
+};
+struct BlockAccessLists : public EthContainer {
+    virtual const ByteSet<8> RLPserialize() const override { return EthContainer::RLPserialize(); }
+    virtual void buildStructure(uint64_t) override { buildAllItems<BlockAccessList>(); }
 };
 struct BlockTransaction : public EthContainer {
-    virtual void buildStructure() override { buildAllItems<BlockField>(); /*FIXME*/ }
+        virtual const ByteSet<8> RLPserialize() const override { return EthContainer::RLPserialize(); }
+        virtual void buildStructure(uint64_t type) override;
 };
 struct BlockTransactions : public EthContainer { 
-     virtual void buildStructure() override { buildAllItems<BlockField>(); /*FIXME*/ }
+     virtual void buildStructure(uint64_t) override { buildAllItems<BlockTransaction>(true); }
 };
 struct BlockUncles : public EthContainer {
-    virtual void buildStructure() override { buildAllItems<BlockHeader>(); }
+    virtual void buildStructure(uint64_t) override { buildAllItems<BlockHeader>(); }
 };
 struct BlockWithdrawal : public EthContainer {
-    virtual void buildStructure() override { buildAllItems<BlockField>(); }
+    virtual void buildStructure(uint64_t) override { buildAllItems<BlockField>(); }
 };
 struct BlockWithdrawals : public EthContainer {
-    virtual void buildStructure() override { buildAllItems<BlockWithdrawal>(); }
+    virtual void buildStructure(uint64_t) override { buildAllItems<BlockWithdrawal>(); }
 };
 
 class Block : public EthContainer {
@@ -52,24 +79,17 @@ class Block : public EthContainer {
         Block() : EthContainer(), m_block_height(-1) {}
         virtual ~Block() = default;
       
-        virtual void buildStructure() override {
-            buildItem<BlockHeader>(0);
-            buildItem<BlockTransactions>(1);
-            buildItem<BlockUncles>(2);
-            buildItem<BlockWithdrawals>(3);
-            
-            deleteChildren();
-
-            setHeight(getHeader()->get<const BlockField>(8)->getIntValue());
-        }
+        virtual void buildStructure(uint64_t type = 0) override;
 
         const BlockHeader* getHeader() const { return get<const BlockHeader>(0); }
         const BlockTransactions* getTransactions() const { return get<const BlockTransactions>(1); }
         const BlockUncles* getUncles() const { return get<const BlockUncles>(2); }
         const BlockWithdrawals* getWithdrawals() const { return get<const BlockWithdrawals>(3); }
 
-        inline void setHeight(uint64_t height) { m_block_height = height; }
         inline uint64_t getHeight() const { return m_block_height; }
+
+    protected:
+        inline void setHeight(uint64_t height) { m_block_height = height; }
 
     private:
         int64_t m_block_height;
@@ -79,15 +99,7 @@ class BlockChain {
     public:
         BlockChain() = default;
 
-        const Block* newBlockFromRawRLP(ByteSet<8> &b) {
-            auto block = make_unique<Block>();
-            block->RLPparse(b);
-            block->buildStructure();
-            auto result= block.get();
-            m_blocks.insert({block->getHeight(), std::move(block)});
-            return result;
-        } 
-    
+        const Block* newBlockFromRawRLP(ByteSet<8> &b);
         inline const Block* getBlock(uint64_t block_height) const { return m_blocks.find(block_height)->second.get(); };
 
     private:
@@ -96,7 +108,7 @@ class BlockChain {
 
 using Header = const BlockHeader;
 using Transactions = const BlockTransactions;
-using Transactions = const BlockTransactions;
+using Transaction = const BlockTransaction;
 using Uncles = const BlockUncles;
 using Withdrawals = const BlockWithdrawals;
 using Withdrawal = const BlockWithdrawal;
