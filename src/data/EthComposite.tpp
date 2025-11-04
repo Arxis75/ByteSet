@@ -94,12 +94,14 @@ void BlockTransaction::buildStructure(uint64_t type)
             for(uint i = 0; i < 7; i++) buildItem<BlockField>(i);
             buildItem<BlockAccessLists>(7);
             for(uint i = 8; i < m_items.size(); i++) buildItem<BlockField>(i);
+            deleteChildren();
             break;
         case 2: //EIP-1559 (12 fields)
             //chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, destination, amount, data, access_list, signature_y_parity, signature_r, signature_s
             for(uint i = 0; i < 8; i++) buildItem<BlockField>(i);
             buildItem<BlockAccessLists>(8);
             for(uint i = 9; i < m_items.size(); i++) buildItem<BlockField>(i);
+            deleteChildren();
             break;
         case 3: //EIP-4844 (14 fields)
             //chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, to, value, data, access_list, max_fee_per_blob_gas, blob_versioned_hashes, y_parity, r, s
@@ -108,6 +110,7 @@ void BlockTransaction::buildStructure(uint64_t type)
             buildItem<BlockField>(9);
             buildItem<BlockBlobVersionHashes>(10);
             for(uint i = 11; i < m_items.size(); i++) buildItem<BlockField>(i);
+            deleteChildren();
             break;
         case 4: //EIP-7702 (13 fields)
             //chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, to, value, data, access_list, authorization_list, signature_y_parity, signature_r, signature_s
@@ -115,12 +118,11 @@ void BlockTransaction::buildStructure(uint64_t type)
             buildItem<BlockAccessLists>(8);
             buildItem<BlockAuthorizationList>(9);
             for(uint i = 10; i < m_items.size(); i++) buildItem<BlockField>(i);
+            deleteChildren();
             break;
         default: //Legacy/EIP-155 (9 fields)
             //nonce, gas_price, gas_limit, to, value, data, v, signature_r, signature_s
             buildAllItems<BlockField>();
             break;
     }
-
-    deleteChildren();
 }
