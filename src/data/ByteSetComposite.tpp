@@ -58,19 +58,19 @@ const ByteSet<8> ByteSetComposite::RLPserialize() const
 void ByteSetComposite::moveChildAt_To(uint64_t child_index, unique_ptr<IByteSetContainer>& target) {
     assert(target);
     if(auto uptr = takeChildAt(child_index); uptr) {
-        if(uptr->isComposite() == target->isComposite())
-            target->push_back(uptr.release());
+        assert(uptr->isComposite() == target->isComposite());
+        target->push_back(uptr.release());
     }
 }
 
 uint64_t ByteSetComposite::RLPparseTypedChildAt(uint64_t child_index) {
     uint64_t type = 0;
     if(auto f = dynamic_cast<const ByteSetField*>(getChildAt(child_index)); f) {
-        ByteSet<8> typed_field = f->getValue();
-        type = typed_field.pop_front_elem();  //assume here type = 8 bits
         ByteSetComposite* typed_composite = new ByteSetComposite;;
         typed_composite->setParent(f->getParent());
-        typed_composite->RLPparse(typed_field);
+        ByteSet<8> typed_child = f->getValue();
+        type = typed_child.pop_front_elem();  //assume here type = 8 bits
+        typed_composite->RLPparse(typed_child);
         if(auto ptr = dynamic_cast<const ByteSetComposite*>(typed_composite->getChildAt(0)); ptr)
             m_children[child_index].reset(ptr);          //skip the list wrapper (nest)
         else

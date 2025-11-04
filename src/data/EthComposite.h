@@ -1,9 +1,6 @@
 #pragma once
 #include <data/ByteSetComposite.h>
 
-class BlockWithdrawal;
-using Withdrawal = const BlockWithdrawal;
-
 class EthContainer : public ByteSetComposite {
     public:
         virtual ~EthContainer() = default;
@@ -31,31 +28,25 @@ class EthContainer : public ByteSetComposite {
         int64_t m_type;
 };
 struct BlockField : public ByteSetField {
-    inline virtual void buildStructure(uint64_t type = 0) {}
+    inline virtual void buildStructure(uint64_t) {}
 };
 
 struct BlockHeader : public EthContainer {
     virtual void buildStructure(uint64_t) override { buildAllItems<BlockField>(); }
 };
-
 struct BlockAuthorization : public EthContainer {
     virtual void buildStructure(uint64_t) override { buildAllItems<BlockField>(); }
 };
 struct BlockAuthorizationList : public EthContainer {
     virtual void buildStructure(uint64_t) override { buildAllItems<BlockAuthorization>(); }
 };
-
 struct BlockBlobVersionHashes : public EthContainer {
-    virtual const ByteSet<8> RLPserialize() const override { return EthContainer::RLPserialize(); }
     virtual void buildStructure(uint64_t) override { buildAllItems<BlockField>(); }
 };
-
 struct BlockStorageKeys : public EthContainer {
-    virtual const ByteSet<8> RLPserialize() const override { return EthContainer::RLPserialize(); }
     virtual void buildStructure(uint64_t) override { buildAllItems<BlockField>(); }
 };
 struct BlockAccessList : public EthContainer {
-    virtual const ByteSet<8> RLPserialize() const override { return EthContainer::RLPserialize(); }
     virtual void buildStructure(uint64_t) override {
         buildItem<BlockField>(0);
         buildItem<BlockStorageKeys>(1);
@@ -65,9 +56,8 @@ struct BlockAccessList : public EthContainer {
 struct BlockAccessLists : public EthContainer {
     virtual void buildStructure(uint64_t) override { buildAllItems<BlockAccessList>(); }
 };
-
 struct BlockTransaction : public EthContainer {
-    virtual void buildStructure(uint64_t type) override;
+    virtual void buildStructure(uint64_t) override;
 };
 struct BlockTransactions : public EthContainer { 
      virtual void buildStructure(uint64_t) override { buildAllItems<BlockTransaction>(true); }
