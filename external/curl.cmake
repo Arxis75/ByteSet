@@ -13,8 +13,6 @@ if(NOT libcurl)
    set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build static libcurl")
    set(CURL_USE_OPENSSL ON CACHE BOOL "Use OpenSSL")
    set(CURL_USE_LIBPSL OFF CACHE BOOL "Disable use of libpsl")
-   # Pass the existing OpenSSL targets to curl
-   #set(CURL_OPENSSL_LIBRARIES OpenSSL::SSL OpenSSL::Crypto CACHE INTERNAL "")
 
    include(FetchContent)
    FetchContent_Declare(
@@ -32,9 +30,4 @@ else()
     add_dependencies(libcurl curl)
     target_include_directories(libcurl INTERFACE ${CURL_INCLUDE_DIR})
     target_link_libraries(libcurl INTERFACE ${CURL_LIBCURL_LIBRARY})
-    
-    #add_library(ethash::ethash INTERFACE IMPORTED GLOBAL)
-    #add_dependencies(ethash::ethash ethash)
-    #target_include_directories(ethash::ethash INTERFACE ${CURL_INCLUDE_DIR})
-    #target_link_libraries(ethash::ethash INTERFACE ${CURL_CURL_LIBRARY})
 endif()

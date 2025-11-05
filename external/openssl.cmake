@@ -33,7 +33,8 @@ if(NOT libOpenSSL OR NOT libCrypto)
     TEST_COMMAND ""#make -j${Ncpu} test#
     INSTALL_COMMAND make -j${Ncpu} install
     INSTALL_DIR ${OPENSSL_INSTALL_DIR}
-    BUILD_BYPRODUCTS ${OPENSSL_LIBRARIES}   #Mandatory for Ninja: https://stackoverflow.com/questions/54866067/cmake-and-ninja-missing-and-no-known-rule-to-make-it
+    BUILD_BYPRODUCTS      #Mandatory for Ninja: https://stackoverflow.com/questions/54866067/cmake-and-ninja-missing-and-no-known-rule-to-make-it
+      ${OPENSSL_LIBRARIES}
   )
 endif()
 
@@ -47,7 +48,8 @@ add_dependencies(OpenSSL::Crypto OpenSSL)
 target_include_directories(OpenSSL::Crypto INTERFACE ${OPENSSL_INCLUDE_DIR})
 target_link_libraries(OpenSSL::Crypto INTERFACE ${OPENSSL_CRYPTO_LIBRARY})
 
-#add_library(OpenSSL::SSL INTERFACE IMPORTED GLOBAL)
-#add_dependencies(OpenSSL::SSL OpenSSL)
-#target_include_directories(OpenSSL::SSL INTERFACE ${OPENSSL_INCLUDE_DIR})
-#target_link_libraries(OpenSSL::SSL INTERFACE ${OPENSSL_SSL_LIBRARY})
+add_library(OpenSSL::SSL INTERFACE IMPORTED GLOBAL)
+add_dependencies(OpenSSL::SSL openssl_project)
+target_include_directories(OpenSSL::SSL INTERFACE ${OPENSSL_INCLUDE_DIR})
+# Link both libssl.a and libcrypto.a so all functions are resolved
+target_link_libraries(OpenSSL::SSL INTERFACE ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY})
