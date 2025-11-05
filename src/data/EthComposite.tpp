@@ -13,9 +13,9 @@ void EthContainer::buildItem(uint64_t index, uint64_t type) {
 
 template<typename T>
 void EthContainer::buildAllItems(bool typed) {
-    DumpChildren();
+    //DumpChildren();
     if(auto nest = const_cast<ByteSetComposite*>(dynamic_cast<const ByteSetComposite*>(getChildAt(0))); nest) {
-        nest->DumpChildren();
+        //nest->DumpChildren();
         if(!m_items)
             m_items = unique_arr<unique_ptr<IByteSetContainer>>(nest->getChildrenCount());
         for(uint i = 0; i<m_items.size(); i++) {

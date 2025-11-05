@@ -12,7 +12,7 @@ IByteSetContainer* ByteSetComposite::newChild(bool is_composite) {
 
 void ByteSetComposite::deleteChildren() {
     while(m_children.size()) {
-        DumpChildren();
+        //DumpChildren();
         unique_ptr<const IByteSetContainer> uchild = std::move(m_children[m_children.size()-1]);
         if(uchild) {
             auto cchild = dynamic_cast<const ByteSetComposite*>(uchild.get());
