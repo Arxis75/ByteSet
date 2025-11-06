@@ -1,6 +1,5 @@
 #pragma once
-
-#include <data/System.h>
+#include <ByteSet/Tools.h>
 
 class ByteSetFormat
 {

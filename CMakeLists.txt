@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.16)
 
 project(ByteSet VERSION 1.0 LANGUAGES C CXX)
 
+option(BUILD_AS_LIBRARY "Build ByteSet as a library instead of an executable" OFF)
+option(BUILD_TESTING "Build unit tests" ON)
+
 # Flags must be defined AFTER the project declaration
 set(CMAKE_CXX_STANDARD 17)  # 11 => 17 to allow omitting '<>' when instanciating a template class with the default parameter
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -12,6 +15,18 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # first we can indicate the documentation build as an option and set it to ON by default
 option(BUILD_DOC "Build documentation" ON)
 
-add_subdirectory(external)
-add_subdirectory(tests)
+# Where custom modules live
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
+add_subdirectory(cmake)
+
 add_subdirectory(src)
+
+if(NOT BUILD_AS_LIBRARY)
+    add_subdirectory(app)
+endif()
+
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

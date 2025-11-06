@@ -1,5 +1,5 @@
-#include <data/EthComposite.h>
-#include <data/trie.h>
+#include <ByteSet/EthComposite.h>
+#include <trie.h>
 
 #include <iostream>
 #include <fstream>
@@ -16,7 +16,10 @@ static size_t write_cb(void *ptr, size_t size, size_t nmemb, void *userdata) {
 
 int main(int argc, char *argv[])
 {
-    BlockChain bl;
+    for(Integer i=0;i<1000000000;i++)
+        cout << dec << "La racin carrée de " << i << " vaut: " << float(sqrt(i)) << endl;
+
+   /* BlockChain bl;
 
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
@@ -114,7 +117,7 @@ int main(int argc, char *argv[])
     rlp = tx6->RLPserialize();
     rlp = tx7->RLPserialize();
 
-    cout << tx2->get<Field>(4)->getValue() << endl;
+    cout << tx2->get<Field>(4)->getValue() << endl;*/
 
     //BlockChain bl;
     //auto b = bl.buildBlockFromRawRLP(block_rlp1, 1413507);
@@ -135,12 +138,12 @@ int main(int argc, char *argv[])
 
     //cout << h->RLPserialize().asString() << endl;
     
-    ByteSet block_rlp2 = b->RLPserialize();
+    /*ByteSet block_rlp2 = b->RLPserialize();
     
     cout << "initial = " << hex << block_rlp.asString() << endl;
     cout << "final = " << hex << block_rlp2.asString() << endl;
     if(block_rlp2 == block_rlp)
-        cout << "Yipee!!!" << endl;
+        cout << "Yipee!!!" << endl;*/
 
     //shared_ptr<const ByteSetList> l = dynamic_pointer_cast<const ByteSetList>(b.getItem(0));
     //cout << hex << dynamic_pointer_cast<const ByteSetField>(l->getItem(0))->getStrValue().asString() << endl;

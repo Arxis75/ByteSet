@@ -1,7 +1,5 @@
 #pragma once
-
-#include <data/System.h>
-#include <data/ByteSetFormat.h>
+#include <ByteSet/ByteSetFormat.h>
 
 enum RLPType {LIST, INT, BYTE, STR};
 
@@ -49,7 +47,7 @@ class ByteSet
 
         //ostream
         template <uint8_t BPE>
-            friend ostream& operator<<(ostream& out, const ByteSet<BPE>& b);
+            friend std::ostream& operator<<(std::ostream& out, const ByteSet<BPE>& b);
 
         //****************************************** PUSH/POP METHODS **************************************************//
         
@@ -119,8 +117,8 @@ class ByteSet
 
     private:
         /// @brief Vector is used to store the data with the Big-Endian convention
-        vector<uint8_t> vvalue;
+        std::vector<uint8_t> vvalue;
         RLPType m_rlp_type;
 };
 
-#include "data/ByteSet.tpp"
+#include <ByteSet/ByteSet.tpp>

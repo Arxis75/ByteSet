@@ -1,5 +1,5 @@
 #pragma once
-#include <data/ByteSet.h>
+#include <ByteSet/ByteSet.h>
 
 class TrieNode {
     public:

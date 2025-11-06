@@ -1,14 +1,21 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.16)
 
-project(ByteSet_test NONE)
+project(ByteSetTest VERSION 1.0 LANGUAGES CXX)
 
-add_executable(ByteSet_test main.cpp)
+set(PROJECT_SOURCES main.cpp)
 
-target_link_libraries(ByteSet_test PRIVATE GTest::gtest)
+add_executable(ByteSetTest ${PROJECT_SOURCES})
 
-enable_testing()
+#Defines the root folder(s) for all targets
+target_include_directories(
+    ByteSetTest
+    PUBLIC ${PROJECT_SOURCE_DIR}/include
+    PUBLIC ${PROJECT_SOURCE_DIR}/src      #PRIVATE ${PROJECT_SOURCE_DIR}/src
+)
+
+target_link_libraries(ByteSetTest PRIVATE LibByteSet GTest::gtest)
 
 add_subdirectory(unit_tests)
 
 include(GoogleTest)
-gtest_discover_tests(ByteSet_test)
+gtest_discover_tests(ByteSetTest)

@@ -1,5 +1,6 @@
 #pragma once
-#include <data/ByteSet.h>
+#include <ByteSet/ByteSet.h>
+#include <ByteSet/Tools.h>
 
 class ByteSetComposite;
 class ByteSetField;
@@ -76,4 +77,4 @@ class ByteSetField : public virtual IByteSetContainer {
         unique_ptr<ByteSet<8>> m_value;
 };
 
-#include <data/ByteSetComposite.tpp>
+#include <ByteSetComposite.tpp>

@@ -1,5 +1,5 @@
-#include <data/ByteSet.h>
-#include <data/Tools.h>
+#include <ByteSet/ByteSet.h>
+#include <ByteSet/Tools.h>
 
 template <uint8_t BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const unsigned char *p, uint64_t source_nb_bytes)
@@ -37,7 +37,7 @@ ByteSet<BitsPerElement>::ByteSet(const char *str, const ByteSetFormat &f, uint64
             push_back(ByteSet(Integer(s.c_str()), target_nb_elem));
         else if(f.isCharAligned()) {
             int elem_mask = pow(2, getBitsPerElem()) - 1;
-            uint64_t nb_elem = (target_nb_elem ? min(target_nb_elem, getStrNbElem(s, f, true)) : getStrNbElem(s, f, true));
+            uint64_t nb_elem = (target_nb_elem ? std::min(target_nb_elem, getStrNbElem(s, f, true)) : getStrNbElem(s, f, true));
             for(uint64_t i = 0; i < nb_elem; i++) {
                 uint8_t elem_value = 0;
                 if( f.getBitsPerChar() > getBitsPerElem()) {
@@ -81,7 +81,7 @@ string ByteSet<BitsPerElement>::asString(const ByteSetFormat &f, bool with_heade
         Integer val = asInteger();
         if(val >=0) {  //Do not display -1 when the ByteSet is empty
             stringstream ss;
-            ss << dec << val;
+            ss << std::dec << val;
             str_result = ss.str();
         }
     }
@@ -238,13 +238,13 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::sha256() const
 }
 
 template <uint8_t bb>
-ostream& operator<<(ostream& out, const ByteSet<bb>& b)
+std::ostream& operator<<(std::ostream& out, const ByteSet<bb>& b)
 {
     //Dumps the vvalue vector as a raw Hex multi-bytes (or multi-bits) string
     //For more visual options, use asString()...
     bool needs_padding = (b.isByteAligned());   //FIXME: not quite true, but ok for byte/bit
     out << "0x ";
     for(int i : b.vvalue)
-        out << hex << uppercase << (needs_padding && i < 0x10 ? "0" : "") << i << " ";
+        out << std::hex << std::uppercase << (needs_padding && i < 0x10 ? "0" : "") << i << " ";
     return out;
 }

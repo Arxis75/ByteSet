@@ -1,5 +1,5 @@
 file(GLOB SOURCES "*.h" "*.cpp")
 
-target_sources(ByteSet_test PUBLIC ${SOURCES})
+target_sources(ByteSetTest PUBLIC ${SOURCES})
 
 add_subdirectory(constructors)

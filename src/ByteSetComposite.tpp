@@ -1,4 +1,5 @@
-#include <data/ByteSetComposite.h>
+#include <ByteSet/ByteSetComposite.h>
+#include <System.h>
 
 IByteSetContainer* ByteSetComposite::newChild(bool is_composite) {
     IByteSetContainer* child;

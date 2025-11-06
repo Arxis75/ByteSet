@@ -1,5 +1,5 @@
-#include <data/ByteSetFormat.h>
-#include <data/Tools.h>
+#include <ByteSet/ByteSetFormat.h>
+#include <System.h>
 
 ByteSetFormat::ByteSetFormat(
         const string &UIName,

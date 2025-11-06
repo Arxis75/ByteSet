@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <data/ByteSet.h>
+#include <ByteSet/ByteSet.h>
 
 #include "Constructors_parameters.h"
 

@@ -1,4 +1,4 @@
-#include <data/trie.h>
+#include <trie.h>
 
 TrieNode::TrieNode()
     : m_children{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}

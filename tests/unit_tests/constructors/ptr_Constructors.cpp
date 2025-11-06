@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <data/ByteSet.h>
+#include <ByteSet/ByteSet.h>
 
 // Helper function to test if a type can be constructed with a specific value
 template <typename T, typename... Args>

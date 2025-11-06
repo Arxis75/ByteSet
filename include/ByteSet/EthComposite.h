@@ -1,5 +1,8 @@
 #pragma once
-#include <data/ByteSetComposite.h>
+
+#include <ByteSet/ByteSetComposite.h>
+#include <ByteSet/Tools.h>
+#include <map>
 
 class EthContainer : public ByteSetComposite {
     public:
@@ -112,4 +115,4 @@ using Withdrawals = const BlockWithdrawals;
 using Withdrawal = const BlockWithdrawal;
 using Field = const BlockField;
 
-#include <data/EthComposite.tpp>
+#include <EthComposite.tpp>
