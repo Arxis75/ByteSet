@@ -6,7 +6,6 @@ set(CURL_LIBCURL_LIBRARY ${CURL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}curl-d${C
 set(CURL_INCLUDE_DIR ${CURL_PREFIX}/include)
 
 find_library(libcurl NAMES libcurl-d.a PATHS "${CURL_LIB_DIR}" NO_DEFAULT_PATH)
-#find_library(libkeccak NAMES libkeccak.a PATHS "${CURL_LIB_DIR}/keccak" NO_DEFAULT_PATH)
 if(NOT libcurl)
    message(STATUS "Third-party: creating target 'curl'")
 
