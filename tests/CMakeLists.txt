@@ -17,5 +17,7 @@ target_link_libraries(ByteSetTest PRIVATE LibByteSet GTest::gtest)
 
 add_subdirectory(unit_tests)
 
+enable_testing()
+
 include(GoogleTest)
 gtest_discover_tests(ByteSetTest)

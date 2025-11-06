@@ -10,4 +10,4 @@ target_include_directories(
 )
 
 #target_link_libraries(ByteSetApp PUBLIC LibByteSet)
-target_link_libraries(ByteSetApp PUBLIC LibByteSet PRIVATE nlohmann_json::nlohmann_json libcurl)    #testing purpose
+target_link_libraries(ByteSetApp PUBLIC LibByteSet PRIVATE nlohmann_json::nlohmann_json libcurl)    #for testing purpose
