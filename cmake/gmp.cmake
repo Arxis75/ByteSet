@@ -10,7 +10,7 @@ if(NOT (TARGET gmp::gmp AND TARGET gmp::gmpxx))
   find_library(libgmp NAMES libgmp.a PATHS "${GMP_LIB_DIR}" NO_DEFAULT_PATH)
   find_library(libgmpxx NAMES libgmpxx.a PATHS "${GMP_LIB_DIR}" NO_DEFAULT_PATH)
   if(NOT libgmp OR NOT libgmpxx)
-    message(STATUS "Third-party: creating target 'gmp'")
+    message(STATUS "👉 Third-party: creating target 'gmp'")
 
     include(ProcessorCount)
     ProcessorCount(Ncpu)

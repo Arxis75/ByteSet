@@ -2,7 +2,7 @@ if(BUILD_DOC)
     if(NOT DOXYGEN_EXECUTABLE)
         FIND_PACKAGE( Doxygen )
         IF(Doxygen_FOUND)
-            MESSAGE(STATUS "Doxygen found: ${DOXYGEN_EXECUTABLE} -- ${DOXYGEN_VERSION}")
+            MESSAGE(STATUS "👉 Doxygen found: ${DOXYGEN_EXECUTABLE} -- ${DOXYGEN_VERSION}")
             # Set Doxygen input and output files.
             SET(DOXYGEN_INPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
             SET(DOXYGEN_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/build-docs)

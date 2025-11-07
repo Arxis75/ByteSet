@@ -1,9 +1,14 @@
 #pragma once
 #include <ByteSet/ByteSetFormat.h>
 
-enum RLPType {LIST, INT, BYTE, STR};
+enum RLPType {LIST, INT, BYTES, STR};
+enum ByteSetBitsPerElem {ONE = 1, FOUR = 4, EIGHT = 8};
 
-template <uint8_t BitsPerElement = 8>   //Should work for 1, 2, 4, 8 only
+constexpr ByteSetBitsPerElem BIT = ByteSetBitsPerElem::ONE;
+constexpr ByteSetBitsPerElem NIBBLE = ByteSetBitsPerElem::FOUR;
+constexpr ByteSetBitsPerElem BYTE = ByteSetBitsPerElem::EIGHT;
+
+template <ByteSetBitsPerElem BitsPerElement = BYTE>
 class ByteSet
 {
     public: 
@@ -35,18 +40,18 @@ class ByteSet
         inline ByteSet& operator=(uint64_t val) { ByteSet b(val); swap(vvalue, b.vvalue); return *this; }
         inline ByteSet& operator=(const Integer &val) { ByteSet b(val); swap(vvalue, b.vvalue); return *this; }
 
-        //******************************* String Constructors/Operators *************************************//
+        //******************************* std::string Constructors/Operators *************************************//
         
-        inline explicit ByteSet(const string &str, const ByteSetFormat &f = Hex, uint64_t target_nb_elem = 0) : ByteSet(str.c_str(), f, target_nb_elem) {}
+        inline explicit ByteSet(const std::string &str, const ByteSetFormat &f = Hex, uint64_t target_nb_elem = 0) : ByteSet(str.c_str(), f, target_nb_elem) {}
         explicit ByteSet(const char *str, const ByteSetFormat &f = Hex, uint64_t target_nb_elem = 0);
 
-        string asString(const ByteSetFormat &f = Hex, bool with_header = true, bool upper_case = true) const;
+        std::string asString(const ByteSetFormat &f = Hex, bool with_header = true, bool upper_case = true) const;
 
-        inline ByteSet& operator=(const string &str) { ByteSet b(str); swap(vvalue, b.vvalue); return *this; }
+        inline ByteSet& operator=(const std::string &str) { ByteSet b(str); swap(vvalue, b.vvalue); return *this; }
         inline ByteSet& operator=(const char *str) { ByteSet b(str); swap(vvalue, b.vvalue); return *this; }
 
         //ostream
-        template <uint8_t BPE>
+        template <ByteSetBitsPerElem BPE>
             friend std::ostream& operator<<(std::ostream& out, const ByteSet<BPE>& b);
 
         //****************************************** PUSH/POP METHODS **************************************************//
@@ -79,11 +84,11 @@ class ByteSet
 
         inline uint8_t getElem(uint64_t elem_index) const { return vvalue[elem_index]; }
         inline uint64_t getIntNbElem(Integer val) const { return ceil(logtwo(1 + val) / getBitsPerElem()); }
-        uint64_t getStrNbElem(const string &str, const ByteSetFormat &f = Hex, bool is_already_Canonical = false) const;
+        uint64_t getStrNbElem(const std::string &str, const ByteSetFormat &f = Hex, bool is_already_Canonical = false) const;
         inline uint8_t getIntElem(const Integer &val, uint64_t elem_offset) const { return uint8_t((Givaro::pow(2, getBitsPerElem()) - 1) & (val >> (getIntNbElem(val) - 1 - elem_offset) * getBitsPerElem())); }
 
-        inline uint8_t getBitsPerElem() const { return BitsPerElement; }
-        inline uint8_t getNbElemPerByte() const { return 8/BitsPerElement; }
+        inline uint8_t getBitsPerElem() const { return uint(BitsPerElement); }
+        inline uint8_t getNbElemPerByte() const { return uint(8/BitsPerElement); }
         inline bool isByteAligned() const { return !(getBitsPerElem()%8);}
 
         inline bool isEmpty() const { return vvalue.size() == 0; }

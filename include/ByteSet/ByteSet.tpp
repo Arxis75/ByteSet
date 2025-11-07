@@ -1,9 +1,9 @@
 #include <ByteSet/ByteSet.h>
 #include <ByteSet/Tools.h>
 
-template <uint8_t BitsPerElement>
+template <ByteSetBitsPerElem BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const unsigned char *p, uint64_t source_nb_bytes)
-    : m_rlp_type(BYTE)
+    : m_rlp_type(BYTES)
 { 
     assert(isByteAligned());
 
@@ -11,9 +11,9 @@ ByteSet<BitsPerElement>::ByteSet(const unsigned char *p, uint64_t source_nb_byte
         push_back_elem(p[i]);
 }
    
-template <uint8_t BitsPerElement>
+template <ByteSetBitsPerElem BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const Integer &val, uint64_t nb_elem)
-    : m_rlp_type(BYTE)
+    : m_rlp_type(BYTES)
 {
     if(val >= 0)   //-1 is the conventional value for an empty ByteSet
     {
@@ -27,11 +27,11 @@ ByteSet<BitsPerElement>::ByteSet(const Integer &val, uint64_t nb_elem)
     }
 }
 
-template <uint8_t BitsPerElement>
+template <ByteSetBitsPerElem BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const char *str, const ByteSetFormat &f, uint64_t target_nb_elem)
-    : m_rlp_type(BYTE)
+    : m_rlp_type(BYTES)
 {
-    string s = f.toCanonicalString(str);
+    std::string s = f.toCanonicalString(str);
     if(s.size()) {
         if(f.getBase() == 10)
             push_back(ByteSet(Integer(s.c_str()), target_nb_elem));
@@ -64,7 +64,7 @@ ByteSet<BitsPerElement>::ByteSet(const char *str, const ByteSetFormat &f, uint64
     }
 }
 
-template <uint8_t BitsPerElement>
+template <ByteSetBitsPerElem BitsPerElement>
 Integer ByteSet<BitsPerElement>::asInteger() const
 {
     Integer ret_value = (getNbElements() ? 0 : -1);     //-1 is the conventional value for an empty ByteSet
@@ -73,14 +73,14 @@ Integer ByteSet<BitsPerElement>::asInteger() const
     return ret_value;     
 }
 
-template <uint8_t BitsPerElement>
-string ByteSet<BitsPerElement>::asString(const ByteSetFormat &f, bool with_header, bool upper_case) const
+template <ByteSetBitsPerElem BitsPerElement>
+std::string ByteSet<BitsPerElement>::asString(const ByteSetFormat &f, bool with_header, bool upper_case) const
 {
-    string str_result;
+    std::string str_result;
     if(f.getBase() == 10) {
         Integer val = asInteger();
         if(val >=0) {  //Do not display -1 when the ByteSet is empty
-            stringstream ss;
+            std::stringstream ss;
             ss << std::dec << val;
             str_result = ss.str();
         }
@@ -95,25 +95,25 @@ string ByteSet<BitsPerElement>::asString(const ByteSetFormat &f, bool with_heade
                 int ne = 0; //Element counter
                 do {
                     c += ((vvalue[elem] >> (nc*f.getBitsPerChar())) & char_mask) << ne*getBitsPerElem();
-                    if(f.getElemsPerChar(BitsPerElement))
+                    if(f.getElemsPerChar(getBitsPerElem()))
                         elem--;
                     ne++;
-                } while(elem >= 0 && ne < f.getElemsPerChar(BitsPerElement));
+                } while(elem >= 0 && ne < f.getElemsPerChar(getBitsPerElem()));
                 str_result.insert(0, 1, f.digitToChar(c, upper_case));
                 nc++;                       
-            } while(elem >= 0 && nc < f.getCharsPerElem(BitsPerElement));
-            if(f.getCharsPerElem(BitsPerElement) > 1)
+            } while(elem >= 0 && nc < f.getCharsPerElem(getBitsPerElem()));
+            if(f.getCharsPerElem(getBitsPerElem()) > 1)
                 elem--;
         }
     }
     return f.toUserString(str_result, with_header);
 }
 
-template <uint8_t BitsPerElement>
-uint64_t ByteSet<BitsPerElement>::getStrNbElem(const string &str, const ByteSetFormat &f, bool is_already_Canonical) const
+template <ByteSetBitsPerElem BitsPerElement>
+uint64_t ByteSet<BitsPerElement>::getStrNbElem(const std::string &str, const ByteSetFormat &f, bool is_already_Canonical) const
 {   
     uint64_t nb_elem = 0;
-    string s = (is_already_Canonical ? str : f.toCanonicalString(str));
+    std::string s = (is_already_Canonical ? str : f.toCanonicalString(str));
     if(f.getBase() == 10) {
         ByteSet b(Integer(s.c_str()));
         nb_elem = b.getNbElements();
@@ -123,7 +123,7 @@ uint64_t ByteSet<BitsPerElement>::getStrNbElem(const string &str, const ByteSetF
     return nb_elem; 
 }
 
-template <uint8_t BitsPerElement>
+template <ByteSetBitsPerElem BitsPerElement>
 uint8_t ByteSet<BitsPerElement>::pop_front_elem()
 {
     assert(getNbElements());
@@ -132,7 +132,7 @@ uint8_t ByteSet<BitsPerElement>::pop_front_elem()
     return ret_value;
 }
 
-template <uint8_t BitsPerElement>
+template <ByteSetBitsPerElem BitsPerElement>
 uint8_t ByteSet<BitsPerElement>::pop_back_elem()
 {
     assert(getNbElements());
@@ -141,7 +141,7 @@ uint8_t ByteSet<BitsPerElement>::pop_back_elem()
     return ret_val;
 }
 
-template <uint8_t BitsPerElement>
+template <ByteSetBitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::pop_front(uint64_t nb_element) {
     ByteSet ret_value;
     if(nb_element <= getNbElements())
@@ -150,7 +150,7 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::pop_front(uint64_t nb_element) 
     return ret_value;
 }
 
-template <uint8_t BitsPerElement>
+template <ByteSetBitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::pop_back(uint64_t nb_element) {
     ByteSet ret_value;
     if(nb_element <= getNbElements())
@@ -159,7 +159,7 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::pop_back(uint64_t nb_element) {
     return ret_value;
 }
 
-template <uint8_t BitsPerElement>
+template <ByteSetBitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::at(const uint64_t elem_offset, const uint64_t nb_element) const
 {
     ByteSet ret_value = *this;
@@ -168,7 +168,7 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::at(const uint64_t elem_offset, 
     return ret_value;
 }
 
-template <uint8_t BitsPerElement>
+template <ByteSetBitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPserialize(bool as_list) const
 {
     ByteSet result(*this);
@@ -186,7 +186,7 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPserialize(bool as_list) cons
     return result;
 }
 
-template <uint8_t BitsPerElement>
+template <ByteSetBitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPparse()
 {
     assert(byteSize());
@@ -204,40 +204,40 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPparse()
     pop_front(total_header_size*getNbElemPerByte());
 
     ByteSet<BitsPerElement> result = pop_front(size*getNbElemPerByte());
-    result.setRLPType(is_list ? RLPType::LIST : (has_header && result.byteSize() == 1 && result.asInteger() < 0x80 ? RLPType::STR : RLPType::BYTE));
+    result.setRLPType(is_list ? RLPType::LIST : (has_header && result.byteSize() == 1 && result.asInteger() < 0x80 ? RLPType::STR : RLPType::BYTES));
     return result;
 }
 
-template <uint8_t BitsPerElement>
+template <ByteSetBitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::keccak256() const
 {
     ByteSet<BitsPerElement> result;
     if(BitsPerElement == 8)
         result = ByteSet(ethash::keccak256(*this, byteSize()).bytes, 32);
     else {
-        ByteSet<8> this_8(asInteger(), byteSize());
-        ByteSet<8> digest_8(ethash::keccak256(this_8, this_8.byteSize()).bytes, 32);
-        result = ByteSet<BitsPerElement>(digest_8.asInteger(), 256/BitsPerElement);
+        ByteSet<BYTE> this_8(asInteger(), byteSize());
+        ByteSet<BYTE> digest_8(ethash::keccak256(this_8, this_8.byteSize()).bytes, 32);
+        result = ByteSet<BitsPerElement>(digest_8.asInteger(), 256/getBitsPerElem());
     }
     return result;
 }
 
-template <uint8_t BitsPerElement>
+template <ByteSetBitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::sha256() const
 {
     ByteSet<BitsPerElement> result(0, 32);
     if(BitsPerElement == 8)
         SHA256(*this, byteSize(), result);              //result needs to be already initialized at 32 Bytes
     else {
-        ByteSet<8> this_8(asInteger(), byteSize());
-        ByteSet<8> digest_8(0, 32);
+        ByteSet<BYTE> this_8(asInteger(), byteSize());
+        ByteSet<BYTE> digest_8(0, 32);
         SHA256(this_8, this_8.byteSize(), digest_8);
         result = ByteSet<BitsPerElement>(digest_8.asInteger(), 256/BitsPerElement);
     }
     return result;
 }
 
-template <uint8_t bb>
+template <ByteSetBitsPerElem bb>
 std::ostream& operator<<(std::ostream& out, const ByteSet<bb>& b)
 {
     //Dumps the vvalue vector as a raw Hex multi-bytes (or multi-bits) string

@@ -7,7 +7,7 @@ set(GIVARO_INCLUDE_DIR ${GIVARO_INSTALL}/include)
 if(NOT TARGET givaro::givaro)
   find_library(libgivaro NAMES libgivaro.a PATHS "${GIVARO_LIB_DIR}" NO_DEFAULT_PATH)
   if(NOT libgivaro)
-    message(STATUS "Third-party: creating target 'givaro'")
+    message(STATUS "👉 Third-party: creating target 'givaro'")
 
     include(FetchContent)
     include(ProcessorCount)

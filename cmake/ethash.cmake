@@ -2,7 +2,7 @@ set(PREFIX ${CMAKE_SOURCE_DIR}/build-external/ethash-1.1.0)
 set(INSTALL ${PREFIX}/install)
 
 if(NOT TARGET ethash::ethash)
-    message(STATUS "Third-party: creating target 'ethash'")
+    message(STATUS "👉 Third-party: creating target 'ethash'")
 
     include(FetchContent)
     FetchContent_Declare(

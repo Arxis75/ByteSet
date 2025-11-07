@@ -10,7 +10,7 @@ if(NOT (TARGET OpenSSL::SSL AND TARGET OpenSSL::Crypto))
   find_library(libOpenSSL NAMES libssl.a PATHS "${OPENSSL_LIB_DIR}" NO_DEFAULT_PATH)
   find_library(libCrypto NAMES libcrypto.a PATHS "${OPENSSL_LIB_DIR}" NO_DEFAULT_PATH)
   if(NOT libOpenSSL OR NOT libCrypto)
-    message(STATUS "Third-party: creating target 'OpenSSL'")
+    message(STATUS "👉 Third-party: creating target 'OpenSSL'")
 
     include(ProcessorCount)
     ProcessorCount(Ncpu)

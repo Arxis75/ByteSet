@@ -2,7 +2,7 @@ set(PREFIX ${CMAKE_SOURCE_DIR}/build-external/nlohmann_json-3.12.0)
 set(INSTALL ${PREFIX})
 
 if(NOT TARGET nlohmann_json::nlohmann_json)
-    message(STATUS "Third-party: creating target 'nlohmann_json'")
+    message(STATUS "👉 Third-party: creating target 'nlohmann_json'")
 
     set(JSON_BuildTests OFF CACHE INTERNAL "")
 

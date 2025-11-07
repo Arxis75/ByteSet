@@ -2,7 +2,7 @@ set(PREFIX ${CMAKE_SOURCE_DIR}/build-external/googletest-1.17.0)
 set(INSTALL ${PREFIX}/install)
 
 if(NOT TARGET GTest::gtest)
-    message(STATUS "Third-party: creating target 'gtest'")
+    message(STATUS "👉 Third-party: creating target 'gtest'")
 
     include(FetchContent)
     FetchContent_Declare(

@@ -17,8 +17,8 @@ TEST(PtrConstructorsTest, Constructors)
     unsigned char uc[] = {0xAA, 0xBB, 0xCC};
 
     //******* Verifies that the constructor won't accept a 1-bit-per-elem format ********
-    ASSERT_DEATH(ByteSet<1> a(cuc, 3), "");
-    ASSERT_DEATH(ByteSet<1> a(uc, 3), "");
+    ASSERT_DEATH(ByteSet<BIT> a(cuc, 3), "");
+    ASSERT_DEATH(ByteSet<BIT> a(uc, 3), "");
 
     //******* Verifies that the constructor won't accept (const) unsigned int* argument ********
     ASSERT_EQ(true, !is_constructible_with_value<ByteSet<>>(cui, 3));

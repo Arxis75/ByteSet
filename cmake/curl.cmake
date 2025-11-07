@@ -8,27 +8,27 @@ set(CURL_INCLUDE_DIR ${CURL_PREFIX}/include)
 if(NOT TARGET libcurl)
     find_library(libcurl NAMES libcurl-d.a PATHS "${CURL_LIB_DIR}" NO_DEFAULT_PATH)
     if(NOT libcurl)
-    message(STATUS "Third-party: creating target 'curl'")
+        message(STATUS "👉 Third-party: creating target 'curl'")
 
-    set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build static libcurl")
-    set(CURL_USE_OPENSSL ON CACHE BOOL "Use OpenSSL")
-    set(CURL_USE_LIBPSL OFF CACHE BOOL "Disable use of libpsl")
+        set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build static libcurl")
+        set(CURL_USE_OPENSSL ON CACHE BOOL "Use OpenSSL")
+        set(CURL_USE_LIBPSL OFF CACHE BOOL "Disable use of libpsl")
 
-    include(FetchContent)
-    FetchContent_Declare(
-            curl
-            URL         https://github.com/curl/curl/releases/download/curl-8_16_0/curl-8.16.0.tar.gz
-            URL_HASH    SHA256=a21e20476e39eca5a4fc5cfb00acf84bbc1f5d8443ec3853ad14c26b3c85b970
-            UPDATE_DISCONNECTED true  # need this to avoid constant rebuild
-            BINARY_DIR "${CURL_INSTALL}"
-            SOURCE_DIR "${CURL_INSTALL}"
-            SUBBUILD_DIR "${CURL_INSTALL}-subbuild"
-        )
-        FetchContent_MakeAvailable(curl)
+        include(FetchContent)
+        FetchContent_Declare(
+                curl
+                URL         https://github.com/curl/curl/releases/download/curl-8_16_0/curl-8.16.0.tar.gz
+                URL_HASH    SHA256=a21e20476e39eca5a4fc5cfb00acf84bbc1f5d8443ec3853ad14c26b3c85b970
+                UPDATE_DISCONNECTED true  # need this to avoid constant rebuild
+                BINARY_DIR "${CURL_INSTALL}"
+                SOURCE_DIR "${CURL_INSTALL}"
+                SUBBUILD_DIR "${CURL_INSTALL}-subbuild"
+            )
+            FetchContent_MakeAvailable(curl)
     else()
         add_library(libcurl INTERFACE IMPORTED GLOBAL)
         add_dependencies(libcurl curl)
         target_include_directories(libcurl INTERFACE ${CURL_INCLUDE_DIR})
         target_link_libraries(libcurl INTERFACE ${CURL_LIBCURL_LIBRARY})
     endif()
-endif()    
+endif()

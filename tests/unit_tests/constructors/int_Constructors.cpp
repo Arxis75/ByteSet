@@ -12,7 +12,7 @@ TEST(IntConstructorsTest, Empty_Constructor)
     ASSERT_EQ(b1.byteSize(), 0);
     ASSERT_EQ(b1.asInteger(), -1);  //-1 is the conventional value for an empty ByteSet
     
-    ByteSet<1> b2;                  //not Aligned
+    ByteSet<BIT> b2;                  //not Aligned
     ASSERT_EQ(b2.getBitsPerElem(), 1);
     ASSERT_EQ(b2.bitSize(), 0);
     ASSERT_EQ(b2.byteSize(), 0);
@@ -39,18 +39,18 @@ TEST(IntConstructorsTest, Empty_Constructor)
 
     ///************* empty Bin Constructors from explicit value < 0 **************
     
-    ByteSet<1> b4;               //Not Aligned
+    ByteSet<BIT> b4;               //Not Aligned
     b4 = -1;                        //operator= 
     ASSERT_EQ(b4.bitSize(), 0);
     ASSERT_EQ(b4.byteSize(), 0);
     ASSERT_EQ(b4.asInteger(), -1);  //-1 is the conventional value for an empty ByteSet
     b4.clear();
-    b4 = ByteSet<1>(-2);         //constructor 
+    b4 = ByteSet<BIT>(-2);         //constructor 
     ASSERT_EQ(b4.bitSize(), 0);
     ASSERT_EQ(b4.byteSize(), 0);
     ASSERT_EQ(b4.asInteger(), -1);  //-1 is the conventional value for an empty ByteSet
     b4.clear();
-    b4 = ByteSet<1>(-3, 256);    //256 elem-wide constructor
+    b4 = ByteSet<BIT>(-3, 256);    //256 elem-wide constructor
     ASSERT_EQ(b4.bitSize(), 0);
     ASSERT_EQ(b4.byteSize(), 0);
     ASSERT_EQ(b4.asInteger(), -1);  //-1 is the conventional value for an empty ByteSet
@@ -77,18 +77,18 @@ TEST(IntConstructorsTest, Empty_Constructor)
 
     ///************* Bin Constructors from explicit value (0) **************
     
-    ByteSet<1> b6;               //Not Aligned
+    ByteSet<BIT> b6;               //Not Aligned
     b6 = 0;                         //operator= 
     ASSERT_EQ(b6.bitSize(), 1);
     ASSERT_EQ(b6.byteSize(), 1);
     ASSERT_EQ(b6.asInteger(), 0);
     b6.clear();
-    b6 = ByteSet<1>(0);         //constructor 
+    b6 = ByteSet<BIT>(0);         //constructor 
     ASSERT_EQ(b6.bitSize(), 1);
     ASSERT_EQ(b6.byteSize(), 1);
     ASSERT_EQ(b6.asInteger(), 0);
     b6.clear();
-    b6 = ByteSet<1>(0, 256);    //256 elem-wide constructor
+    b6 = ByteSet<BIT>(0, 256);    //256 elem-wide constructor
     ASSERT_EQ(b6.bitSize(), 256);
     ASSERT_EQ(b6.byteSize(), 32);
     ASSERT_EQ(b6.asInteger(), 0);
@@ -96,40 +96,40 @@ TEST(IntConstructorsTest, Empty_Constructor)
 }
 
 using MyIntTypes = ::testing::Types<
-    MyIntType<int8_t, 8>,
-    MyIntType<int8_t, 1>,
-    MyIntType<uint8_t, 1>,
-    MyIntType<uint8_t, 8>,
-    MyIntType<int16_t, 1>,
-    MyIntType<int16_t, 8>,
-    MyIntType<uint16_t, 1>,
-    MyIntType<uint16_t, 8>,
-    MyIntType<int32_t, 1>,
-    MyIntType<int32_t, 8>,
-    MyIntType<uint32_t, 1>,
-    MyIntType<uint32_t, 8>,
-    MyIntType<int64_t, 1>,
-    MyIntType<int64_t, 8>,
-    MyIntType<uint64_t, 1>,
-    MyIntType<uint64_t, 8>,
-    MyIntType<Integer, 8>,
-    MyIntType<Integer, 1>,
+    MyIntType<int8_t, BYTE>,
+    MyIntType<int8_t, BIT>,
+    MyIntType<uint8_t, BIT>,
+    MyIntType<uint8_t, BYTE>,
+    MyIntType<int16_t, BIT>,
+    MyIntType<int16_t, BYTE>,
+    MyIntType<uint16_t, BIT>,
+    MyIntType<uint16_t, BYTE>,
+    MyIntType<int32_t, BIT>,
+    MyIntType<int32_t, BYTE>,
+    MyIntType<uint32_t, BIT>,
+    MyIntType<uint32_t, BYTE>,
+    MyIntType<int64_t, BIT>,
+    MyIntType<int64_t, BYTE>,
+    MyIntType<uint64_t, BIT>,
+    MyIntType<uint64_t, BYTE>,
+    MyIntType<Integer, BYTE>,
+    MyIntType<Integer, BIT>,
 
-    MyIntType<int8_t, 4>,
-    MyIntType<uint8_t, 4>,
-    MyIntType<int16_t, 4>,
-    MyIntType<uint16_t, 4>,
-    MyIntType<int32_t, 4>,
-    MyIntType<uint32_t, 4>,
-    MyIntType<int64_t, 4>,
-    MyIntType<uint64_t, 4>,
-    MyIntType<Integer, 4>
+    MyIntType<int8_t, NIBBLE>,
+    MyIntType<uint8_t, NIBBLE>,
+    MyIntType<int16_t, NIBBLE>,
+    MyIntType<uint16_t, NIBBLE>,
+    MyIntType<int32_t, NIBBLE>,
+    MyIntType<uint32_t, NIBBLE>,
+    MyIntType<int64_t, NIBBLE>,
+    MyIntType<uint64_t, NIBBLE>,
+    MyIntType<Integer, NIBBLE>
 >;
 
 TYPED_TEST_SUITE(MyIntTypedTest, MyIntTypes);
 TYPED_TEST(MyIntTypedTest, Constructors) {
     using T = typename TestFixture::T;
-    const uint8_t nb = TestFixture::nb_bits_per_elem;
+    const ByteSetBitsPerElem nb = TestFixture::nb_bits_per_elem;
 
     //Fills the value with 1, except for the sign bit if present
     T val = (std::is_signed_v<T> ? 0x7F : 0xFF);
@@ -157,7 +157,7 @@ TEST(IntConstructorsTest, BigIntegerConstructor) {
     //Test with a Big Int
     Integer val("31075983100084779441602131509");   // 95 bits integer (11.875 Bytes)
     
-    ///************* Constructors from <Integer, 8> **************
+    ///************* Constructors from <Integer, BYTE> **************
     ByteSet b1;
 
     b1 = val;                           //operator= 
@@ -173,18 +173,18 @@ TEST(IntConstructorsTest, BigIntegerConstructor) {
     ASSERT_EQ(b1.asInteger(), val); 
     b1.clear();
 
-    ///************* Constructors from <Integer, 1> **************
-    ByteSet<1> b2;
+    ///************* Constructors from <Integer, BIT> **************
+    ByteSet<BIT> b2;
 
     b2 = val;                           //operator= 
     ASSERT_EQ(b2.bitSize(), 95);
     ASSERT_EQ(b2.asInteger(), val);
     b2.clear();
-    b2 = ByteSet<1>(val);               //constructor 
+    b2 = ByteSet<BIT>(val);               //constructor 
     ASSERT_EQ(b2.bitSize(), 95);
     ASSERT_EQ(b2.asInteger(), val);
     b2.clear();
-    b2 = ByteSet<1>(val, 131);          //131 bits constructor
+    b2 = ByteSet<BIT>(val, 131);          //131 bits constructor
     ASSERT_EQ(b2.bitSize(), 131);
     ASSERT_EQ(b2.asInteger(), val); 
     b2.clear();
@@ -202,7 +202,7 @@ TEST(IntConstructorsTest, Value_Truncation)
 
     ///************* Bin0 Constructor from explicit value (0x2000F) **************
     
-    ByteSet<1> b2(0x2000F, 17);             //Force truncation to 17-bits
+    ByteSet<BIT> b2(0x2000F, 17);             //Force truncation to 17-bits
     ASSERT_EQ(b2.bitSize(), 17);                //is 17 bits (instead of 18)
     ASSERT_EQ(b2.byteSize(), 3);                //is 3 Bytes
     ASSERT_EQ(b2.asInteger(), 0xF);             //has truncated right-value
