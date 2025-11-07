@@ -36,6 +36,7 @@ class ByteSetComposite : public virtual IByteSetContainer
         ByteSetComposite& operator=(const ByteSetComposite&) = delete;
         virtual ~ByteSetComposite() = default;
 
+        virtual void RLPparse(ByteSet<BYTE> &b) override = 0;
         virtual const ByteSet<BYTE> RLPserialize() const override;
         inline virtual void push_back(const IByteSetContainer *f) override { m_children.emplace_back(f); }
 
@@ -80,6 +81,8 @@ class TypedByteSetComposite : public ByteSetComposite {
 class ByteSetField : public virtual IByteSetContainer {
     public:
         ByteSetField() = default;
+        ByteSetField(const ByteSetField&) = delete;
+        ByteSetField& operator=(const ByteSetField&) = delete;
         virtual ~ByteSetField() = default;
         
         inline virtual void RLPparse(ByteSet<BYTE> &b) override { m_value = std::make_unique<ByteSet<BYTE>>(b); }

@@ -15,6 +15,26 @@ void ByteSetComposite::create(ByteSet<BYTE> &b) {
         push_back(item);  //implicit call of unique_ptr ctor
 }
 
+const ByteSet<BYTE> ByteSetComposite::RLPserialize() const
+{
+    ByteSet<BYTE> rlp;
+    for(uint64_t i=0; i<m_children.size(); i++) {
+        if(m_children[i])
+            rlp.push_back(m_children[i]->RLPserialize());
+    }
+    rlp =  rlp.RLPserialize(true);
+    return rlp;
+}
+
+const ByteSet<BYTE> TypedByteSetComposite::RLPserialize() const {
+    ByteSet result = ByteSetComposite::RLPserialize();
+    if(uint8_t type = getType(); type) {
+        result.push_front_elem(type);
+        result = result.RLPserialize(false);
+    }
+    return result;
+}
+
 void ByteSetComposite::deleteChildren() {
     while(m_children.size()) {
         //DumpChildren();
@@ -35,26 +55,6 @@ void ByteSetComposite::deleteChildren() {
             m_children.pop_back();
         }
     }
-}
-
-const ByteSet<BYTE> ByteSetComposite::RLPserialize() const
-{
-    ByteSet<BYTE> rlp;
-    for(uint64_t i=0; i<m_children.size(); i++) {
-        if(m_children[i])
-            rlp.push_back(m_children[i]->RLPserialize());
-    }
-    rlp =  rlp.RLPserialize(true);
-    return rlp;
-}
-
-const ByteSet<BYTE> TypedByteSetComposite::RLPserialize() const {
-    ByteSet result = ByteSetComposite::RLPserialize();
-    if(uint8_t type = getType(); type) {
-        result.push_front_elem(type);
-        result = result.RLPserialize(false);
-    }
-    return result;
 }
 
 void ByteSetComposite::DumpChildren() const
