@@ -11,7 +11,6 @@ void ByteSetComposite::create(ByteSet<BYTE> &b) {
             payload = payload.RLPparse();
         }
         item->RLPparse(payload);
-        item->setParent(this);
         push_back(item);  //implicit call of unique_ptr ctor
 }
 
@@ -37,7 +36,6 @@ const ByteSet<BYTE> TypedByteSetComposite::RLPserialize() const {
 
 void ByteSetComposite::deleteChildren() {
     while(m_children.size()) {
-        //DumpChildren();
         unique_ptr<const IByteSetContainer> uchild = std::move(m_children[m_children.size()-1]);
         if(uchild) {
             auto cchild = dynamic_cast<const ByteSetComposite*>(uchild.get());
@@ -46,6 +44,7 @@ void ByteSetComposite::deleteChildren() {
             else {
                 //delete cchild;                                    //delete handled solely by unique_ptr
                 m_children.pop_back();
+                //DumpChildren();
             }
         }
         else {
@@ -53,6 +52,7 @@ void ByteSetComposite::deleteChildren() {
                 //delete m_children[m_children.size()-1].get();     //delete handled solely by unique_ptr
             }
             m_children.pop_back();
+            //DumpChildren();
         }
     }
 }
