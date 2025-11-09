@@ -69,6 +69,7 @@ class ByteSet
         //************************************** Accessors ****************************************//
 
         inline bool operator==(const ByteSet &b) const { return vvalue == b.vvalue; }
+        inline bool operator!=(const ByteSet &b) const { return !(vvalue == b.vvalue); }
 
         /// @brief 
 
@@ -110,6 +111,24 @@ class ByteSet
         inline void removefront0padding() { while(getNbElements() && !getElem(0)) pop_front_elem(); }
         bool hasRLPListHeader() const { return getNbElements() && at(0, 8/getBitsPerElem()).asInteger() >= 0xC0; }
         ByteSet buildRLPSizeHeader() const { return ByteSet(byteSize(), ByteSet(byteSize()).byteSize() * getNbElemPerByte()); }   // the size needs to be byte-aligned
+
+        //********************************************* Trie  Helpers *************************************************/
+
+        inline bool hasTerminator() const { return getNbElements() && getElem(getNbElements()-1) == 0x10; }
+        inline bool isOnlyTerminator() const { return getNbElements() == 1 && getElem(0) == 0x10; }
+        inline ByteSet withTerminator() const {
+            ByteSet result(*this);
+            if(result.getNbElements() && result.getElem(result.getNbElements()-1) != 0x10)
+                result.push_back_elem(0x10);
+            return result;
+        }
+        inline ByteSet withoutTerminator() const {
+            ByteSet result(*this);
+            if(result.getNbElements() && result.getElem(result.getNbElements()-1) == 0x10)
+                result.pop_back_elem();
+            return result;
+        }
+
 
         //********************************** Container manipulation interface ***************************************//
 

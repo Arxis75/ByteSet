@@ -1,34 +1,41 @@
 #pragma once
 #include <ByteSet/ByteSet.h>
 
-class ByteSetComposite;
-class ByteSetField;
+class IByteSetComposite;
 
-class IByteSetContainer
+class IByteSetComponent
 {
     public:
-        virtual ~IByteSetContainer() = default;
+        virtual ~IByteSetComponent() = default;
 
         virtual void RLPparse(ByteSet<BYTE> &b) = 0;
         virtual const ByteSet<BYTE> RLPserialize() const = 0;
 
-        inline virtual const ByteSetComposite* getComposite() const { return nullptr; }
+        inline virtual const IByteSetComposite* getComposite() const { return nullptr; }
 
-        const ByteSetComposite* getParent() const { return m_parent; }
-        void setParent(const ByteSetComposite* p) { m_parent = p; }
+        const IByteSetComposite* getParent() const { return m_parent; }
+        void setParent(const IByteSetComposite* p) { m_parent = p; }
 
     protected:
-        IByteSetContainer() = default;
-
-        virtual void push_back(IByteSetContainer* f) = 0;
-        inline virtual uint64_t getType() const { return 0; };
-        inline virtual void setType(uint64_t type) {}
+        IByteSetComponent() : m_parent(nullptr) {}
 
     private:
-        const ByteSetComposite* m_parent;
+        const IByteSetComposite* m_parent;
 };
 
-class ByteSetComposite : public virtual IByteSetContainer
+class IByteSetComposite : public virtual IByteSetComponent
+{
+    public:
+        virtual ~IByteSetComposite() = default;
+        inline virtual const IByteSetComposite* getComposite() const override { return this; }
+        inline virtual uint64_t getChildrenCount() const = 0;
+        virtual void DumpChildren() const = 0;
+    protected:
+        IByteSetComposite() = default;
+        virtual void deleteChildren() = 0;
+};
+
+class ByteSetComposite : public virtual IByteSetComposite
 {
     public:
         ByteSetComposite(const ByteSetComposite&) = delete;
@@ -45,20 +52,22 @@ class ByteSetComposite : public virtual IByteSetContainer
         template<typename T>
            inline const T* get(uint64_t index) const { return (index < m_children.size() ? dynamic_cast<const T*>(m_children[index].get()) : nullptr); }
         
-        void DumpChildren() const;
+        void DumpChildren() const override;
         
-        inline virtual const ByteSetComposite* getComposite() const override { return this; }
-        inline uint64_t getChildrenCount() const { return m_children.size(); }
+        inline uint64_t getChildrenCount() const override { return m_children.size(); }
 
     protected:
         ByteSetComposite() = default;
         
-        inline virtual void push_back(IByteSetContainer *f) override { f->setParent(this); m_children.emplace_back(f); }
+        inline virtual void push_back(IByteSetComponent *f) { f->setParent(this); m_children.emplace_back(f); }
+
+        inline virtual uint64_t getType() const { return 0; }
+        inline virtual void setType(uint64_t type) { }
         
-        void deleteChildren();
+        virtual void deleteChildren() override;
 
     private:
-        std::vector<std::unique_ptr<const IByteSetContainer>> m_children;
+        std::vector<std::unique_ptr<const IByteSetComponent>> m_children;
 };
 
 class TypedByteSetComposite : public ByteSetComposite {
@@ -71,7 +80,7 @@ class TypedByteSetComposite : public ByteSetComposite {
         inline virtual void setType(uint64_t type) override { m_type = type; }
     
     protected:
-        TypedByteSetComposite() = default;
+        TypedByteSetComposite() : m_type(0) {}  // 0 = Legacy (without type)
 
     private:
         int64_t m_type;
@@ -79,9 +88,9 @@ class TypedByteSetComposite : public ByteSetComposite {
 
 //----------------------------------------------- LEAF ---------------------------------------------------
 
-class ByteSetField : public virtual IByteSetContainer {
+class ByteSetField : public virtual IByteSetComponent {
     public:
-        ByteSetField() = default;
+        ByteSetField() : m_value(nullptr) {}
         ByteSetField(const ByteSetField&) = delete;
         ByteSetField& operator=(const ByteSetField&) = delete;
         virtual ~ByteSetField() = default;
@@ -92,11 +101,8 @@ class ByteSetField : public virtual IByteSetContainer {
         inline const ByteSet<BYTE>& getValue() const { return *m_value.get(); }
         inline const Integer getIntValue() const { return m_value->getNbElements() ? m_value->asInteger() : Integer::zero; }
 
-        inline void setValue(std::unique_ptr<ByteSet<BYTE>> &b) { return m_value.reset(b.release()); }
-        inline std::unique_ptr<ByteSet<BYTE>> takeValue() { return std::move(m_value); }
-    
-    protected:
-        virtual void push_back(IByteSetContainer *b) override { assert(false); }
+        //inline void setValue(std::unique_ptr<ByteSet<BYTE>> &b) { return m_value.reset(b.release()); }
+        //inline std::unique_ptr<ByteSet<BYTE>> takeValue() { return std::move(m_value); }
 
     private:
         std::unique_ptr<ByteSet<BYTE>> m_value;

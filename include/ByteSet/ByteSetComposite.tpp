@@ -36,7 +36,7 @@ const ByteSet<BYTE> TypedByteSetComposite::RLPserialize() const {
 
 void ByteSetComposite::deleteChildren() {
     while(m_children.size()) {
-        unique_ptr<const IByteSetContainer> uchild = std::move(m_children[m_children.size()-1]);
+        unique_ptr<const IByteSetComponent> uchild = std::move(m_children[m_children.size()-1]);
         if(uchild) {
             auto cchild = dynamic_cast<const ByteSetComposite*>(uchild.get());
             if(cchild && cchild->getChildrenCount()) 
