@@ -120,33 +120,9 @@ class ByteSet
         inline void addTerminator() { if(!hasTerminator()) push_back_elem(0x10); }
         inline void removeTerminator() { if(hasTerminator()) pop_back_elem(); }
 
-        inline ByteSet withTerminator() const {
-            ByteSet result(*this);
-            if(!result.getNbElements() || result.getElem(result.getNbElements()-1) != 0x10)
-                result.push_back_elem(0x10);
-            return result;
-        }
-        inline ByteSet withoutTerminator() const {
-            ByteSet result(*this);
-            if(result.getNbElements() && result.getElem(result.getNbElements()-1) == 0x10)
-                result.pop_back_elem();
-            return result;
-        }
-
-        inline ByteSet<BYTE> HexToCompact() const
-        {
-            assert(getBitsPerElem() == 4);
-
-            ByteSet tmp = withoutTerminator();
-            if(tmp.getNbElements()%2)
-                tmp.push_front_elem(0x1+2*hasTerminator());
-            else {
-                tmp.push_front_elem(0x0);
-                tmp.push_front_elem(2*hasTerminator());
-            }
-            ByteSet<BYTE> result = tmp.asAligned();
-            return result;
-        }
+        ByteSet withTerminator() const;
+        ByteSet withoutTerminator() const;
+        ByteSet<BYTE> HexToCompact() const;
 
         inline ByteSet<BYTE> asAligned() const { return ByteSet<BYTE>(asInteger(), (getNbElements()+7)/8); }
 

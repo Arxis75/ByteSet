@@ -237,6 +237,38 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::sha256() const
     return result;
 }
 
+template <ByteSetBitsPerElem BitsPerElement>
+ByteSet<BitsPerElement> ByteSet<BitsPerElement>::withTerminator() const {
+    ByteSet result(*this);
+    if(!result.getNbElements() || result.getElem(result.getNbElements()-1) != 0x10)
+        result.push_back_elem(0x10);
+    return result;
+}
+
+template <ByteSetBitsPerElem BitsPerElement>
+ByteSet<BitsPerElement> ByteSet<BitsPerElement>::withoutTerminator() const {
+    ByteSet result(*this);
+    if(result.getNbElements() && result.getElem(result.getNbElements()-1) == 0x10)
+        result.pop_back_elem();
+    return result;
+}
+
+template <ByteSetBitsPerElem BitsPerElement>
+ByteSet<BYTE> ByteSet<BitsPerElement>::HexToCompact() const
+{
+    assert(getBitsPerElem() == 4);
+
+    ByteSet tmp = withoutTerminator();
+    if(tmp.getNbElements()%2)
+        tmp.push_front_elem(0x1+2*hasTerminator());
+    else {
+        tmp.push_front_elem(0x0);
+        tmp.push_front_elem(2*hasTerminator());
+    }
+    ByteSet<BYTE> result = tmp.asAligned();
+    return result;
+}
+
 template <ByteSetBitsPerElem bb>
 std::ostream& operator<<(std::ostream& out, const ByteSet<bb>& b)
 {
