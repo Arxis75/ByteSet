@@ -116,9 +116,13 @@ class ByteSet
 
         inline bool hasTerminator() const { return getNbElements() && getElem(getNbElements()-1) == 0x10; }
         inline bool isOnlyTerminator() const { return getNbElements() == 1 && getElem(0) == 0x10; }
+
+        inline void addTerminator() { if(!hasTerminator()) push_back_elem(0x10); }
+        inline void removeTerminator() { if(hasTerminator()) pop_back_elem(); }
+
         inline ByteSet withTerminator() const {
             ByteSet result(*this);
-            if(result.getNbElements() && result.getElem(result.getNbElements()-1) != 0x10)
+            if(!result.getNbElements() || result.getElem(result.getNbElements()-1) != 0x10)
                 result.push_back_elem(0x10);
             return result;
         }
@@ -129,12 +133,28 @@ class ByteSet
             return result;
         }
 
+        inline ByteSet<BYTE> HexToCompact() const
+        {
+            assert(getBitsPerElem() == 4);
+
+            ByteSet tmp = withoutTerminator();
+            if(tmp.getNbElements()%2)
+                tmp.push_front_elem(0x1+2*hasTerminator());
+            else {
+                tmp.push_front_elem(0x0);
+                tmp.push_front_elem(2*hasTerminator());
+            }
+            ByteSet<BYTE> result = tmp.asAligned();
+            return result;
+        }
+
+        inline ByteSet<BYTE> asAligned() const { return ByteSet<BYTE>(asInteger(), (getNbElements()+7)/8); }
 
         //********************************** Container manipulation interface ***************************************//
 
         inline void clear() { vvalue.clear(); }
 
-        ByteSet RLPserialize(bool as_list) const;
+        ByteSet RLPSerialize(bool as_list) const;
         ByteSet RLPparse();
         ByteSet keccak256() const;
         ByteSet sha256() const;

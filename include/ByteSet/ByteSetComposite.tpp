@@ -14,27 +14,27 @@ void ByteSetComposite::create(ByteSet<BYTE> &b) {
         push_back(item);  //implicit call of unique_ptr ctor
 }
 
-const ByteSet<BYTE> ByteSetComposite::RLPserialize() const
+inline const ByteSet<BYTE> ByteSetComposite::RLPSerialize() const
 {
     ByteSet<BYTE> rlp;
     for(uint64_t i=0; i<m_children.size(); i++) {
         if(m_children[i])
-            rlp.push_back(m_children[i]->RLPserialize());
+            rlp.push_back(m_children[i]->RLPSerialize());
     }
-    rlp =  rlp.RLPserialize(true);
+    rlp =  rlp.RLPSerialize(true);
     return rlp;
 }
 
-const ByteSet<BYTE> TypedByteSetComposite::RLPserialize() const {
-    ByteSet result = ByteSetComposite::RLPserialize();
+inline const ByteSet<BYTE> TypedByteSetComposite::RLPSerialize() const {
+    ByteSet result = ByteSetComposite::RLPSerialize();
     if(uint8_t type = getType(); type) {
         result.push_front_elem(type);
-        result = result.RLPserialize(false);
+        result = result.RLPSerialize(false);
     }
     return result;
 }
 
-void ByteSetComposite::deleteChildren() {
+inline void ByteSetComposite::deleteChildren() {
     while(m_children.size()) {
         unique_ptr<const IByteSetComponent> uchild = std::move(m_children[m_children.size()-1]);
         if(uchild) {
@@ -57,7 +57,7 @@ void ByteSetComposite::deleteChildren() {
     }
 }
 
-void ByteSetComposite::DumpChildren() const
+inline void ByteSetComposite::DumpChildren() const
 {
     if(m_children.size())
         for(int i=0;i<m_children.size();i++) {

@@ -169,7 +169,7 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::at(const uint64_t elem_offset, 
 }
 
 template <ByteSetBitsPerElem BitsPerElement>
-ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPserialize(bool as_list) const
+ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPSerialize(bool as_list) const
 {
     ByteSet result(*this);
     while(result.getNbElements() % (result.getNbElemPerByte()))
