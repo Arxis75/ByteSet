@@ -1,5 +1,28 @@
 #include <ByteSet/ByteSetTrie.h>
 
+ByteSetTrieNode* ByteSetTrieNode::newLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value) const {
+    ByteSetTrieNode* new_leaf = new ByteSetTrieNode();
+    new_leaf->m_key = key.withTerminator();
+    new_leaf->m_value = value;
+    return new_leaf;
+}
+
+ByteSetTrieNode* ByteSetTrieNode::createExtension(const ByteSet<NIBBLE>& key, bool do_mutate) {
+    ByteSetTrieNode* extension = do_mutate ? this : new ByteSetTrieNode();
+    extension->m_key = key.withoutTerminator();
+    extension->m_value.clear();
+    extension->m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(1);
+    return extension;
+}
+
+ByteSetTrieNode* ByteSetTrieNode::createBranch(bool do_mutate) {
+    ByteSetTrieNode* branch = do_mutate ? this : new ByteSetTrieNode();
+    branch->m_key.clear();
+    branch->m_value.clear();
+    branch->m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(16);
+    return branch;
+}
+
 const ByteSet<BYTE> ByteSetTrieNode::hash() const {
     ByteSet<BYTE> result;
 
@@ -93,21 +116,19 @@ void ByteSetTrieNode::connectToParent(ByteSetTrieNode* parent, uint index_in_par
 
 ByteSetTrieNode* ByteSetTrieNode::insert(ByteSetTrieNode* parent, uint index_in_parent, ByteSetTrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value) {
     assert(type != TYPE::EMPTY);
-    ByteSetTrieNode* node = new ByteSetTrieNode();
+    ByteSetTrieNode* node;
     if(type == TYPE::LEAF) {
-        node->m_key = key.withTerminator();
-        node->m_value = value;
+        node = newLeaf(key, value);
     }
     else if(type == TYPE::EXTN) {
-        m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(1);
-        node->m_key = key.withoutTerminator();
-        connectChild(child, child_index);
+        node = createExtension(key);
+        node->connectChild(child, child_index);
     }
     else if(type == TYPE::BRAN) {
-        m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(16);
-        connectChild(child, child_index);
+        node = createBranch();
+        node->connectChild(child, child_index);
     }
-    connectToParent(parent, index_in_parent);
+    node->connectToParent(parent, index_in_parent);
     return node;
 }
 
@@ -127,16 +148,12 @@ void ByteSetTrieNode::store(ByteSet<NIBBLE> key, ByteSet<BYTE> value) {
             unshared_nibbles = key;
             
             //Save a copy of the pruned Leaf
-            uint pruned_previous_leaf_index = m_key.pop_front_elem();   //should be at least the terminator left to pop
-            ByteSetTrieNode* pruned_previous_leaf = new ByteSetTrieNode();
-            pruned_previous_leaf->m_key = m_key;
-            pruned_previous_leaf->m_value = m_value;
+            uint pruned_previous_leaf_index = m_key.pop_front_elem();   //a popped Terminator will be handled by connectToParent()
+            auto pruned_previous_leaf = newLeaf(m_key, m_value);
 
             if(shared_nibbles.getNbElements()) {
                 //Some common nibbles: mutate from LEAF => EXTENSION
-                m_key = shared_nibbles;
-                m_value.clear();
-                m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(1);
+                createExtension(shared_nibbles, true);
 
                 //insert a BRANCH as child of this EXTENSION and reconnect the previous LEAF
                 auto branch = insert(this, 0, pruned_previous_leaf, pruned_previous_leaf_index, BRAN);
@@ -146,9 +163,7 @@ void ByteSetTrieNode::store(ByteSet<NIBBLE> key, ByteSet<BYTE> value) {
             }
             else {
                 //No common nibbles: mutate from LEAF => BRANCH
-                m_key.clear();
-                m_value.clear();
-                m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(16);
+                createBranch(true);
                 
                 //Reconnect the previous LEAF:
                 pruned_previous_leaf->connectToParent(this, pruned_previous_leaf_index);
@@ -166,29 +181,27 @@ void ByteSetTrieNode::store(ByteSet<NIBBLE> key, ByteSet<BYTE> value) {
             //Shrink the existing EXTN node's m_key to only shared_nibbles 
             m_key = shared_nibbles;    
 
-            if(!unshared_nibbles.getNbElements())
+            if(!unshared_nibbles.getNbElements()) {
                 //Continue the key parsing under the existing child branch
                 m_children[0]->store(key, value);
+            }
             else if(!shared_nibbles.getNbElements())
             {
                 //Disconnect the previous child branch before mutation
                 auto previous_branch = disconnectChild(0);
                 
                 //No common nibbles: mutate from EXTN => BRANCH
-                m_key.clear();
-                m_value.clear();
-                m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(16);
+                createBranch(true);
 
                 //Insert a new child EXTENSION between the mutated branch (parent) and the previous branch (child)
                 uint64_t unshared_ext_index = unshared_nibbles.pop_front_elem();
-                auto unshared_ext = insert(this, unshared_ext_index, previous_branch, 0, EXTN);
-                unshared_ext->m_key = unshared_nibbles;
+                auto unshared_ext = insert(this, unshared_ext_index, previous_branch, 0, EXTN, unshared_nibbles);
 
                 //Continue the key parsing
                 store(key, value);
             }
             else {
-                //Disconnect the current child branch
+                //Disconnect the previous child branch
                 auto previous_branch = disconnectChild(0);
 
                 //Insert a new BRANCH child between THIS Extension and the previous BRANCH
@@ -200,8 +213,7 @@ void ByteSetTrieNode::store(ByteSet<NIBBLE> key, ByteSet<BYTE> value) {
                     new_branch->disconnectChild(new_branch_child_index);
 
                     //Insert a new child EXTENSION between the newly created branch (parent) and the previous branch (child)
-                    auto unshared_ext = insert(new_branch, new_branch_child_index, previous_branch, 0, EXTN);
-                    unshared_ext->m_key = unshared_nibbles;
+                    auto unshared_ext = insert(new_branch, new_branch_child_index, previous_branch, 0, EXTN, unshared_nibbles);
                 }
                 //Continue the key parsing under the new branch
                 new_branch->store(key, value);
@@ -216,9 +228,7 @@ void ByteSetTrieNode::store(ByteSet<NIBBLE> key, ByteSet<BYTE> value) {
 
                 if(!m_children[index]) {
                     //The key's first nibble placeholder is empty => new LEAF
-                    auto new_leaf = new ByteSetTrieNode();
-                    new_leaf->m_key = key.withTerminator();
-                    new_leaf->m_value = value;
+                    auto new_leaf = newLeaf(key, value);
                     new_leaf->setParent(this);
                     m_children[index].reset(new_leaf);
                 }

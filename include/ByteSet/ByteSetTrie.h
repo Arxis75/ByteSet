@@ -20,6 +20,9 @@ class ByteSetTrieNode : public IByteSetComposite
 
         ByteSet<NIBBLE> extractCommonNibbles(ByteSet<NIBBLE> &key1, ByteSet<NIBBLE> &key2) const;
 
+        ByteSetTrieNode* newLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value) const;
+        ByteSetTrieNode* createExtension(const ByteSet<NIBBLE>& key, bool do_mutate = false);
+        ByteSetTrieNode* createBranch(bool do_mutate = false);
         ByteSetTrieNode* disconnectChild(uint child_index);
         void connectChild(ByteSetTrieNode* child, uint child_index);
         ByteSetTrieNode* disconnectFromParent(uint index_in_parent);
