@@ -13,7 +13,6 @@ std::vector<std::string> split(const std::string& list, const std::string& separ
 
 std::string removeCharsFromString(const std::string &val, const char* charsToRemove);
 
-
 template <typename T>
 class unique_arr {
     std::unique_ptr<T[]> data_;

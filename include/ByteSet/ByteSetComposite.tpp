@@ -1,5 +1,11 @@
 #include <ByteSet/ByteSetComposite.h>
-#include <System.h>
+
+using std::unique_ptr;
+
+using std::dec;
+using std::hex;
+using std::endl;
+using std::cout;
 
 template<typename T>
 void ByteSetComposite::create(ByteSet<BYTE> &b) {

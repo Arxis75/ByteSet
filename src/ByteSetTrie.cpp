@@ -1,4 +1,5 @@
 #include <ByteSet/ByteSetTrie.h>
+#include <System.h>
 
 ByteSetTrieNode* ByteSetTrieNode::newLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value) const {
     ByteSetTrieNode* new_leaf = new ByteSetTrieNode();
