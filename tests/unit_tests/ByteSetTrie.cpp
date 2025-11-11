@@ -34,7 +34,7 @@ TEST(ByteSetTrieTest, hex_encoded_securetrie_test)
     ByteSet<NIBBLE> key;
     ByteSet<BYTE> value;
 
-    /*key = ByteSet<NIBBLE>("0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b");
+    key = ByteSet<NIBBLE>("0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b");
     value = ByteSet<BYTE>("0xf848018405f446a7a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");
     btt.store(key, value);
 
@@ -54,9 +54,9 @@ TEST(ByteSetTrieTest, hex_encoded_securetrie_test)
     value = ByteSet<BYTE>("0xf8478083019a59a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");
     btt.store(key, value);
 
-    ASSERT_EQ(btt.hash(), ByteSet("0x730a444e08ab4b8dee147c9b232fc52d34a223d600031c1e9d25bfc985cbd797"));*/
+    ASSERT_EQ(btt.hash(), ByteSet("0x730a444e08ab4b8dee147c9b232fc52d34a223d600031c1e9d25bfc985cbd797"));
 
-    /*btt.clear();
+    btt.clear();
 
     key = ByteSet<NIBBLE>("0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b");
     value = ByteSet<BYTE>("0xf84c01880de0b6b3a7622746a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");
@@ -70,9 +70,9 @@ TEST(ByteSetTrieTest, hex_encoded_securetrie_test)
     value = ByteSet<BYTE>("0xf8468082521aa056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");
     btt.store(key, value);
 
-    ASSERT_EQ(btt.hash(), ByteSet("0xa7c787bf470808896308c215e22c7a580a0087bb6db6e8695fb4759537283a83"));*/
+    ASSERT_EQ(btt.hash(), ByteSet("0xa7c787bf470808896308c215e22c7a580a0087bb6db6e8695fb4759537283a83"));
 
-    /*btt.clear();
+    btt.clear();
 
     key = ByteSet<NIBBLE>("0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b");
     value = ByteSet<BYTE>("0xf84c01880de0b6b3a7614bc3a056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");
@@ -90,7 +90,7 @@ TEST(ByteSetTrieTest, hex_encoded_securetrie_test)
     value = ByteSet<BYTE>("0xf8478083012d9da056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");
     btt.store(key, value);
 
-    ASSERT_EQ(btt.hash(), ByteSet("0x40b37be88a49e2c08b8d33fcb03a0676ffd0481df54dfebd3512b8ec54f40cad"));*/
+    ASSERT_EQ(btt.hash(), ByteSet("0x40b37be88a49e2c08b8d33fcb03a0676ffd0481df54dfebd3512b8ec54f40cad"));
 }
 
 TEST(ByteSetTrieTest, trieanyorder)
@@ -253,7 +253,7 @@ TEST(ByteSetTrieTest, trieanyorder_secureTrie)
 
     ASSERT_EQ(btt.hash(), ByteSet("0xe9e2935138352776cad724d31c9fa5266a5c593bb97726dd2a908fe6d53284df"));
 
-    /*btt.clear();
+    btt.clear();
 
     key = ByteSet<NIBBLE>("doe", UTF8);
     value = ByteSet<BYTE>("reindeer", UTF8);
@@ -267,9 +267,9 @@ TEST(ByteSetTrieTest, trieanyorder_secureTrie)
     value = ByteSet<BYTE>("cat", UTF8);
     btt.store(key, value);
 
-    ASSERT_EQ(btt.hash(), ByteSet("0xd4cd937e4a4368d7931a9cf51686b7e10abb3dce38a39000fd7902a092b64585"));*/
+    ASSERT_EQ(btt.hash(), ByteSet("0xd4cd937e4a4368d7931a9cf51686b7e10abb3dce38a39000fd7902a092b64585"));
 
-    /*btt.clear();
+    btt.clear();
     
     key = ByteSet<NIBBLE>("do", UTF8);
     value = ByteSet<BYTE>("verb", UTF8);
@@ -287,9 +287,9 @@ TEST(ByteSetTrieTest, trieanyorder_secureTrie)
     value = ByteSet<BYTE>("puppy", UTF8);
     btt.store(key, value);
 
-    ASSERT_EQ(btt.hash(), ByteSet("0x29b235a58c3c25ab83010c327d5932bcf05324b7d6b1185e650798034783ca9d"));*/
+    ASSERT_EQ(btt.hash(), ByteSet("0x29b235a58c3c25ab83010c327d5932bcf05324b7d6b1185e650798034783ca9d"));
 
-    /*btt.clear();
+    btt.clear();
     
     key = ByteSet<NIBBLE>("foo", UTF8);
     value = ByteSet<BYTE>("bar", UTF8);
@@ -299,9 +299,9 @@ TEST(ByteSetTrieTest, trieanyorder_secureTrie)
     value = ByteSet<BYTE>("bass", UTF8);
     btt.store(key, value);
 
-    ASSERT_EQ(btt.hash(), ByteSet("0x1385f23a33021025d9e87cca5c66c00de06178807b96a9acc92b7d651ccde842"));*/
+    ASSERT_EQ(btt.hash(), ByteSet("0x1385f23a33021025d9e87cca5c66c00de06178807b96a9acc92b7d651ccde842"));
 
-    /*btt.clear();
+    btt.clear();
     
     key = ByteSet<NIBBLE>("be", UTF8);
     value = ByteSet<BYTE>("e", UTF8);
@@ -315,9 +315,9 @@ TEST(ByteSetTrieTest, trieanyorder_secureTrie)
     value = ByteSet<BYTE>("d", UTF8);
     btt.store(key, value);
 
-    ASSERT_EQ(btt.hash(), ByteSet("0x826a4f9f9054a3e980e54b20da992c24fa20467f1ca635115ef4917be66e746f"));*/
+    ASSERT_EQ(btt.hash(), ByteSet("0x826a4f9f9054a3e980e54b20da992c24fa20467f1ca635115ef4917be66e746f"));
 
-    /*btt.clear();
+    btt.clear();
     
     key = ByteSet<NIBBLE>("test", UTF8);
     value = ByteSet<BYTE>("test", UTF8);
@@ -327,9 +327,9 @@ TEST(ByteSetTrieTest, trieanyorder_secureTrie)
     value = ByteSet<BYTE>("testy", UTF8);
     btt.store(key, value);
 
-    ASSERT_EQ(btt.hash(), ByteSet("0xaea54fb6c80499674248a462864c420c9d9f3b3d38c879c12425bade1ad76552"));*/
+    ASSERT_EQ(btt.hash(), ByteSet("0xaea54fb6c80499674248a462864c420c9d9f3b3d38c879c12425bade1ad76552"));
 
-    /*btt.clear();
+    btt.clear();
     
     key = ByteSet<NIBBLE>("0x0045");
     value = ByteSet<BYTE>("0x0123456789");
@@ -339,7 +339,7 @@ TEST(ByteSetTrieTest, trieanyorder_secureTrie)
     value = ByteSet<BYTE>("0x9876543210");
     btt.store(key, value);
 
-    ASSERT_EQ(btt.hash(), ByteSet("0xbc11c02c8ab456db0c4d2728b6a2a6210d06f26a2ace4f7d8bdfc72ddf2630ab"));*/
+    ASSERT_EQ(btt.hash(), ByteSet("0xbc11c02c8ab456db0c4d2728b6a2a6210d06f26a2ace4f7d8bdfc72ddf2630ab"));
 }
 
 TEST(ByteSetTrieTest, trietest)
@@ -632,7 +632,6 @@ TEST(ByteSetTrieTest, trietest)
 
     ASSERT_EQ(btt.hash(), ByteSet("0x9f6221ebb8efe7cff60a716ecb886e67dd042014be444669f0159d8e68b42100"));*/
 
-
     /*key = ByteSet<NIBBLE>("key1aa", UTF8);
     value = ByteSet<BYTE>("0123456789012345678901234567890123456789xxx", UTF8);
     btt.store(key, value);
@@ -672,4 +671,295 @@ TEST(ByteSetTrieTest, trietest)
     btt.store(key, value);
 
     ASSERT_EQ(btt.hash(), ByteSet("0x7a320748f780ad9ad5b0837302075ce0eeba6c26e3d8562c67ccc0f1b273298a"));
+}
+
+TEST(ByteSetTrieTest, trietest_secureTrie)
+{
+    //https://github.com/ethereum/tests/blob/develop/TrieTests/trietest.json
+
+    BlockTransactionsTrie btt(true);
+    ByteSet<NIBBLE> key;
+    ByteSet<BYTE> value;
+    
+    /*key = ByteSet<NIBBLE>("do", UTF8);
+    value = ByteSet<BYTE>("verb", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("ether", UTF8);
+    value = ByteSet<BYTE>("wookiedoo", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("horse", UTF8);
+    value = ByteSet<BYTE>("stallion", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("shaman", UTF8);
+    value = ByteSet<BYTE>("horse", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("doge", UTF8);
+    value = ByteSet<BYTE>("coin", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("ether", UTF8);
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("dog", UTF8);
+    value = ByteSet<BYTE>("puppy", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("shaman", UTF8);
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    ASSERT_EQ(btt.hash(), ByteSet("0x29b235a58c3c25ab83010c327d5932bcf05324b7d6b1185e650798034783ca9d"));*/
+
+    key = ByteSet<NIBBLE>("0x04110d816c380812a427968ece99b1c963dfbce6");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x095e7baea6a6c7c4c2dfeb977efac326af552d87");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x0a517d755cebbf66312b30fff713666a9cb917e0");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x24dd378f51adc67a50e339e8031fe9bd4aafab36");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x293f982d000532a7861ab122bdc4bbfd26bf9030");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x2cf5732f017b0cf1b1f13a1478e10239716bf6b5");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x31c640b92c21a1f1465c91070b4b3b4d6854195f");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x37f998764813b136ddf5a754f34063fd03065e36");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x37fa399a749c121f8a15ce77e3d9f9bec8020d7a");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x4f36659fa632310b6ec438dea4085b522a2dd077");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x62c01474f089b07dae603491675dc5b5748f7049");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x729af7294be595a0efd7d891c9e51f89c07950c7");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x83e3e5a16d3b696a0314b30b2534804dd5e11197");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x8703df2417e0d7c59d063caa9583cb10a4d20532");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x8dffcd74e5b5923512916c6a64b502689cfa65e1");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x95a4d7cccb5204733874fa87285a176fe1e9e240");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x99b2fcba8120bedd048fe79f5262a6690ed38c39");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xa4202b8b8afd5354e3e40a219bdc17f6001bf2cf");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xa9647f4a0a14042d91dc33c0328030a7157c93ae");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xaa6cffe5185732689c18f37a7f86170cb7304c2a");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xaae4a2e3c51c04606dcb3723456e58f3ed214f45");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xc37a43e940dfb5baf581a0b82b351d48305fc885");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xd2571607e241ecf590ed94b12d87c94babe36db6");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xf735071cbee190d76b704ce68384fc21e389fbe7");
+    value = ByteSet<BYTE>("something", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x04110d816c380812a427968ece99b1c963dfbce6");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x095e7baea6a6c7c4c2dfeb977efac326af552d87");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x0a517d755cebbf66312b30fff713666a9cb917e0");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x24dd378f51adc67a50e339e8031fe9bd4aafab36");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x293f982d000532a7861ab122bdc4bbfd26bf9030");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x2cf5732f017b0cf1b1f13a1478e10239716bf6b5");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x31c640b92c21a1f1465c91070b4b3b4d6854195f");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x37f998764813b136ddf5a754f34063fd03065e36");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x37fa399a749c121f8a15ce77e3d9f9bec8020d7a");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x4f36659fa632310b6ec438dea4085b522a2dd077");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x62c01474f089b07dae603491675dc5b5748f7049");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x729af7294be595a0efd7d891c9e51f89c07950c7");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x83e3e5a16d3b696a0314b30b2534804dd5e11197");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x8703df2417e0d7c59d063caa9583cb10a4d20532");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x8dffcd74e5b5923512916c6a64b502689cfa65e1");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x95a4d7cccb5204733874fa87285a176fe1e9e240");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x99b2fcba8120bedd048fe79f5262a6690ed38c39");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xa4202b8b8afd5354e3e40a219bdc17f6001bf2cf");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xa9647f4a0a14042d91dc33c0328030a7157c93ae");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xaa6cffe5185732689c18f37a7f86170cb7304c2a");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xaae4a2e3c51c04606dcb3723456e58f3ed214f45");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xc37a43e940dfb5baf581a0b82b351d48305fc885");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xd2571607e241ecf590ed94b12d87c94babe36db6");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0xf735071cbee190d76b704ce68384fc21e389fbe7");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    ASSERT_EQ(btt.hash(), ByteSet("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"));
+
+    key = ByteSet<NIBBLE>("0x0000000000000000000000000000000000000000000000000000000000000045");
+    value = ByteSet<BYTE>("0x22b224a1420a802ab51d326e29fa98e34c4f24ea");
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x0000000000000000000000000000000000000000000000000000000000000046");
+    value = ByteSet<BYTE>("0x67706c2076330000000000000000000000000000000000000000000000000000");
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x0000000000000000000000000000000000000000000000000000001234567890");
+    value = ByteSet<BYTE>("0x697c7b8c961b56f675d570498424ac8de1a918f6");
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x000000000000000000000000697c7b8c961b56f675d570498424ac8de1a918f6");
+    value = ByteSet<BYTE>("0x1234567890");
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x0000000000000000000000007ef9e639e2733cb34e4dfc576d4b23f72db776b2");
+    value = ByteSet<BYTE>("0x4655474156000000000000000000000000000000000000000000000000000000");
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x000000000000000000000000ec4f34c97e43fbb2816cfd95e388353c7181dab1");
+    value = ByteSet<BYTE>("0x4e616d6552656700000000000000000000000000000000000000000000000000");
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x4655474156000000000000000000000000000000000000000000000000000000");
+    value = ByteSet<BYTE>("0x7ef9e639e2733cb34e4dfc576d4b23f72db776b2");
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x4e616d6552656700000000000000000000000000000000000000000000000000");
+    value = ByteSet<BYTE>("0xec4f34c97e43fbb2816cfd95e388353c7181dab1");
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x0000000000000000000000000000000000000000000000000000001234567890");
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x000000000000000000000000697c7b8c961b56f675d570498424ac8de1a918f6");
+    value = ByteSet<BYTE>("0x6f6f6f6820736f2067726561742c207265616c6c6c793f000000000000000000");
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("0x6f6f6f6820736f2067726561742c207265616c6c6c793f000000000000000000");
+    value = ByteSet<BYTE>("0x697c7b8c961b56f675d570498424ac8de1a918f6");
+    btt.store(key, value);
+
+    ASSERT_EQ(btt.hash(), ByteSet("0x72adb52e9d9428f808e3e8045be18d3baa77881d0cfab89a17a2bcbacee2f320"));
 }

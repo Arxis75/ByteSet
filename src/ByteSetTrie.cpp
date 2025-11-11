@@ -12,6 +12,7 @@ ByteSetTrieNode* ByteSetTrieNode::createExtension(const ByteSet<NIBBLE>& key, bo
     ByteSetTrieNode* extension = do_mutate ? this : new ByteSetTrieNode();
     extension->m_key = key.withoutTerminator();
     extension->m_value.clear();
+    extension->m_children.release();
     extension->m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(1);
     return extension;
 }
@@ -20,6 +21,7 @@ ByteSetTrieNode* ByteSetTrieNode::createBranch(bool do_mutate) {
     ByteSetTrieNode* branch = do_mutate ? this : new ByteSetTrieNode();
     branch->m_key.clear();
     branch->m_value.clear();
+    branch->m_children.release();
     branch->m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(16);
     return branch;
 }
@@ -34,7 +36,7 @@ const ByteSet<BYTE> ByteSetTrieNode::hash() const {
             result = result.keccak256();
         cout << "Empty node " << dec << " hash = " << result.asString() << endl;
     }
-    else if(getType() == TYPE::EMPTY || getType() == TYPE::LEAF) {
+    else if(getType() == TYPE::LEAF) {
         result.push_back(m_key.HexToCompact().RLPSerialize(false));
         result.push_back(m_value.RLPSerialize(false));
         result = result.RLPSerialize(true);
@@ -201,7 +203,7 @@ ByteSetTrieNode* ByteSetTrieNode::insert(ByteSetTrieNode* parent, uint index_in_
     return node;
 }
 
-void ByteSetTrieNode::store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) {
+void ByteSetTrieNode::storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) {
     ByteSet<NIBBLE> shared_nibbles, unshared_nibbles;
     switch(getType()) {
         case EMPTY:
@@ -234,7 +236,7 @@ void ByteSetTrieNode::store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) {
                     auto branch = insert(this, 0, pruned_previous_leaf, pruned_previous_leaf_index, BRAN);
 
                     //Continue the key parsing
-                    branch->store(key, value);
+                    branch->storeKV(key, value);
                 }
                 else {
                     //No common nibbles: mutate from LEAF => BRANCH
@@ -244,7 +246,7 @@ void ByteSetTrieNode::store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) {
                     pruned_previous_leaf->connectToParent(this, pruned_previous_leaf_index);
 
                     //Continue the key parsing
-                    store(key, value);
+                    storeKV(key, value);
                 }
             }
             break;
@@ -259,22 +261,25 @@ void ByteSetTrieNode::store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) {
 
             if(!unshared_nibbles.getNbElements()) {
                 //Continue the key parsing under the existing child branch
-                m_children[0]->store(key, value);
+                m_children[0]->storeKV(key, value);
             }
             else if(!shared_nibbles.getNbElements())
             {
                 //Disconnect the previous child branch before mutation
                 auto previous_branch = disconnectChild(0);
-                
+
                 //No common nibbles: mutate from EXTN => BRANCH
                 createBranch(true);
-
-                //Insert a new child EXTENSION between the mutated branch (parent) and the previous branch (child)
-                uint64_t unshared_ext_index = unshared_nibbles.pop_front_elem();
-                auto unshared_ext = insert(this, unshared_ext_index, previous_branch, 0, EXTN, unshared_nibbles);
+                
+                uint64_t unshared_index = unshared_nibbles.pop_front_elem();
+                if(unshared_nibbles.getNbElements())
+                    //Insert a new child EXTENSION between the mutated branch (parent) and the previous branch (child)
+                    auto unshared_ext = insert(this, unshared_index, previous_branch, 0, EXTN, unshared_nibbles);
+                else
+                    connectChild(previous_branch, unshared_index);
 
                 //Continue the key parsing
-                store(key, value);
+                storeKV(key, value);
             }
             else {
                 //Disconnect the previous child branch
@@ -292,7 +297,7 @@ void ByteSetTrieNode::store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) {
                     auto unshared_ext = insert(new_branch, new_branch_child_index, previous_branch, 0, EXTN, unshared_nibbles);
                 }
                 //Continue the key parsing under the new branch
-                new_branch->store(key, value);
+                new_branch->storeKV(key, value);
             }
             break;
         }
@@ -310,7 +315,7 @@ void ByteSetTrieNode::store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) {
                 }
                 else
                     //Continue the key parsing in the proper placeholder
-                    m_children[index]->store(key, value);
+                    m_children[index]->storeKV(key, value);
             }
             break;
         }
