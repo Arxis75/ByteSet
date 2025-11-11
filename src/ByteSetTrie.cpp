@@ -31,24 +31,27 @@ const ByteSet<BYTE> ByteSetTrieNode::hash() const {
         result.push_back(m_value.RLPSerialize(false));
         result = result.RLPSerialize(true);
         cout << "Leaf " << dec << " rlp = " << result.asString() << endl;
-        result = result.keccak256();
+        if(result.byteSize() >= 32)
+            result = result.keccak256();
         cout << "Leaf " << dec << " hash = " << result.asString() << endl;
     }
     else if(getType() == TYPE::EXTN) {
-        result.push_back(m_key.HexToCompact());
-        result.push_back(m_children[0]->hash().RLPSerialize(false));
+        result.push_back(m_key.HexToCompact().RLPSerialize(false));
+        result.push_back(m_children[0]->hash());
         result = result.RLPSerialize(true);
         cout << "Extension " << dec << " rlp = " << result.asString() << endl;
-        result = result.keccak256();
+        if(result.byteSize() >= 32)
+            result = result.keccak256();
         cout << "Extension " << dec << " hash = " << result.asString() << endl;
     }
     else if(getType() == TYPE::BRAN) {
         for(uint i=0;i<m_children.size();i++)
-            result.push_back(m_children[i] ? m_children[i]->hash().RLPSerialize(false) : ByteSet<BYTE>().RLPSerialize(false));
+            result.push_back(m_children[i] ? m_children[i]->hash() : ByteSet<BYTE>().RLPSerialize(false));
         result.push_back(m_value.RLPSerialize(false));
         result = result.RLPSerialize(true);
         cout << "Branch " << dec << " rlp = " << result.asString() << endl;
-        result = result.keccak256();
+        if(result.byteSize() >= 32)
+            result = result.keccak256();
         cout << "Branch " << dec << " hash = " << result.asString() << endl;
     }
     return result;
@@ -141,7 +144,7 @@ void ByteSetTrieNode::store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) {
             m_value = value;
             break;
         case LEAF: {
-            assert(key != m_key);   //no double insertion
+            assert(key != m_key.withoutTerminator());   //no double insertion
 
             //prune key and m_key of their common nibbles.
             shared_nibbles = extractCommonNibbles(key, m_key);
