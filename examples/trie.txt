@@ -1,0 +1,129 @@
+Calcul du RLP:  https://toolkit.abdk.consulting/ethereum#rlp                    //Warning! Wrong encoding of integer(0), should be 0x80 in ethereum for resolving malleability with 0x00
+Calcul du keccak: https://emn178.github.io/online-tools/keccak_256.html
+
+    // Block 10593417:
+    //  Transactions Root Hash:
+    //      0xab41f886be23cd786d8a69a72b0f988ea72e0b2e03970d0798f5e03763a442cc
+    //  Transactions:
+    //      (80, f8ab81a5852e90edd00083012bc294a3bed4e1c75d00fa6f4e5e6922db7261b5e9acd280b844a9059cbb0000000000000000000000008bda8b9823b8490e8cf220dc7b91d97da1c54e250000000000000000000000000000000000000000000000056bc75e2d6310000026a06c89b57113cf7da8aed7911310e03d49be5e40de0bd73af4c9c54726c478691ba056223f039fab98d47c71f84190cf285ce8fc7d9181d6769387e5efd0a970e2e9)
+    //      (01, f8ab81a6852e90edd00083012bc294a3bed4e1c75d00fa6f4e5e6922db7261b5e9acd280b844a9059cbb0000000000000000000000008bda8b9823b8490e8cf220dc7b91d97da1c54e250000000000000000000000000000000000000000000000056bc75e2d6310000026a0d77c66153a661ecc986611dffda129e14528435ed3fd244c3afb0d434e9fd1c1a05ab202908bf6cbc9f57c595e6ef3229bce80a15cdf67487873e57cc7f5ad7c8a)
+    //      (02, f86d8229f185199c82cc008252089488e9a2d38e66057e18545ce03b3ae9ce4fc360538702ce7de1537c008025a096e7a1d9683b205f697b4073a3e2f0d0ad42e708f03e899c61ed6a894a7f916aa05da238fbb96d41a4b5ec0338c86cfcb627d0aa8e556f21528e62f31c32f7e672)
+    //      (03, f86f826b2585199c82cc0083015f9094e955ede0a3dbf651e2891356ecd0509c1edb8d9c8801051fdc4efdc0008025a02190f26e70a82d7f66354a13cda79b6af1aa808db768a787aeb348d425d7d0b3a06a82bd0518bc9b69dc551e20d772a1b06222edfc5d39b6973e4f4dc46ed8b196)
+
+
+
+
+root_rlp = RLP([ "0x98f3110a26a9ee7d32d5da055ebd725f09d6b5223aaa66a1f463822628308956",
+                 "0x", "0x", "0x", "0x", "0x", "0x", "0x",
+                 "0x0e6e346926890fbe0443125f7eed828ab63e0f4ebcd37722254eb097bac00252",
+                 "0x", "0x", "0x", "0x", "0x", "0x", "0x", "0x"])
+         = RLP(
+["0x98f3110a26a9ee7d32d5da055ebd725f09d6b5223aaa66a1f463822628308956","0x","0x","0x","0x","0x","0x","0x","0x0e6e346926890fbe0443125f7eed828ab63e0f4ebcd37722254eb097bac00252","0x","0x","0x","0x","0x","0x","0x","0x"]
+         )
+
+         = 0xf851a098f3110a26a9ee7d32d5da055ebd725f09d6b5223aaa66a1f46382262830895680808080808080a00e6e346926890fbe0443125f7eed828ab63e0f4ebcd37722254eb097bac002528080808080808080
+
+keccak(root_rlp) = ab41f886be23cd786d8a69a72b0f988ea72e0b2e03970d0798f5e03763a442cc
+
+-------------------- TX0 ------------------------
+
+tx-0_rlp = RLP([ "0xa5",
+                 "0x2e90edd000",
+                 "0x12bc2",
+                 "0xa3bed4e1c75d00fa6f4e5e6922db7261b5e9acd2",
+                 "0x0",
+                 "0xa9059cbb0000000000000000000000008bda8b9823b8490e8cf220dc7b91d97da1c54e250000000000000000000000000000000000000000000000056bc75e2d63100000",
+                 "0x26",
+                 "0x6c89b57113cf7da8aed7911310e03d49be5e40de0bd73af4c9c54726c478691b",
+                 "0x56223f039fab98d47c71f84190cf285ce8fc7d9181d6769387e5efd0a970e2e9"])
+         
+         = RLP(
+["0xa5","0x2e90edd000","0x012bc2","0xa3bed4e1c75d00fa6f4e5e6922db7261b5e9acd2","0x","0xa9059cbb0000000000000000000000008bda8b9823b8490e8cf220dc7b91d97da1c54e250000000000000000000000000000000000000000000000056bc75e2d63100000","0x26","0x6c89b57113cf7da8aed7911310e03d49be5e40de0bd73af4c9c54726c478691b","0x56223f039fab98d47c71f84190cf285ce8fc7d9181d6769387e5efd0a970e2e9"]
+         )
+         = 0xf8ab81a5852e90edd00083012bc294a3bed4e1c75d00fa6f4e5e6922db7261b5e9acd280b844a9059cbb0000000000000000000000008bda8b9823b8490e8cf220dc7b91d97da1c54e250000000000000000000000000000000000000000000000056bc75e2d6310000026a06c89b57113cf7da8aed7911310e03d49be5e40de0bd73af4c9c54726c478691ba056223f039fab98d47c71f84190cf285ce8fc7d9181d6769387e5efd0a970e2e9
+
+keccak(tx-0_rlp) = 0xb0c43213c86c2cacce8ceef965b881529d31e5be93ad6cefcef2f319a20ef1b5
+
+path = 0x80 (0th transaction) 
+key = 3|0 : 0 comes from remainig path of 0x80 when 8 is encoded in the branch node.
+
+ln-0_rlp = RLP([0x30, tx-0_rlp])
+         = RLP(
+["0x30","0xf8ab81a5852e90edd00083012bc294a3bed4e1c75d00fa6f4e5e6922db7261b5e9acd280b844a9059cbb0000000000000000000000008bda8b9823b8490e8cf220dc7b91d97da1c54e250000000000000000000000000000000000000000000000056bc75e2d6310000026a06c89b57113cf7da8aed7911310e03d49be5e40de0bd73af4c9c54726c478691ba056223f039fab98d47c71f84190cf285ce8fc7d9181d6769387e5efd0a970e2e9"]
+)
+         = 0xf8b030b8adf8ab81a5852e90edd00083012bc294a3bed4e1c75d00fa6f4e5e6922db7261b5e9acd280b844a9059cbb0000000000000000000000008bda8b9823b8490e8cf220dc7b91d97da1c54e250000000000000000000000000000000000000000000000056bc75e2d6310000026a06c89b57113cf7da8aed7911310e03d49be5e40de0bd73af4c9c54726c478691ba056223f039fab98d47c71f84190cf285ce8fc7d9181d6769387e5efd0a970e2e9
+
+
+keccak(ln-0_rlp) = 0x0e6e346926890fbe0443125f7eed828ab63e0f4ebcd37722254eb097bac00252
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+1. State Trie
+
+Key: keccak256(address) → 32-byte hash (64 nibbles)
+Value: RLP-encoded account (nonce, balance, storageRoot, codeHash)
+
+2. Storage Trie (per account)
+
+Key: keccak256(storage_slot_index)
+Value: RLP-encoded storage value (e.g., uint256)
+
+3. Transaction Trie / Receipt Trie
+
+Key: the RLP-encoded transaction index (an integer like 0, 1, 2, ...), then converted to a byte array (i.e., RLP of the number)
+Value: RLP-encoded transaction object / transaction receipt
+
+🔷 1. State Trie
+
+Key: keccak256(address) (64 hex nibbles)
+
+Value: RLP-encoded account object:
+
+[
+  nonce,
+  balance,
+  storageRoot,
+  codeHash
+]
+
+
+Size: ~100–150 bytes (depends on account complexity)
+
+storageRoot and codeHash are 32-byte hashes.
+
+balance and nonce can be variable-length integers.
+
+🔷 2. Storage Trie (one per account)
+
+Key: keccak256(slot_index)
+
+Value: RLP-encoded storage value (usually a 256-bit integer)
+
+Size: ~1–33 bytes (RLP compresses leading zeros)
+
+But can be more if storing complex packed data manually.
+
+🔷 3. Transaction Trie
+
+Key: RLP(transaction index)
+
+Value: RLP(transaction object)
+
+Legacy transaction: often ~100–200 bytes
+
+EIP-1559 transactions: even larger due to new fields (access lists, etc.)
+
+Can go beyond 500 bytes if calldata is large.
+
+🔷 4. Receipt Trie
+
+Key: RLP(transaction index)
+
+Value: RLP(receipt)
+
+Includes logs, bloom filter, gas used, status
+
+Logs can be deeply nested and data-rich
+
+Size: ~100–1000+ bytes, depending on how many logs were emitted
+

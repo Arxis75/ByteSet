@@ -37,7 +37,8 @@ const ByteSet<BYTE> ByteSetTrieNode::hash() const {
     }
     else if(getType() == TYPE::EXTN) {
         result.push_back(m_key.HexToCompact().RLPSerialize(false));
-        result.push_back(m_children[0]->hash());
+        ByteSet<BYTE> h(m_children[0]->hash());
+        result.push_back(h.byteSize() < 32 ? h : h.RLPSerialize(false));    // < 32 Bytes => Value node, else Hash Node
         result = result.RLPSerialize(true);
         cout << "Extension " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32)
@@ -45,8 +46,14 @@ const ByteSet<BYTE> ByteSetTrieNode::hash() const {
         cout << "Extension " << dec << " hash = " << result.asString() << endl;
     }
     else if(getType() == TYPE::BRAN) {
-        for(uint i=0;i<m_children.size();i++)
-            result.push_back(m_children[i] ? m_children[i]->hash() : ByteSet<BYTE>().RLPSerialize(false));
+        for(uint i=0;i<m_children.size();i++) {
+            if(m_children[i]) {
+                ByteSet<BYTE> h(m_children[i]->hash());
+                result.push_back(h.byteSize() < 32 ? h : h.RLPSerialize(false));
+            }
+            else
+                result.push_back_elem(0x80);
+        }
         result.push_back(m_value.RLPSerialize(false));
         result = result.RLPSerialize(true);
         cout << "Branch " << dec << " rlp = " << result.asString() << endl;

@@ -1,6 +1,31 @@
 #include <gtest/gtest.h>
 #include <ByteSet/ByteSetTrie.h>
 
+TEST(ByteSetTrieTest, Mainnet_TxTrie_Block_10593417)
+{
+    BlockTransactionsTrie btt;
+    ByteSet<BYTE> value;
+    ByteSet<NIBBLE> key;
+
+    key = ByteSet<NIBBLE>(0x80, 2);
+    value = ByteSet("f8ab81a5852e90edd00083012bc294a3bed4e1c75d00fa6f4e5e6922db7261b5e9acd280b844a9059cbb0000000000000000000000008bda8b9823b8490e8cf220dc7b91d97da1c54e250000000000000000000000000000000000000000000000056bc75e2d6310000026a06c89b57113cf7da8aed7911310e03d49be5e40de0bd73af4c9c54726c478691ba056223f039fab98d47c71f84190cf285ce8fc7d9181d6769387e5efd0a970e2e9");
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>(0x01, 2);
+    value = ByteSet("f8ab81a6852e90edd00083012bc294a3bed4e1c75d00fa6f4e5e6922db7261b5e9acd280b844a9059cbb0000000000000000000000008bda8b9823b8490e8cf220dc7b91d97da1c54e250000000000000000000000000000000000000000000000056bc75e2d6310000026a0d77c66153a661ecc986611dffda129e14528435ed3fd244c3afb0d434e9fd1c1a05ab202908bf6cbc9f57c595e6ef3229bce80a15cdf67487873e57cc7f5ad7c8a");
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>(0x02, 2);
+    value = ByteSet("f86d8229f185199c82cc008252089488e9a2d38e66057e18545ce03b3ae9ce4fc360538702ce7de1537c008025a096e7a1d9683b205f697b4073a3e2f0d0ad42e708f03e899c61ed6a894a7f916aa05da238fbb96d41a4b5ec0338c86cfcb627d0aa8e556f21528e62f31c32f7e672");
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>(0x03, 2);
+    value = ByteSet("f86f826b2585199c82cc0083015f9094e955ede0a3dbf651e2891356ecd0509c1edb8d9c8801051fdc4efdc0008025a02190f26e70a82d7f66354a13cda79b6af1aa808db768a787aeb348d425d7d0b3a06a82bd0518bc9b69dc551e20d772a1b06222edfc5d39b6973e4f4dc46ed8b196");
+    btt.store(key, value);
+
+    ASSERT_EQ(btt.hash(), ByteSet("0xab41f886be23cd786d8a69a72b0f988ea72e0b2e03970d0798f5e03763a442cc"));
+}
+    
 TEST(ByteSetTrieTest, hex_encoded_securetrie_test)
 {
     //https://github.com/ethereum/tests/blob/develop/TrieTests/hex_encoded_securetrie_test.json
@@ -79,6 +104,7 @@ TEST(ByteSetTrieTest, trieanyorder)
     // Working RLP is:
     // ["0x2041","0x6161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161"]
     // = 0xf6822041b26161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161
+    
     key = ByteSet<NIBBLE>("A", UTF8);
     value = ByteSet<BYTE>("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", UTF8);
     btt.store(key, value);
@@ -87,7 +113,42 @@ TEST(ByteSetTrieTest, trieanyorder)
 
     btt.clear();
 
-    /*key = ByteSet<NIBBLE>("doe", UTF8);
+    /******************************************************************************************************************* */
+    /*                                     NEXT TEST INTERNAL STRUCTURE FOR DEBUGGING
+    
+    32 Bytes Hash nodes are RLP encoded inside parent node => 33 Bytes
+    < 32 Bytes Value Nodes being already RLP encoded, are not re-RLP-encoded => still < 32 Bytes
+
+    L0:
+        key: 0x
+        value: "reindeer" (0x7265696E64656572)
+        ["0x20", "0x7265696e64656572"] = 0xca20887265696e64656572
+
+    L1:
+        key: 0x76C6573776F727468
+        value: "cat" (0x636174)
+        ["0x376c6573776f727468", "0x636174"] = 0xce89376c6573776f72746883636174
+
+    B1:
+        value: "puppy" (0x7075707079)
+        ["0x", "0x", "0x", "0x", "0x", "0x", "0xce89376c6573776f72746883636174", "0x", "0x", "0x", "0x", "0x", "0x", "0x", "0x", "0x", "0x7075707079"]
+            = 0xe4808080808080ce89376c6573776f72746883636174808080808080808080857075707079
+        keccak256 = 0x37efd11993cb04a54048c25320e9f29c50a432d28afdf01598b2978ce1ca3068
+
+    B0:
+        value: "" (0x)
+        ["0x", "0x", "0x", "0x", "0x", "0xca20887265696e64656572", "0x", "0x37efd11993cb04a54048c25320e9f29c50a432d28afdf01598b2978ce1ca3068", "0x", "0x", "0x", "0x", "0x", "0x", "0x", "0x", "0x"]
+            = 0xf83b8080808080ca20887265696e6465657280A037efd11993cb04a54048c25320e9f29c50a432d28afdf01598b2978ce1ca3068808080808080808080
+        keccak256 = 0xdb6ae1fda66890f6693f36560d36b4dca68b4d838f17016b151efe1d4c95c453
+
+    E0:
+        key: 0x646F6
+        ["0x1646f6", "0xdb6ae1fda66890f6693f36560d36b4dca68b4d838f17016b151efe1d4c95c453"]
+            = 0xe5831646f6A0db6ae1fda66890f6693f36560d36b4dca68b4d838f17016b151efe1d4c95c453
+        keccak256 = 0x8aad789dff2f538bca5d8ea56e8abe10f4c7ba3a5dea95fea4cd6e7c3a1168d3
+    ------------------------------------------------------------------------------------------------------------------*/
+
+    key = ByteSet<NIBBLE>("doe", UTF8);
     value = ByteSet<BYTE>("reindeer", UTF8);
     btt.store(key, value);
 
@@ -99,7 +160,7 @@ TEST(ByteSetTrieTest, trieanyorder)
     value = ByteSet<BYTE>("cat", UTF8);
     btt.store(key, value);
 
-    ASSERT_EQ(btt.hash(), ByteSet("0x8aad789dff2f538bca5d8ea56e8abe10f4c7ba3a5dea95fea4cd6e7c3a1168d3"));*/
+    ASSERT_EQ(btt.hash(), ByteSet("0x8aad789dff2f538bca5d8ea56e8abe10f4c7ba3a5dea95fea4cd6e7c3a1168d3"));
 
     /*btt.clear();
     
