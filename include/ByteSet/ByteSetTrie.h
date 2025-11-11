@@ -15,17 +15,17 @@ class ByteSetTrieNode : public IByteSetComposite
         virtual ~ByteSetTrieNode() { cout << "-- node " << this << " deleted. --" << endl; }
 
         virtual const ByteSet<BYTE> hash() const;
-        inline virtual uint64_t getChildrenCount() const override {return m_children.size(); }
+        inline virtual uint64_t getChildrenCount() const override { return m_children.size(); }
         virtual void DumpChildren() const override;
 
         ByteSet<NIBBLE> extractCommonNibbles(ByteSet<NIBBLE> &key1, ByteSet<NIBBLE> &key2) const;
 
-        ByteSetTrieNode* newLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value) const;
+        ByteSetTrieNode* createLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value, bool do_mutate = false);
         ByteSetTrieNode* createExtension(const ByteSet<NIBBLE>& key, bool do_mutate = false);
         ByteSetTrieNode* createBranch(bool do_mutate = false);
         ByteSetTrieNode* disconnectChild(uint child_index);
         void connectChild(ByteSetTrieNode* child, uint child_index);
-        ByteSetTrieNode* disconnectFromParent(uint index_in_parent);
+        int disconnectFromParent();
         void connectToParent(ByteSetTrieNode* parent, uint index_in_parent);
 
         ByteSetTrieNode* insert(ByteSetTrieNode* parent, uint index_in_parent, ByteSetTrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key = EMPTY_KEY, const ByteSet<BYTE>& value = EMPTY_VALUE);

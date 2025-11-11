@@ -1,10 +1,11 @@
 #include <ByteSet/ByteSetTrie.h>
 
-ByteSetTrieNode* ByteSetTrieNode::newLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value) const {
-    ByteSetTrieNode* new_leaf = new ByteSetTrieNode();
-    new_leaf->m_key = key.withTerminator();
-    new_leaf->m_value = value;
-    return new_leaf;
+ByteSetTrieNode* ByteSetTrieNode::createLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value, bool do_mutate) {
+    ByteSetTrieNode* leaf = do_mutate ? this : new ByteSetTrieNode();
+    leaf->m_key = key.withTerminator();
+    leaf->m_value = value;
+    leaf->m_children.release();
+    return leaf;
 }
 
 ByteSetTrieNode* ByteSetTrieNode::createExtension(const ByteSet<NIBBLE>& key, bool do_mutate) {
@@ -26,12 +27,19 @@ ByteSetTrieNode* ByteSetTrieNode::createBranch(bool do_mutate) {
 const ByteSet<BYTE> ByteSetTrieNode::hash() const {
     ByteSet<BYTE> result;
 
-    if(getType() == TYPE::LEAF) {
+    if(getType() == TYPE::EMPTY) {
+        result = result.RLPSerialize(false);
+        cout << "Empty node " << dec << " rlp = " << result.asString() << endl;
+        if(result.byteSize() >= 32 || !getParent())
+            result = result.keccak256();
+        cout << "Empty node " << dec << " hash = " << result.asString() << endl;
+    }
+    else if(getType() == TYPE::EMPTY || getType() == TYPE::LEAF) {
         result.push_back(m_key.HexToCompact().RLPSerialize(false));
         result.push_back(m_value.RLPSerialize(false));
         result = result.RLPSerialize(true);
         cout << "Leaf " << dec << " rlp = " << result.asString() << endl;
-        if(result.byteSize() >= 32)
+        if(result.byteSize() >= 32 || !getParent())
             result = result.keccak256();
         cout << "Leaf " << dec << " hash = " << result.asString() << endl;
     }
@@ -41,7 +49,7 @@ const ByteSet<BYTE> ByteSetTrieNode::hash() const {
         result.push_back(h.byteSize() < 32 ? h : h.RLPSerialize(false));    // < 32 Bytes => Value node, else Hash Node
         result = result.RLPSerialize(true);
         cout << "Extension " << dec << " rlp = " << result.asString() << endl;
-        if(result.byteSize() >= 32)
+        if(result.byteSize() >= 32 || !getParent())
             result = result.keccak256();
         cout << "Extension " << dec << " hash = " << result.asString() << endl;
     }
@@ -57,7 +65,7 @@ const ByteSet<BYTE> ByteSetTrieNode::hash() const {
         result.push_back(m_value.RLPSerialize(false));
         result = result.RLPSerialize(true);
         cout << "Branch " << dec << " rlp = " << result.asString() << endl;
-        if(result.byteSize() >= 32)
+        if(result.byteSize() >= 32 || !getParent())
             result = result.keccak256();
         cout << "Branch " << dec << " hash = " << result.asString() << endl;
     }
@@ -99,25 +107,76 @@ void ByteSetTrieNode::connectChild(ByteSetTrieNode* child, uint child_index) {
     }
 }
 
-ByteSetTrieNode* ByteSetTrieNode::disconnectFromParent(uint index_in_parent) {
+int ByteSetTrieNode::disconnectFromParent() {
+    int index_in_parent = -1;
+    //This method is only called when a Leaf is nullified => pruning the trie
     if(ByteSetTrieNode* parent = const_cast<ByteSetTrieNode*>(dynamic_cast<const ByteSetTrieNode*>(getParent())); parent) {
-        if(parent->getType() == TYPE::EXTN) index_in_parent = 0;
-        parent->m_children[index_in_parent].release();
+        if(parent->getType() == TYPE::BRAN) {
+            uint parent_children_count = 0;
+            for(uint i=0;i<16;i++) {
+                if(parent->m_children[i].get() == this) {
+                    index_in_parent = i;
+                    parent->m_children[i].release();
+                }
+                if(parent->m_children[i])
+                    parent_children_count++;
+            }
+            if(!parent_children_count) {
+                if(int index_in_parent_parent = parent->disconnectFromParent(); index_in_parent_parent >=0) {
+                    if(parent->m_value.getNbElements()) {
+                        //Create a Leaf to hold the m_value held in the branch disapearing
+                        if(auto parent_parent = const_cast<ByteSetTrieNode*>(dynamic_cast<const ByteSetTrieNode*>(parent->getParent())); parent_parent) {
+                            auto leaf = parent->createLeaf(EMPTY_KEY, m_value);
+                            leaf->connectToParent(parent_parent, index_in_parent_parent);
+                        }
+                        else
+                            auto leaf = parent->createLeaf(EMPTY_KEY, m_value, true);
+                    }
+                }
+                else
+                    //Parent is an empty Root => become Leaf
+                    parent->createLeaf(EMPTY_KEY, parent->m_value, true);
+            }
+        }
+        else if(parent->getType() == TYPE::EXTN) {
+            index_in_parent = 0;
+            parent->m_children[0].release();
+            if(int index_in_parent_parent = parent->disconnectFromParent(); index_in_parent_parent >=0) {
+                if(parent->m_value.getNbElements()) {
+                    //Create a Leaf to hold the m_value held in the branch disapearing
+                    if(auto parent_parent = const_cast<ByteSetTrieNode*>(dynamic_cast<const ByteSetTrieNode*>(parent->getParent())); parent_parent) {
+                        auto leaf = parent->createLeaf(EMPTY_KEY, m_value);
+                        leaf->connectToParent(parent_parent, index_in_parent_parent);
+                    }
+                    else
+                        auto leaf = parent->createLeaf(EMPTY_KEY, m_value, true);
+                }
+            }
+            else
+                //Parent is an empty Root => become Leaf
+                parent->createLeaf(parent->m_key, EMPTY_VALUE, true);
+        }
         setParent(nullptr);
     }
-    return this;
+    return index_in_parent;
 }
 
 void ByteSetTrieNode::connectToParent(ByteSetTrieNode* parent, uint index_in_parent) {
     if(parent) {
-        if(parent->getType() == TYPE::BRAN && index_in_parent == 0x10) {
+        assert(parent->getType() != TYPE::LEAF);
+        if(getType() == TYPE::LEAF && parent->getType() == TYPE::BRAN && index_in_parent == 0x10) {
             //THIS gets eaten by the parent branch node
             parent->m_value = m_value;
             //delete this;
         }
+        else if(getType() == TYPE::LEAF && parent->getType() == TYPE::EXTN) {
+            //THIS eats the parent extension node
+            m_key.push_front(parent->m_key);
+            //delete this;
+        }
         else {
             if(parent->getType() == TYPE::EXTN) index_in_parent = 0;
-            assert(parent->getType() != TYPE::LEAF && !parent->m_children[index_in_parent]);
+            assert(!parent->m_children[index_in_parent]);
             setParent(parent);
             parent->m_children[index_in_parent].reset(this);
         }
@@ -128,7 +187,7 @@ ByteSetTrieNode* ByteSetTrieNode::insert(ByteSetTrieNode* parent, uint index_in_
     assert(type != TYPE::EMPTY);
     ByteSetTrieNode* node;
     if(type == TYPE::LEAF) {
-        node = newLeaf(key, value);
+        node = createLeaf(key, value);
     }
     else if(type == TYPE::EXTN) {
         node = createExtension(key);
@@ -151,35 +210,42 @@ void ByteSetTrieNode::store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) {
             m_value = value;
             break;
         case LEAF: {
-            assert(key != m_key.withoutTerminator());   //no double insertion
-
-            //prune key and m_key of their common nibbles.
-            shared_nibbles = extractCommonNibbles(key, m_key);
-            unshared_nibbles = key;
-            
-            //Save a copy of the pruned Leaf
-            uint pruned_previous_leaf_index = m_key.pop_front_elem();   //a popped Terminator will be handled by connectToParent()
-            auto pruned_previous_leaf = newLeaf(m_key, m_value);
-
-            if(shared_nibbles.getNbElements()) {
-                //Some common nibbles: mutate from LEAF => EXTENSION
-                createExtension(shared_nibbles, true);
-
-                //insert a BRANCH as child of this EXTENSION and reconnect the previous LEAF
-                auto branch = insert(this, 0, pruned_previous_leaf, pruned_previous_leaf_index, BRAN);
-
-                //Continue the key parsing
-                branch->store(key, value);
+            if(key == m_key.withoutTerminator()) {
+                if(value.getNbElements())
+                    //LEAF value update
+                    m_value = value;
+                else
+                    disconnectFromParent();
             }
             else {
-                //No common nibbles: mutate from LEAF => BRANCH
-                createBranch(true);
+                //prune key and m_key of their common nibbles.
+                shared_nibbles = extractCommonNibbles(key, m_key);
+                unshared_nibbles = key;
                 
-                //Reconnect the previous LEAF:
-                pruned_previous_leaf->connectToParent(this, pruned_previous_leaf_index);
+                //Save a copy of the pruned Leaf
+                uint pruned_previous_leaf_index = m_key.pop_front_elem();   //a popped Terminator will be handled by connectToParent()
+                auto pruned_previous_leaf = createLeaf(m_key, m_value);
 
-                //Continue the key parsing
-                store(key, value);
+                if(shared_nibbles.getNbElements()) {
+                    //Some common nibbles: mutate from LEAF => EXTENSION
+                    createExtension(shared_nibbles, true);
+
+                    //insert a BRANCH as child of this EXTENSION and reconnect the previous LEAF
+                    auto branch = insert(this, 0, pruned_previous_leaf, pruned_previous_leaf_index, BRAN);
+
+                    //Continue the key parsing
+                    branch->store(key, value);
+                }
+                else {
+                    //No common nibbles: mutate from LEAF => BRANCH
+                    createBranch(true);
+                    
+                    //Reconnect the previous LEAF:
+                    pruned_previous_leaf->connectToParent(this, pruned_previous_leaf_index);
+
+                    //Continue the key parsing
+                    store(key, value);
+                }
             }
             break;
         }
@@ -238,7 +304,7 @@ void ByteSetTrieNode::store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) {
 
                 if(!m_children[index]) {
                     //The key's first nibble placeholder is empty => new LEAF
-                    auto new_leaf = newLeaf(key, value);
+                    auto new_leaf = createLeaf(key, value);
                     new_leaf->setParent(this);
                     m_children[index].reset(new_leaf);
                 }
