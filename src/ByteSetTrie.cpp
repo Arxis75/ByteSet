@@ -1,5 +1,4 @@
 #include <ByteSet/ByteSetTrie.h>
-#include <System.h>
 
 ByteSetTrieNode* ByteSetTrieNode::newLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value) const {
     ByteSetTrieNode* new_leaf = new ByteSetTrieNode();
@@ -28,7 +27,7 @@ const ByteSet<BYTE> ByteSetTrieNode::hash() const {
     ByteSet<BYTE> result;
 
     if(getType() == TYPE::LEAF) {
-        result.push_back(m_key.HexToCompact());
+        result.push_back(m_key.HexToCompact().RLPSerialize(false));
         result.push_back(m_value.RLPSerialize(false));
         result = result.RLPSerialize(true);
         cout << "Leaf " << dec << " rlp = " << result.asString() << endl;
@@ -133,7 +132,7 @@ ByteSetTrieNode* ByteSetTrieNode::insert(ByteSetTrieNode* parent, uint index_in_
     return node;
 }
 
-void ByteSetTrieNode::store(ByteSet<NIBBLE> key, ByteSet<BYTE> value) {
+void ByteSetTrieNode::store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) {
     ByteSet<NIBBLE> shared_nibbles, unshared_nibbles;
     switch(getType()) {
         case EMPTY:

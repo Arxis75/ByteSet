@@ -1,5 +1,4 @@
 #include <ByteSet/Tools.h>
-#include <System.h>
 
 vector<string> split(const string& list, const string& separator)
 {

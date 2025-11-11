@@ -1,5 +1,7 @@
 #include <ByteSet/ByteSetFormat.h>
-#include <System.h>
+#include <regex>
+
+using std::regex;
 
 ByteSetFormat::ByteSetFormat(
         const string &UIName,

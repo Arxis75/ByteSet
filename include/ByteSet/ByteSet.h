@@ -124,7 +124,7 @@ class ByteSet
         ByteSet withoutTerminator() const;
         ByteSet<BYTE> HexToCompact() const;
 
-        inline ByteSet<BYTE> asAligned() const { return ByteSet<BYTE>(asInteger(), (getNbElements()+7)/8); }
+        inline ByteSet<BYTE> asAligned() const { return ByteSet<BYTE>(asInteger(), (getNbElements()*getBitsPerElem()+7)/8); }
 
         //********************************** Container manipulation interface ***************************************//
 

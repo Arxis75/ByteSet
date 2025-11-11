@@ -12,7 +12,7 @@ class ByteSetTrieNode : public IByteSetComposite
         ByteSetTrieNode() = default;
         ByteSetTrieNode(const ByteSetTrieNode&) = delete;
         ByteSetTrieNode& operator=(const ByteSetTrieNode&) = delete;
-        virtual ~ByteSetTrieNode() = default;
+        virtual ~ByteSetTrieNode() { cout << "-- node " << this << " deleted. --" << endl; }
 
         virtual const ByteSet<BYTE> hash() const;
         inline virtual uint64_t getChildrenCount() const override {return m_children.size(); }
@@ -30,7 +30,7 @@ class ByteSetTrieNode : public IByteSetComposite
 
         ByteSetTrieNode* insert(ByteSetTrieNode* parent, uint index_in_parent, ByteSetTrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key = EMPTY_KEY, const ByteSet<BYTE>& value = EMPTY_VALUE);
 
-        void store(ByteSet<NIBBLE> key, ByteSet<BYTE> value);
+        void store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value);
 
         inline TYPE getType() const { return m_children.size() == 16 ? BRAN : (m_children.size() == 0 ? (m_value.getNbElements() ? LEAF : EMPTY) : EXTN);}
         inline const ByteSet<NIBBLE>& getKey() const { return m_key; }
@@ -39,7 +39,7 @@ class ByteSetTrieNode : public IByteSetComposite
         inline const ByteSet<BYTE>& getValue() const { return m_value; }
         inline void setValue(const ByteSet<BYTE>& value) { m_value = value; }
 
-    protected:
+        inline void clear() { m_children.release(); m_key.clear(); m_value.clear(); }
 
     public:
         unique_arr<std::unique_ptr<ByteSetTrieNode>> m_children;

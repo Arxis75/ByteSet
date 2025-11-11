@@ -4,14 +4,26 @@
 #include <ethash/keccak.hpp>
 #include <openssl/sha.h>
 
+#include <string>
+#include <vector>
 #include <memory>
 #include <sstream>
 
 using Givaro::Integer;
 
-std::vector<std::string> split(const std::string& list, const std::string& separator);
+using std::unique_ptr;
 
-std::string removeCharsFromString(const std::string &val, const char* charsToRemove);
+using std::string;
+using std::vector;
+
+using std::dec;
+using std::hex;
+using std::endl;
+using std::cout;
+
+vector<string> split(const string& list, const string& separator);
+
+string removeCharsFromString(const string &val, const char* charsToRemove);
 
 template <typename T>
 class unique_arr {
