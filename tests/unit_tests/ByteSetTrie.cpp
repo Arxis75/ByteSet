@@ -30,7 +30,7 @@ TEST(ByteSetTrieTest, hex_encoded_securetrie_test)
 {
     //https://github.com/ethereum/tests/blob/develop/TrieTests/hex_encoded_securetrie_test.json
 
-    BlockTransactionsTrie btt;
+    BlockTransactionsTrie btt(true);
     ByteSet<NIBBLE> key;
     ByteSet<BYTE> value;
 
@@ -233,6 +233,113 @@ TEST(ByteSetTrieTest, trieanyorder)
     btt.store(key, value);
 
     ASSERT_EQ(btt.hash(), ByteSet("0x285505fcabe84badc8aa310e2aae17eddc7d120aabec8a476902c8184b3a3503"));
+}
+
+TEST(ByteSetTrieTest, trieanyorder_secureTrie)
+{
+    //https://github.com/ethereum/tests/blob/develop/TrieTests/trieanyorder_secureTrie.json
+
+    BlockTransactionsTrie btt(true);
+    ByteSet<NIBBLE> key;
+    ByteSet<BYTE> value;
+
+    // Working RLP is:
+    // ["0x2041","0x6161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161"]
+    // = 0xf6822041b26161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161
+    
+    key = ByteSet<NIBBLE>("A", UTF8);
+    value = ByteSet<BYTE>("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", UTF8);
+    btt.store(key, value);
+
+    ASSERT_EQ(btt.hash(), ByteSet("0xe9e2935138352776cad724d31c9fa5266a5c593bb97726dd2a908fe6d53284df"));
+
+    /*btt.clear();
+
+    key = ByteSet<NIBBLE>("doe", UTF8);
+    value = ByteSet<BYTE>("reindeer", UTF8);
+    btt.store(key, value);
+
+    key = ByteSet<NIBBLE>("dog", UTF8);
+    value = ByteSet<BYTE>("puppy", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("dogglesworth", UTF8);
+    value = ByteSet<BYTE>("cat", UTF8);
+    btt.store(key, value);
+
+    ASSERT_EQ(btt.hash(), ByteSet("0xd4cd937e4a4368d7931a9cf51686b7e10abb3dce38a39000fd7902a092b64585"));*/
+
+    /*btt.clear();
+    
+    key = ByteSet<NIBBLE>("do", UTF8);
+    value = ByteSet<BYTE>("verb", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("horse", UTF8);
+    value = ByteSet<BYTE>("stallion", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("doge", UTF8);
+    value = ByteSet<BYTE>("coin", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("dog", UTF8);
+    value = ByteSet<BYTE>("puppy", UTF8);
+    btt.store(key, value);
+
+    ASSERT_EQ(btt.hash(), ByteSet("0x29b235a58c3c25ab83010c327d5932bcf05324b7d6b1185e650798034783ca9d"));*/
+
+    /*btt.clear();
+    
+    key = ByteSet<NIBBLE>("foo", UTF8);
+    value = ByteSet<BYTE>("bar", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("food", UTF8);
+    value = ByteSet<BYTE>("bass", UTF8);
+    btt.store(key, value);
+
+    ASSERT_EQ(btt.hash(), ByteSet("0x1385f23a33021025d9e87cca5c66c00de06178807b96a9acc92b7d651ccde842"));*/
+
+    /*btt.clear();
+    
+    key = ByteSet<NIBBLE>("be", UTF8);
+    value = ByteSet<BYTE>("e", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("dog", UTF8);
+    value = ByteSet<BYTE>("puppy", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("bed", UTF8);
+    value = ByteSet<BYTE>("d", UTF8);
+    btt.store(key, value);
+
+    ASSERT_EQ(btt.hash(), ByteSet("0x826a4f9f9054a3e980e54b20da992c24fa20467f1ca635115ef4917be66e746f"));*/
+
+    /*btt.clear();
+    
+    key = ByteSet<NIBBLE>("test", UTF8);
+    value = ByteSet<BYTE>("test", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("te", UTF8);
+    value = ByteSet<BYTE>("testy", UTF8);
+    btt.store(key, value);
+
+    ASSERT_EQ(btt.hash(), ByteSet("0xaea54fb6c80499674248a462864c420c9d9f3b3d38c879c12425bade1ad76552"));*/
+
+    /*btt.clear();
+    
+    key = ByteSet<NIBBLE>("0x0045");
+    value = ByteSet<BYTE>("0x0123456789");
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("0x4500");
+    value = ByteSet<BYTE>("0x9876543210");
+    btt.store(key, value);
+
+    ASSERT_EQ(btt.hash(), ByteSet("0xbc11c02c8ab456db0c4d2728b6a2a6210d06f26a2ace4f7d8bdfc72ddf2630ab"));*/
 }
 
 TEST(ByteSetTrieTest, trietest)

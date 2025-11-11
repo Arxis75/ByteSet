@@ -30,7 +30,7 @@ class ByteSetTrieNode : public IByteSetComposite
 
         ByteSetTrieNode* insert(ByteSetTrieNode* parent, uint index_in_parent, ByteSetTrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key = EMPTY_KEY, const ByteSet<BYTE>& value = EMPTY_VALUE);
 
-        void store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value);
+        virtual void store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value);
 
         inline TYPE getType() const { return m_children.size() == 16 ? BRAN : (m_children.size() == 0 ? (m_value.getNbElements() ? LEAF : EMPTY) : EXTN);}
         inline const ByteSet<NIBBLE>& getKey() const { return m_key; }
@@ -50,6 +50,14 @@ class ByteSetTrieNode : public IByteSetComposite
 class BlockTransactionsTrie : public ByteSetTrieNode
 {
     public:
-        BlockTransactionsTrie() = default;
+        BlockTransactionsTrie(bool is_secure = false) : ByteSetTrieNode(), m_is_secure(is_secure) {}
         virtual ~BlockTransactionsTrie() = default;
+
+        inline virtual void store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) override {
+            ByteSet<NIBBLE> tmp = m_is_secure ? key.keccak256() : key;
+            ByteSetTrieNode::store(tmp, value); 
+        }
+
+    private:
+        const bool m_is_secure;
 };
