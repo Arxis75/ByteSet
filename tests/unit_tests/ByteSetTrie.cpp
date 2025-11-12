@@ -355,22 +355,6 @@ TEST(ByteSetTrieTest, trieanyorder_secureTrie)
     ASSERT_EQ(btt.hash(), ByteSet("0xaea54fb6c80499674248a462864c420c9d9f3b3d38c879c12425bade1ad76552"));
 
     btt.clear();
-  
-    key = ByteSet<NIBBLE>("test", UTF8);
-    value = ByteSet<BYTE>("test", UTF8);
-    btt.store(key, value);
-    
-    key = ByteSet<NIBBLE>("te", UTF8);
-    value = ByteSet<BYTE>("testy", UTF8);
-    btt.store(key, value);
-    
-    key = ByteSet<NIBBLE>("test", UTF8);
-    value = ByteSet<BYTE>();
-    btt.store(key, value);
-
-    ASSERT_EQ(btt.hash(), ByteSet("0xaea54fb6c80499674248a462864c420c9d9f3b3d38c879c12425bade1ad76552"));
-
-    btt.clear();
     
     key = ByteSet<NIBBLE>("0x0045");
     value = ByteSet<BYTE>("0x0123456789");
@@ -1015,4 +999,45 @@ TEST(ByteSetTrieTest, trietest_secureTrie)
     btt.store(key, value);
 
     ASSERT_EQ(btt.hash(), ByteSet("0x72adb52e9d9428f808e3e8045be18d3baa77881d0cfab89a17a2bcbacee2f320"));
+}
+
+TEST(ByteSetTrieTest, BranchWithValue_merging)
+{
+    BlockTransactionsTrie btt;
+    ByteSet<BYTE> value;
+    ByteSet<NIBBLE> key;
+
+    //Merge with the above EXTENSION => LEAF
+  
+    key = ByteSet<NIBBLE>("test", UTF8);
+    value = ByteSet<BYTE>("test", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("te", UTF8);
+    value = ByteSet<BYTE>("testy", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("test", UTF8);
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    ASSERT_EQ(btt.hash(), ByteSet("0xa0ad4c6568ad0369c5724f1d19a07d0e450d9a07350cd3b0e3cfb3fc04b9dd41"));
+
+    //Merge as ROOT => LEAF
+
+    btt.clear();
+  
+    key = ByteSet<NIBBLE>("test", UTF8);
+    value = ByteSet<BYTE>("test", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>();
+    value = ByteSet<BYTE>("testy", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("st", UTF8);
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    ASSERT_EQ(btt.hash(), ByteSet("0xebb7900d6230a3fbb8ad855dc12aec8cf566c93ec302472386c96b2a5bb5a0a5"));
 }

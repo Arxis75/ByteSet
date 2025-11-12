@@ -1,5 +1,15 @@
 #include <ByteSet/ByteSetTrie.h>
 
+/// @brief creates a new Leaf or tries to mutate "this" into a Leaf
+///  WARNING: a caller of this function should not assume that mutating "this" returns "this".
+///           The function might merge the Leaf with the parent when possible, and then return
+///           the merged PARENT.
+///           Best practive is to always do "auto mutated_this = createLeaf(..., true);"
+///           and use mutated_this as the final Leaf (not "this").
+/// @param key: the key of the Leaf
+/// @param value: the value of the Leaf
+/// @param do_mutate: if true, tries to mutate "this" into a leaf: might cause merge with the parent
+/// @return the Leaf pointer, which might differ from "this" even in a mutation scenario.
 ByteSetTrieNode* ByteSetTrieNode::createLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value, bool do_mutate) {
     ByteSetTrieNode* leaf = nullptr;
     if(do_mutate) {
@@ -19,6 +29,15 @@ ByteSetTrieNode* ByteSetTrieNode::createLeaf(const ByteSet<NIBBLE>& key, const B
     return leaf;
 }
 
+/// @brief creates a new Extension or tries to mutate "this" into a Extension
+///  WARNING: a caller of this function should not assume that mutating "this" returns "this".
+///           The function might merge the Extension with the parent when possible, and then return
+///           the merged PARENT.
+///           Best practive is to always do "auto mutated_this = createExtension(..., true);"
+///           and use mutated_this as the final Extension (not "this").
+/// @param key: the key of the Extension
+/// @param do_mutate: if true, tries to mutate "this" into a Extension: might cause merge with the parent
+/// @return the Extension pointer, which might differ from "this" even in a mutation scenario.
 ByteSetTrieNode* ByteSetTrieNode::createExtension(const ByteSet<NIBBLE>& key, bool do_mutate) {
     ByteSetTrieNode* extension = nullptr;
     if(do_mutate) {
@@ -39,6 +58,10 @@ ByteSetTrieNode* ByteSetTrieNode::createExtension(const ByteSet<NIBBLE>& key, bo
     return extension;
 }
 
+/// @brief creates a new Branch or tries to mutate "this" into a Branch.
+/// @param value: the value of the Branch
+/// @param do_mutate: if true, mutates "this" into a Branch
+/// @return the Branch pointer, which is always "this" in a mutation scenario (no merge with the parent).
 ByteSetTrieNode* ByteSetTrieNode::createBranch(const ByteSet<BYTE>& value, bool do_mutate) {
     ByteSetTrieNode* branch = do_mutate ? this : new ByteSetTrieNode();
     branch->m_key.clear();
@@ -331,7 +354,7 @@ void ByteSetTrieNode::wipeK(uint index) {
                 uint nb_children = getChildrenCount();
                 if(!nb_children && m_value.getNbElements())
                     //This BRANCH mutates to LEAF to integrate the m_value of the former BRANCH
-                    createLeaf(EMPTY_KEY, m_value, true);
+                    auto leaf = createLeaf(EMPTY_KEY, m_value, true);
                 else if(nb_children == 1 && !m_value.getNbElements()) {
                     int only_child_index = getFirstChildIndex();
                     ByteSetTrieNode* only_child = m_children[only_child_index].release();
@@ -342,7 +365,7 @@ void ByteSetTrieNode::wipeK(uint index) {
 
                     if(only_child->getType() == TYPE::LEAF) {
                         //This BRANCH mutates to LEAF to integrate the m_key/m_value of only_child
-                        createLeaf(new_key, only_child->m_value, true);              
+                        auto leaf = createLeaf(new_key, only_child->m_value, true);              
                     }
                     else if(only_child->getType() == TYPE::EXTN) {
                         auto child_extension_child = only_child->m_children[0].release();   //Disconnect only_child's child
