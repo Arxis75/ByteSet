@@ -27,7 +27,7 @@ class ByteSetTrieNode : public IByteSetComposite
         inline const ByteSet<BYTE>& getValue() const { return m_value; }
         inline void setValue(const ByteSet<BYTE>& value) { m_value = value; }*/
 
-        inline void clear() { m_children.release(); m_key.clear(); m_value.clear(); }
+        inline void clear() { m_children.reset(); m_key.clear(); m_value.clear(); }
 
     protected:
         ByteSetTrieNode* createLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value, bool do_mutate = false);

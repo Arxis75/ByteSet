@@ -25,7 +25,7 @@ ByteSetTrieNode* ByteSetTrieNode::createLeaf(const ByteSet<NIBBLE>& key, const B
         leaf = new ByteSetTrieNode();
     leaf->m_key.push_back(key.withTerminator());
     leaf->m_value = value;
-    leaf->m_children.release();
+    leaf->m_children.reset();
     return leaf;
 }
 
@@ -53,7 +53,7 @@ ByteSetTrieNode* ByteSetTrieNode::createExtension(const ByteSet<NIBBLE>& key, bo
         extension = new ByteSetTrieNode();
     extension->m_key.push_back(key.withoutTerminator());
     extension->m_value.clear();
-    extension->m_children.release();
+    extension->m_children.reset();
     extension->m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(1);
     return extension;
 }
@@ -66,7 +66,7 @@ ByteSetTrieNode* ByteSetTrieNode::createBranch(const ByteSet<BYTE>& value, bool 
     ByteSetTrieNode* branch = do_mutate ? this : new ByteSetTrieNode();
     branch->m_key.clear();
     branch->m_value = value;
-    branch->m_children.release();
+    branch->m_children.reset();
     branch->m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(16);
     return branch;
 }
@@ -259,7 +259,7 @@ void ByteSetTrieNode::storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) 
 
                 if(unshared_nibbles.getNbElements()) {
                     //Disconnect the newly created branch from previous_branch (its child)
-                    new_branch->disconnectChild(new_branch_child_index);
+                    previous_branch = new_branch->disconnectChild(new_branch_child_index);
 
                     //Insert a new child EXTENSION between the newly created branch (parent) and the previous branch (child)
                     auto unshared_ext = insert(new_branch, new_branch_child_index, previous_branch, 0, EXTN, unshared_nibbles);
@@ -348,7 +348,7 @@ void ByteSetTrieNode::wipeK(uint index) {
         }
         case BRAN: {
                 if(m_children[index])
-                    m_children[index].release();
+                    m_children[index].reset();
                 uint nb_children = getChildrenCount();
                 if(!nb_children && m_value.getNbElements())
                     //This BRANCH mutates to LEAF to integrate the m_value of the former BRANCH
