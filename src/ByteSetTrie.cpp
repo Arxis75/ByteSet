@@ -53,29 +53,29 @@ const ByteSet<BYTE> ByteSetTrieNode::hash() const {
 
     if(getType() == TYPE::EMPTY) {
         result = result.RLPSerialize(false);
-        cout << "Empty node " << dec << " rlp = " << result.asString() << endl;
+        //cout << "Empty node " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32 || !getParent())
             result = result.keccak256();
-        cout << "Empty node " << dec << " hash = " << result.asString() << endl;
+        //cout << "Empty node " << dec << " hash = " << result.asString() << endl;
     }
     else if(getType() == TYPE::LEAF) {
         result.push_back(m_key.HexToCompact().RLPSerialize(false));
         result.push_back(m_value.RLPSerialize(false));
         result = result.RLPSerialize(true);
-        cout << "Leaf " << dec << " rlp = " << result.asString() << endl;
+        //cout << "Leaf " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32 || !getParent())
             result = result.keccak256();
-        cout << "Leaf " << dec << " hash = " << result.asString() << endl;
+        //cout << "Leaf " << dec << " hash = " << result.asString() << endl;
     }
     else if(getType() == TYPE::EXTN) {
         result.push_back(m_key.HexToCompact().RLPSerialize(false));
         ByteSet<BYTE> h(m_children[0]->hash());
         result.push_back(h.byteSize() < 32 ? h : h.RLPSerialize(false));    // < 32 Bytes => Value node, else Hash Node
         result = result.RLPSerialize(true);
-        cout << "Extension " << dec << " rlp = " << result.asString() << endl;
+        //cout << "Extension " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32 || !getParent())
             result = result.keccak256();
-        cout << "Extension " << dec << " hash = " << result.asString() << endl;
+        //cout << "Extension " << dec << " hash = " << result.asString() << endl;
     }
     else if(getType() == TYPE::BRAN) {
         for(uint i=0;i<m_children.size();i++) {
@@ -88,42 +88,25 @@ const ByteSet<BYTE> ByteSetTrieNode::hash() const {
         }
         result.push_back(m_value.RLPSerialize(false));
         result = result.RLPSerialize(true);
-        cout << "Branch " << dec << " rlp = " << result.asString() << endl;
+        //cout << "Branch " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32 || !getParent())
             result = result.keccak256();
-        cout << "Branch " << dec << " hash = " << result.asString() << endl;
+        //cout << "Branch " << dec << " hash = " << result.asString() << endl;
     }
     return result;
 } 
 
-ByteSet<NIBBLE> ByteSetTrieNode::extractCommonNibbles(ByteSet<NIBBLE> &key1, ByteSet<NIBBLE> &key2) const {
-    ByteSet<NIBBLE> result;
-    while(key1.getNbElements() && key2.getNbElements() && key1.getElem(0) == key2.getElem(0)) {
-        result.push_back_elem(key1.pop_front_elem());
-        key2.pop_front_elem();
-    }
-    return result;
-}
-
 void ByteSetTrieNode::connectChild(ByteSetTrieNode* child, uint child_index) {
     if(child) {
-        if(getType() == TYPE::BRAN && child_index == 0x10) {
-            //Child gets eaten by THIS branch node
-            m_value = child->m_value;
-            //delete child;
-        }
-        else {
-            if(getType() == TYPE::EXTN) child_index = 0;
-            assert(getType() != TYPE::LEAF && !m_children[child_index]);
-            child->setParent(this);
-            m_children[child_index].reset(child);
-        }
+        assert(child_index < m_children.size() && !m_children[child_index]);
+        child->setParent(this);
+        m_children[child_index].reset(child);
     }
 }
 
 ByteSetTrieNode* ByteSetTrieNode::disconnectChild(uint child_index) {
     ByteSetTrieNode* child = nullptr;
-    if(getType() == TYPE::EXTN) child_index = 0;
+    assert(child_index < m_children.size());
     if(m_children[child_index]) {
         m_children[child_index]->setParent(nullptr);
         child = m_children[child_index].release();
@@ -225,8 +208,7 @@ void ByteSetTrieNode::storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) 
                 //Continue the key parsing under the existing child branch
                 m_children[0]->storeKV(key, value);
             }
-            else if(!shared_nibbles.getNbElements())
-            {
+            else if(!shared_nibbles.getNbElements()) {
                 //Disconnect the previous child branch before mutation
                 auto previous_branch = disconnectChild(0);
 
@@ -298,6 +280,7 @@ int ByteSetTrieNode::getChildIndex(const ByteSetTrieNode* child) const {
     return index;
 }
 
+
 int ByteSetTrieNode::getFirstChildIndex() const
 {
     int first_child_found_index = -1;
@@ -335,19 +318,16 @@ void ByteSetTrieNode::wipeK(uint index) {
             break;
         }
         case EXTN: {
-                if(m_children[index])
-                    m_children[index].release();
-                if(parent)
-                    //Propagates emptiness to the parent
-                    parent->wipeK(parent->getChildIndex(this));
-                else
-                    //THIS becomes an EMPTY Root
-                    createLeaf(EMPTY_KEY, EMPTY_VALUE, true);
+            //An EXTENSION will never require direct erasure. The mandatory BRANCH under it
+            // will first mutate into an extension to merge with it, then when its child banch mutates into 
+            // a single leaf, the leaf will absorbe the extension into a new leaf that may be erased.
             break;
         }
         case BRAN: {
+                dumpChildren();
                 if(m_children[index])
                     m_children[index].release();
+                dumpChildren();
                 uint nb_children = getChildrenCount();
                 if(!nb_children && m_value.getNbElements())
                     //This BRANCH mutates to LEAF to integrate the m_value of the former BRANCH
@@ -381,6 +361,15 @@ void ByteSetTrieNode::wipeK(uint index) {
         default:
             break;
     }
+}
+
+ByteSet<NIBBLE> ByteSetTrieNode::extractCommonNibbles(ByteSet<NIBBLE> &key1, ByteSet<NIBBLE> &key2) const {
+    ByteSet<NIBBLE> result;
+    while(key1.getNbElements() && key2.getNbElements() && key1.getElem(0) == key2.getElem(0)) {
+        result.push_back_elem(key1.pop_front_elem());
+        key2.pop_front_elem();
+    }
+    return result;
 }
 
 void ByteSetTrieNode::dumpChildren() const {

@@ -355,6 +355,22 @@ TEST(ByteSetTrieTest, trieanyorder_secureTrie)
     ASSERT_EQ(btt.hash(), ByteSet("0xaea54fb6c80499674248a462864c420c9d9f3b3d38c879c12425bade1ad76552"));
 
     btt.clear();
+  
+    key = ByteSet<NIBBLE>("test", UTF8);
+    value = ByteSet<BYTE>("test", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("te", UTF8);
+    value = ByteSet<BYTE>("testy", UTF8);
+    btt.store(key, value);
+    
+    key = ByteSet<NIBBLE>("test", UTF8);
+    value = ByteSet<BYTE>();
+    btt.store(key, value);
+
+    ASSERT_EQ(btt.hash(), ByteSet("0xaea54fb6c80499674248a462864c420c9d9f3b3d38c879c12425bade1ad76552"));
+
+    btt.clear();
     
     key = ByteSet<NIBBLE>("0x0045");
     value = ByteSet<BYTE>("0x0123456789");

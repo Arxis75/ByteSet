@@ -15,36 +15,37 @@ class ByteSetTrieNode : public IByteSetComposite
         virtual ~ByteSetTrieNode() { cout << "-- node " << this << " deleted. --" << endl; }
 
         virtual const ByteSet<BYTE> hash() const;
+        
         virtual uint64_t getChildrenCount() const override;
         virtual void dumpChildren() const override;
 
-        ByteSet<NIBBLE> extractCommonNibbles(ByteSet<NIBBLE> &key1, ByteSet<NIBBLE> &key2) const;
-
-        ByteSetTrieNode* createLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value, bool do_mutate = false);
-        ByteSetTrieNode* createExtension(const ByteSet<NIBBLE>& key, bool do_mutate = false);
-        ByteSetTrieNode* createBranch(const ByteSet<BYTE>& value, bool do_mutate = false);
-        void connectChild(ByteSetTrieNode* child, uint child_index);
-        ByteSetTrieNode* disconnectChild(uint child_index);
-
-        int getChildIndex(const ByteSetTrieNode* child) const;
-        int getFirstChildIndex() const;
-
-        ByteSetTrieNode* insert(ByteSetTrieNode* parent, uint index_in_parent, ByteSetTrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key = EMPTY_KEY, const ByteSet<BYTE>& value = EMPTY_VALUE);
-
         inline TYPE getType() const { return m_children.size() == 16 ? BRAN : (m_children.size() == 0 ? (m_value.getNbElements() ? LEAF : EMPTY) : EXTN);}
-        inline const ByteSet<NIBBLE>& getKey() const { return m_key; }
+        
+        /*inline const ByteSet<NIBBLE>& getKey() const { return m_key; }
         inline void setKey(const ByteSet<NIBBLE>& key) { m_key = key; }
 
         inline const ByteSet<BYTE>& getValue() const { return m_value; }
-        inline void setValue(const ByteSet<BYTE>& value) { m_value = value; }
+        inline void setValue(const ByteSet<BYTE>& value) { m_value = value; }*/
 
         inline void clear() { m_children.release(); m_key.clear(); m_value.clear(); }
 
     protected:
+        ByteSetTrieNode* createLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value, bool do_mutate = false);
+        ByteSetTrieNode* createExtension(const ByteSet<NIBBLE>& key, bool do_mutate = false);
+        ByteSetTrieNode* createBranch(const ByteSet<BYTE>& value, bool do_mutate = false);
+
         void storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value);
         void wipeK(uint index = 0);
 
-    public:
+        void connectChild(ByteSetTrieNode* child, uint child_index);
+        ByteSetTrieNode* disconnectChild(uint child_index);
+        ByteSetTrieNode* insert(ByteSetTrieNode* parent, uint index_in_parent, ByteSetTrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key = EMPTY_KEY, const ByteSet<BYTE>& value = EMPTY_VALUE);
+        int getChildIndex(const ByteSetTrieNode* child) const;
+        int getFirstChildIndex() const;
+
+        ByteSet<NIBBLE> extractCommonNibbles(ByteSet<NIBBLE> &key1, ByteSet<NIBBLE> &key2) const;
+
+    protected:
         unique_arr<std::unique_ptr<ByteSetTrieNode>> m_children;
         ByteSet<NIBBLE> m_key;
         ByteSet<BYTE> m_value;
