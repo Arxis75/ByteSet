@@ -276,6 +276,7 @@ void ByteSetTrieNode::storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) 
                     //Insert a new child EXTENSION between the mutated branch (parent) and the previous branch (child)
                     auto unshared_ext = insert(this, unshared_index, previous_branch, 0, EXTN, unshared_nibbles);
                 else
+                    //Reconnect the previous child branch
                     connectChild(previous_branch, unshared_index);
 
                 //Continue the key parsing
