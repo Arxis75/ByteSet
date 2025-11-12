@@ -12,7 +12,7 @@ class ByteSetTrieNode : public IByteSetComposite
         ByteSetTrieNode() = default;
         ByteSetTrieNode(const ByteSetTrieNode&) = delete;
         ByteSetTrieNode& operator=(const ByteSetTrieNode&) = delete;
-        virtual ~ByteSetTrieNode() { cout << "-- node " << this << " deleted. --" << endl; }
+        virtual ~ByteSetTrieNode() = default; //{ cout << "-- node " << this << " deleted. --" << endl; }
 
         virtual const ByteSet<BYTE> hash() const;
         

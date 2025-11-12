@@ -394,19 +394,19 @@ TEST(ByteSetTrieTest, trietest)
     key = ByteSet<NIBBLE>("doge", UTF8);
     value = ByteSet<BYTE>("coin", UTF8);
     btt.store(key, value);
-btt.dumpChildren();
+
     key = ByteSet<NIBBLE>("ether", UTF8);
     value = ByteSet<BYTE>();
     btt.store(key, value);
-btt.dumpChildren();
+
     key = ByteSet<NIBBLE>("dog", UTF8);
     value = ByteSet<BYTE>("puppy", UTF8);
     btt.store(key, value);
-btt.dumpChildren();
+
     key = ByteSet<NIBBLE>("shaman", UTF8);
     value = ByteSet<BYTE>();
     btt.store(key, value);
-btt.dumpChildren();
+
     ASSERT_EQ(btt.hash(), ByteSet("0x5991bb8c6514148a29db676a14ac506cd2cd5775ace63c30a4fe457715e9ac84"));
 
     btt.clear();

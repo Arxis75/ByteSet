@@ -347,10 +347,8 @@ void ByteSetTrieNode::wipeK(uint index) {
             break;
         }
         case BRAN: {
-                dumpChildren();
                 if(m_children[index])
                     m_children[index].release();
-                dumpChildren();
                 uint nb_children = getChildrenCount();
                 if(!nb_children && m_value.getNbElements())
                     //This BRANCH mutates to LEAF to integrate the m_value of the former BRANCH
