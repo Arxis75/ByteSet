@@ -46,7 +46,7 @@ class ByteSetComposite : public IByteSetComponent, public IByteSetComposite
         inline virtual ~ByteSetComposite() { deleteChildren(); }
 
         virtual const ByteSet<BYTE> RLPSerialize() const override;
-        inline virtual const IByteSetComposite* getComposite() const { return this; }
+        inline virtual const IByteSetComposite* getComposite() const override { return this; }
 
         template<typename T>
             void create(ByteSet<BYTE> &b);

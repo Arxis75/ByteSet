@@ -1,16 +1,38 @@
 #include <ByteSet/ByteSetTrie.h>
 
 ByteSetTrieNode* ByteSetTrieNode::createLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value, bool do_mutate) {
-    ByteSetTrieNode* leaf = do_mutate ? this : new ByteSetTrieNode();
-    leaf->m_key = key.withTerminator();
+    ByteSetTrieNode* leaf = nullptr;
+    if(do_mutate) {
+        auto parent = const_cast<ByteSetTrieNode*>(dynamic_cast<const ByteSetTrieNode*>(getParent()));
+        if(parent && parent->getType() == TYPE::EXTN)
+            leaf = parent;
+        else {
+            leaf = this;
+            leaf->m_key.clear();
+        }
+    }
+    else
+        leaf = new ByteSetTrieNode();
+    leaf->m_key.push_back(key.withTerminator());
     leaf->m_value = value;
     leaf->m_children.release();
     return leaf;
 }
 
 ByteSetTrieNode* ByteSetTrieNode::createExtension(const ByteSet<NIBBLE>& key, bool do_mutate) {
-    ByteSetTrieNode* extension = do_mutate ? this : new ByteSetTrieNode();
-    extension->m_key = key.withoutTerminator();
+    ByteSetTrieNode* extension = nullptr;
+    if(do_mutate) {
+        auto parent = const_cast<ByteSetTrieNode*>(dynamic_cast<const ByteSetTrieNode*>(getParent()));
+        if(parent && parent->getType() == TYPE::EXTN)
+            extension = parent;
+        else {
+            extension = this;
+            extension->m_key.clear();
+        }
+    }
+    else
+        extension = new ByteSetTrieNode();
+    extension->m_key.push_back(key.withoutTerminator());
     extension->m_value.clear();
     extension->m_children.release();
     extension->m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(1);
@@ -158,17 +180,17 @@ void ByteSetTrieNode::storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) 
 
                 if(shared_nibbles.getNbElements()) {
                     //Some common nibbles: mutate from LEAF => EXTENSION
-                    createExtension(shared_nibbles, true);
+                    auto ext = createExtension(shared_nibbles, true);
 
                     ByteSetTrieNode* branch = nullptr;
                     if(pruned_previous_leaf)
-                        //insert a BRANCH as child of this EXTENSION and reconnect the pruned LEAF
-                        branch = insert(this, 0, pruned_previous_leaf, pruned_previous_leaf_index, BRAN);
+                        //insert a BRANCH as child of ext EXTENSION and reconnect the pruned LEAF
+                        branch = insert(ext, 0, pruned_previous_leaf, pruned_previous_leaf_index, BRAN);
                     else {
                         //create a sub-BRANCH with the former LEAF m_value
                         branch = createBranch(previous_value);
                         //and connect it to THIS EXTENSION
-                        this->connectChild(branch, 0);
+                        ext->connectChild(branch, 0);
                     }
 
                     //Continue the key parsing
@@ -327,29 +349,16 @@ void ByteSetTrieNode::wipeK(uint index) {
                 if(m_children[index])
                     m_children[index].release();
                 uint nb_children = getChildrenCount();
-                if(!nb_children) {
-                    if(m_value.getNbElements()) {
-                        if(parent && parent->getType() == TYPE::EXTN)
-                            //Parent EXTENSION mutate to LEAF to integrate the m_value of the former BRANCH
-                            parent->createLeaf(parent->m_key, m_value, true);   //Wipes THIS
-                        else
-                            //This BRANCH mutates to LEAF to integrate the m_value of the former BRANCH
-                            createLeaf(EMPTY_KEY, m_value, true);
-                    }
-                    else if(parent)
-                        //Propagates emptiness to the parent
-                        parent->wipeK(parent->getChildIndex(this));
-                    else
-                        //THIS becomes an EMPTY Root
-                        createLeaf(EMPTY_KEY, EMPTY_VALUE, true);
-                }
+                if(!nb_children && m_value.getNbElements())
+                    //This BRANCH mutates to LEAF to integrate the m_value of the former BRANCH
+                    createLeaf(EMPTY_KEY, m_value, true);
                 else if(nb_children == 1 && !m_value.getNbElements()) {
                     int only_child_index = getFirstChildIndex();
                     ByteSetTrieNode* only_child = m_children[only_child_index].release();
                     
                     ByteSet<NIBBLE> new_key(only_child_index);
                     if(only_child->getType() != TYPE::BRAN)
-                        new_key.push_back(only_child->m_key);
+                        new_key.push_back(only_child->m_key.withoutTerminator());
 
                     if(only_child->getType() == TYPE::LEAF) {
                         //This BRANCH mutates to LEAF to integrate the m_key/m_value of only_child
@@ -358,13 +367,13 @@ void ByteSetTrieNode::wipeK(uint index) {
                     else if(only_child->getType() == TYPE::EXTN) {
                         auto child_extension_child = only_child->m_children[0].release();   //Disconnect only_child's child
                         //This BRANCH mutates to EXTENSION to integrate the m_key of only_child
-                        createExtension(new_key, true);
-                        connectChild(child_extension_child, 0);
+                        auto ext = createExtension(new_key, true);
+                        ext->connectChild(child_extension_child, 0);
                     }
                     else {
                         //This BRANCH mutates to EXTENSION with only_child_index as key
-                        createExtension(new_key, true);
-                        connectChild(only_child, 0);
+                        auto ext = createExtension(new_key, true);
+                        ext->connectChild(only_child, 0);
                     }
                 } 
             break;

@@ -613,7 +613,7 @@ btt.dumpChildren();
 
     ASSERT_EQ(btt.hash(), ByteSet("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"));
 
-    /*btt.clear();
+    btt.clear();
 
     key = ByteSet<NIBBLE>("0x0000000000000000000000000000000000000000000000000000000000000045");
     value = ByteSet<BYTE>("0x22b224a1420a802ab51d326e29fa98e34c4f24ea");
@@ -659,7 +659,7 @@ btt.dumpChildren();
     value = ByteSet<BYTE>("0x697c7b8c961b56f675d570498424ac8de1a918f6");
     btt.store(key, value);
 
-    ASSERT_EQ(btt.hash(), ByteSet("0x9f6221ebb8efe7cff60a716ecb886e67dd042014be444669f0159d8e68b42100"));*/
+    ASSERT_EQ(btt.hash(), ByteSet("0x9f6221ebb8efe7cff60a716ecb886e67dd042014be444669f0159d8e68b42100"));
 
     btt.clear();
 
