@@ -383,6 +383,8 @@ TEST(ByteSetTrieTest, trietest)
     btt.store(key, value);
 
     ASSERT_EQ(btt.hash(), ByteSet("0x5991bb8c6514148a29db676a14ac506cd2cd5775ace63c30a4fe457715e9ac84"));*/
+
+    btt.clear();
     
     key = ByteSet<NIBBLE>("0x04110d816c380812a427968ece99b1c963dfbce6");
     value = ByteSet<BYTE>("something", UTF8);
@@ -586,6 +588,8 @@ TEST(ByteSetTrieTest, trietest)
 
     ASSERT_EQ(btt.hash(), ByteSet("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"));
 
+    btt.clear();
+
     /*key = ByteSet<NIBBLE>("0x0000000000000000000000000000000000000000000000000000000000000045");
     value = ByteSet<BYTE>("0x22b224a1420a802ab51d326e29fa98e34c4f24ea");
     btt.store(key, value);
@@ -632,7 +636,9 @@ TEST(ByteSetTrieTest, trietest)
 
     ASSERT_EQ(btt.hash(), ByteSet("0x9f6221ebb8efe7cff60a716ecb886e67dd042014be444669f0159d8e68b42100"));*/
 
-    /*key = ByteSet<NIBBLE>("key1aa", UTF8);
+    btt.clear();
+
+    key = ByteSet<NIBBLE>("key1aa", UTF8);
     value = ByteSet<BYTE>("0123456789012345678901234567890123456789xxx", UTF8);
     btt.store(key, value);
 
@@ -656,7 +662,9 @@ TEST(ByteSetTrieTest, trietest)
     value = ByteSet<BYTE>("1234567890123456789012345678901", UTF8);
     btt.store(key, value);
 
-    ASSERT_EQ(btt.hash(), ByteSet("0xcb65032e2f76c48b82b5c24b3db8f670ce73982869d38cd39a624f23d62a9e89"));*/
+    ASSERT_EQ(btt.hash(), ByteSet("0xcb65032e2f76c48b82b5c24b3db8f670ce73982869d38cd39a624f23d62a9e89"));
+
+    btt.clear();
 
     key = ByteSet<NIBBLE>("abc", UTF8);
     value = ByteSet<BYTE>("123", UTF8);
@@ -715,6 +723,8 @@ TEST(ByteSetTrieTest, trietest_secureTrie)
 
     ASSERT_EQ(btt.hash(), ByteSet("0x29b235a58c3c25ab83010c327d5932bcf05324b7d6b1185e650798034783ca9d"));*/
 
+    btt.clear();
+
     key = ByteSet<NIBBLE>("0x04110d816c380812a427968ece99b1c963dfbce6");
     value = ByteSet<BYTE>("something", UTF8);
     btt.store(key, value);
@@ -916,6 +926,8 @@ TEST(ByteSetTrieTest, trietest_secureTrie)
     btt.store(key, value);
 
     ASSERT_EQ(btt.hash(), ByteSet("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"));
+
+    btt.clear();
 
     key = ByteSet<NIBBLE>("0x0000000000000000000000000000000000000000000000000000000000000045");
     value = ByteSet<BYTE>("0x22b224a1420a802ab51d326e29fa98e34c4f24ea");
