@@ -44,7 +44,7 @@ inline void ByteSetComposite::deleteChildren() {
             else {
                 //delete cchild;                                    //delete handled solely by unique_ptr
                 m_children.pop_back();
-                //DumpChildren();
+                //dumpChildren();
             }
         }
         else {
@@ -52,12 +52,12 @@ inline void ByteSetComposite::deleteChildren() {
                 //delete m_children[m_children.size()-1].get();     //delete handled solely by unique_ptr
             }
             m_children.pop_back();
-            //DumpChildren();
+            //dumpChildren();
         }
     }
 }
 
-inline void ByteSetComposite::DumpChildren() const
+inline void ByteSetComposite::dumpChildren() const
 {
     if(m_children.size())
         for(int i=0;i<m_children.size();i++) {

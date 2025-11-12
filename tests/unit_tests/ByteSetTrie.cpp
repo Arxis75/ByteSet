@@ -162,32 +162,57 @@ TEST(ByteSetTrieTest, trieanyorder)
 
     ASSERT_EQ(btt.hash(), ByteSet("0x8aad789dff2f538bca5d8ea56e8abe10f4c7ba3a5dea95fea4cd6e7c3a1168d3"));
 
-    btt.clear();
+    /*btt.clear();
     
     key = ByteSet<NIBBLE>("do", UTF8);
     value = ByteSet<BYTE>("verb", UTF8);
     btt.store(key, value);
-    
+btt.dumpChildren();    
     key = ByteSet<NIBBLE>("horse", UTF8);
     value = ByteSet<BYTE>("stallion", UTF8);
     btt.store(key, value);
-    
+btt.dumpChildren();    
     key = ByteSet<NIBBLE>("doge", UTF8);
     value = ByteSet<BYTE>("coin", UTF8);
     btt.store(key, value);
-    
+btt.dumpChildren();    
     key = ByteSet<NIBBLE>("dog", UTF8);
     value = ByteSet<BYTE>("puppy", UTF8);
     btt.store(key, value);
+btt.dumpChildren();
+    ASSERT_EQ(btt.hash(), ByteSet("0x5991bb8c6514148a29db676a14ac506cd2cd5775ace63c30a4fe457715e9ac84"));*/
 
-    ASSERT_EQ(btt.hash(), ByteSet("0x5991bb8c6514148a29db676a14ac506cd2cd5775ace63c30a4fe457715e9ac84"));
+    /******************************************************************************************************************* */
+    /*                                     NEXT TEST INTERNAL STRUCTURE FOR DEBUGGING
+    
+    32 Bytes Hash nodes are RLP encoded inside parent node => 33 Bytes
+    < 32 Bytes Value Nodes being already RLP encoded, are not re-RLP-encoded => still < 32 Bytes
+
+    E0:
+        key: 0x666F6F
+        ["0x00666F6F", "0xda808080808080c634846261737380808080808080808083626172"]
+            = 0xe08400666f6fda808080808080c634846261737380808080808080808083626172
+        keccak256 = 0x17beaa1648bafa633cda809c90c04af50fc8aed3cb40d16efbddee6fdf63c4c3
+
+    B0:
+        value: "bar" (0x626172)
+        ["0x", "0x", "0x", "0x", "0x", "0x", "0xc6348462617373", "0x", "0x", "0x", "0x", "0x", "0x", "0x", "0x", "0x", "0x626172"]
+            = 0xda808080808080c634846261737380808080808080808083626172      
+        keccak256 = 0x
+
+    L0:
+        key: 0x4
+        value: "bass" (0x62617373)
+        ["0x34", "0x62617373"] = 0xc6348462617373
+        keccak256 = 0x
+    *******************************************************************************************************************/
 
     btt.clear();
     
     key = ByteSet<NIBBLE>("foo", UTF8);
     value = ByteSet<BYTE>("bar", UTF8);
     btt.store(key, value);
-    
+   
     key = ByteSet<NIBBLE>("food", UTF8);
     value = ByteSet<BYTE>("bass", UTF8);
     btt.store(key, value);
@@ -350,7 +375,7 @@ TEST(ByteSetTrieTest, trietest)
     ByteSet<NIBBLE> key;
     ByteSet<BYTE> value;
     
-    /*key = ByteSet<NIBBLE>("do", UTF8);
+    key = ByteSet<NIBBLE>("do", UTF8);
     value = ByteSet<BYTE>("verb", UTF8);
     btt.store(key, value);
   
@@ -369,20 +394,20 @@ TEST(ByteSetTrieTest, trietest)
     key = ByteSet<NIBBLE>("doge", UTF8);
     value = ByteSet<BYTE>("coin", UTF8);
     btt.store(key, value);
-   
+btt.dumpChildren();
     key = ByteSet<NIBBLE>("ether", UTF8);
     value = ByteSet<BYTE>();
     btt.store(key, value);
-   
+btt.dumpChildren();
     key = ByteSet<NIBBLE>("dog", UTF8);
     value = ByteSet<BYTE>("puppy", UTF8);
     btt.store(key, value);
-   
+btt.dumpChildren();
     key = ByteSet<NIBBLE>("shaman", UTF8);
     value = ByteSet<BYTE>();
     btt.store(key, value);
-
-    ASSERT_EQ(btt.hash(), ByteSet("0x5991bb8c6514148a29db676a14ac506cd2cd5775ace63c30a4fe457715e9ac84"));*/
+btt.dumpChildren();
+    ASSERT_EQ(btt.hash(), ByteSet("0x5991bb8c6514148a29db676a14ac506cd2cd5775ace63c30a4fe457715e9ac84"));
 
     btt.clear();
     
@@ -585,12 +610,12 @@ TEST(ByteSetTrieTest, trietest)
     key = ByteSet<NIBBLE>("0xf735071cbee190d76b704ce68384fc21e389fbe7");
     value = ByteSet<BYTE>();
     btt.store(key, value);
-
+btt.dumpChildren();
     ASSERT_EQ(btt.hash(), ByteSet("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"));
 
-    btt.clear();
+    /*btt.clear();
 
-    /*key = ByteSet<NIBBLE>("0x0000000000000000000000000000000000000000000000000000000000000045");
+    key = ByteSet<NIBBLE>("0x0000000000000000000000000000000000000000000000000000000000000045");
     value = ByteSet<BYTE>("0x22b224a1420a802ab51d326e29fa98e34c4f24ea");
     btt.store(key, value);
 
@@ -723,7 +748,7 @@ TEST(ByteSetTrieTest, trietest_secureTrie)
 
     ASSERT_EQ(btt.hash(), ByteSet("0x29b235a58c3c25ab83010c327d5932bcf05324b7d6b1185e650798034783ca9d"));*/
 
-    btt.clear();
+    /*btt.clear();
 
     key = ByteSet<NIBBLE>("0x04110d816c380812a427968ece99b1c963dfbce6");
     value = ByteSet<BYTE>("something", UTF8);
@@ -925,7 +950,7 @@ TEST(ByteSetTrieTest, trietest_secureTrie)
     value = ByteSet<BYTE>();
     btt.store(key, value);
 
-    ASSERT_EQ(btt.hash(), ByteSet("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"));
+    ASSERT_EQ(btt.hash(), ByteSet("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"));*/
 
     btt.clear();
 

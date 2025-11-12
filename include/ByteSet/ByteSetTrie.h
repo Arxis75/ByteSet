@@ -15,21 +15,21 @@ class ByteSetTrieNode : public IByteSetComposite
         virtual ~ByteSetTrieNode() { cout << "-- node " << this << " deleted. --" << endl; }
 
         virtual const ByteSet<BYTE> hash() const;
-        inline virtual uint64_t getChildrenCount() const override { return m_children.size(); }
-        virtual void DumpChildren() const override;
+        virtual uint64_t getChildrenCount() const override;
+        virtual void dumpChildren() const override;
 
         ByteSet<NIBBLE> extractCommonNibbles(ByteSet<NIBBLE> &key1, ByteSet<NIBBLE> &key2) const;
 
         ByteSetTrieNode* createLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value, bool do_mutate = false);
         ByteSetTrieNode* createExtension(const ByteSet<NIBBLE>& key, bool do_mutate = false);
-        ByteSetTrieNode* createBranch(bool do_mutate = false);
-        ByteSetTrieNode* disconnectChild(uint child_index);
+        ByteSetTrieNode* createBranch(const ByteSet<BYTE>& value, bool do_mutate = false);
         void connectChild(ByteSetTrieNode* child, uint child_index);
-        int disconnectFromParent();
-        void connectToParent(ByteSetTrieNode* parent, uint index_in_parent);
+        ByteSetTrieNode* disconnectChild(uint child_index);
+
+        int getChildIndex(const ByteSetTrieNode* child) const;
+        int getFirstChildIndex() const;
 
         ByteSetTrieNode* insert(ByteSetTrieNode* parent, uint index_in_parent, ByteSetTrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key = EMPTY_KEY, const ByteSet<BYTE>& value = EMPTY_VALUE);
-
 
         inline TYPE getType() const { return m_children.size() == 16 ? BRAN : (m_children.size() == 0 ? (m_value.getNbElements() ? LEAF : EMPTY) : EXTN);}
         inline const ByteSet<NIBBLE>& getKey() const { return m_key; }
@@ -42,6 +42,7 @@ class ByteSetTrieNode : public IByteSetComposite
 
     protected:
         void storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value);
+        void wipeK(uint index = 0);
 
     public:
         unique_arr<std::unique_ptr<ByteSetTrieNode>> m_children;

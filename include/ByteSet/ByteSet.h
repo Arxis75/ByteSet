@@ -115,7 +115,7 @@ class ByteSet
         //********************************************* Trie  Helpers *************************************************/
 
         inline bool hasTerminator() const { return getNbElements() && getElem(getNbElements()-1) == 0x10; }
-        inline bool isOnlyTerminator() const { return getNbElements() == 1 && getElem(0) == 0x10; }
+        inline bool isTerminator() const { return getNbElements() == 1 && getElem(0) == 0x10; }
 
         inline void addTerminator() { if(!hasTerminator()) push_back_elem(0x10); }
         inline void removeTerminator() { if(hasTerminator()) pop_back_elem(); }

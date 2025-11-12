@@ -34,7 +34,7 @@ class IByteSetComposite: public virtual IByteSetContainer
     public:
         virtual ~IByteSetComposite() = default;
 
-        inline virtual void DumpChildren() const = 0;
+        inline virtual void dumpChildren() const = 0;
         inline virtual uint64_t getChildrenCount() const = 0;
 };
 
@@ -55,7 +55,7 @@ class ByteSetComposite : public IByteSetComponent, public IByteSetComposite
         template<typename T>
            inline const T* get(uint64_t index) const { return (index < m_children.size() ? dynamic_cast<const T*>(m_children[index].get()) : nullptr); }
         
-        virtual void DumpChildren() const override;
+        virtual void dumpChildren() const override;
         
         inline virtual uint64_t getChildrenCount() const override { return m_children.size(); }
 
