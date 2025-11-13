@@ -44,7 +44,9 @@ class ByteSetComposite : public IByteSetComponent, public IByteSetComposite
     public:
         ByteSetComposite(const ByteSetComposite&) = delete;
         ByteSetComposite& operator=(const ByteSetComposite&) = delete;
-        inline virtual ~ByteSetComposite() { deleteChildren(); }
+        ByteSetComposite(ByteSetComposite&&) noexcept = default;
+        ByteSetComposite& operator=(ByteSetComposite&&) noexcept = default;
+        inline virtual ~ByteSetComposite() { clear(); }
 
         virtual const ByteSet<BYTE> RLPSerialize() const override;
         inline virtual const IByteSetComposite* getComposite() const override { return this; }
@@ -68,7 +70,7 @@ class ByteSetComposite : public IByteSetComponent, public IByteSetComposite
         inline virtual uint64_t getType() const { return 0; }
         inline virtual void setType(uint64_t type) { }
         
-        virtual void deleteChildren();
+        virtual void clear();
 
     private:
         std::vector<std::unique_ptr<const IByteSetComponent>> m_children;
@@ -77,6 +79,8 @@ class ByteSetComposite : public IByteSetComponent, public IByteSetComposite
 class TypedByteSetComposite : public ByteSetComposite {
     public:
         virtual ~TypedByteSetComposite() = default;
+        TypedByteSetComposite(TypedByteSetComposite&&) noexcept = default;
+        TypedByteSetComposite& operator=(TypedByteSetComposite&&) noexcept = default;
 
         virtual const ByteSet<BYTE> RLPSerialize() const override;
 

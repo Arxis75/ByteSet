@@ -2,10 +2,12 @@
 #include <ByteSet/ByteSetComposite.h>
 #include <ByteSet/Tools.h>
 
+template <typename T = ByteSet<BYTE>>
 class ByteSetTrieNode : public IByteSetComposite
 {
+    static_assert(std::is_base_of_v<ITrieable, T>, "Trie value type must inherit from ITrieable");
+
         inline static const ByteSet<NIBBLE> EMPTY_KEY = ByteSet<NIBBLE>();
-        inline static const ByteSet<BYTE> EMPTY_VALUE = ByteSet<BYTE>();
 
     public:
         enum TYPE {EMPTY, EXTN, BRAN, LEAF};
@@ -19,27 +21,21 @@ class ByteSetTrieNode : public IByteSetComposite
         virtual uint64_t getChildrenCount() const override;
         virtual void dumpChildren() const override;
 
-        inline TYPE getType() const { return m_children.size() == 16 ? BRAN : (m_children.size() == 0 ? (m_value.getNbElements() ? LEAF : EMPTY) : EXTN);}
-        
-        /*inline const ByteSet<NIBBLE>& getKey() const { return m_key; }
-        inline void setKey(const ByteSet<NIBBLE>& key) { m_key = key; }
-
-        inline const ByteSet<BYTE>& getValue() const { return m_value; }
-        inline void setValue(const ByteSet<BYTE>& value) { m_value = value; }*/
+        inline TYPE getType() const { return m_children.size() == 16 ? BRAN : (m_children.size() == 0 ? (!m_value.isEmpty() ? LEAF : EMPTY) : EXTN);}
 
         inline void clear() { m_children.reset(); m_key.clear(); m_value.clear(); }
 
     protected:
-        ByteSetTrieNode* createLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value, bool do_mutate = false);
+        ByteSetTrieNode* createLeaf(const ByteSet<NIBBLE>& key, T&& value, bool do_mutate = false);
         ByteSetTrieNode* createExtension(const ByteSet<NIBBLE>& key, bool do_mutate = false);
-        ByteSetTrieNode* createBranch(const ByteSet<BYTE>& value, bool do_mutate = false);
+        ByteSetTrieNode* createBranch(T&& value, bool do_mutate = false);
 
-        void storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value);
+        void storeKV(ByteSet<NIBBLE> &key, T&& value);
         void wipeK(uint index = 0);
 
         void connectChild(ByteSetTrieNode* child, uint child_index);
         ByteSetTrieNode* disconnectChild(uint child_index);
-        ByteSetTrieNode* insert(ByteSetTrieNode* parent, uint index_in_parent, ByteSetTrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key = EMPTY_KEY, const ByteSet<BYTE>& value = EMPTY_VALUE);
+        ByteSetTrieNode* insert(ByteSetTrieNode* parent, uint index_in_parent, ByteSetTrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key = EMPTY_KEY, T&& value = T());
         int getChildIndex(const ByteSetTrieNode* child) const;
         int getFirstChildIndex() const;
 
@@ -48,20 +44,23 @@ class ByteSetTrieNode : public IByteSetComposite
     protected:
         unique_arr<std::unique_ptr<ByteSetTrieNode>> m_children;
         ByteSet<NIBBLE> m_key;
-        ByteSet<BYTE> m_value;
+        T m_value;
 };
 
-class BlockTransactionsTrie : public ByteSetTrieNode
+template <typename T = ByteSet<BYTE>>
+class BlockTransactionsTrie : public ByteSetTrieNode<T>
 {
     public:
-        BlockTransactionsTrie(bool is_secure = false) : ByteSetTrieNode(), m_is_secure(is_secure) {}
+        BlockTransactionsTrie(bool is_secure = false) : ByteSetTrieNode<T>(), m_is_secure(is_secure) {}
         virtual ~BlockTransactionsTrie() = default;
 
-        inline void store(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) {
+        inline void store(ByteSet<NIBBLE> &key, T& value) {
             ByteSet<NIBBLE> tmp = m_is_secure ? key.keccak256() : key;
-            storeKV(tmp, value); 
+            ByteSetTrieNode<T>::storeKV(tmp, std::move(value)); 
         }
 
     private:
         const bool m_is_secure;
 };
+
+#include <ByteSet/ByteSetTrie.tpp>

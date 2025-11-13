@@ -8,12 +8,27 @@ constexpr ByteSetBitsPerElem BIT = ByteSetBitsPerElem::ONE;
 constexpr ByteSetBitsPerElem NIBBLE = ByteSetBitsPerElem::FOUR;
 constexpr ByteSetBitsPerElem BYTE = ByteSetBitsPerElem::EIGHT;
 
+template <ByteSetBitsPerElem> class ByteSet;
+
+class ITrieable
+{
+    public:
+        virtual ~ITrieable() = default;
+
+        inline virtual bool isEmpty() const = 0;
+        inline virtual void clear() = 0;
+        inline virtual ByteSet<BYTE> serialize() const = 0;
+    
+    protected:
+        ITrieable() = default;
+};
+
 template <ByteSetBitsPerElem BitsPerElement = BYTE>
-class ByteSet
+class ByteSet : virtual public ITrieable
 {
     public: 
         ByteSet() = default;
-        ~ByteSet() = default;
+        virtual ~ByteSet() = default;
 
         //****************************** Array Constructors/Operators ****************************************//
 
@@ -92,8 +107,6 @@ class ByteSet
         inline uint8_t getNbElemPerByte() const { return uint(8/BitsPerElement); }
         inline bool isByteAligned() const { return !(getBitsPerElem()%8);}
 
-        inline bool isEmpty() const { return vvalue.size() == 0; }
-
         /// @brief Gets the size in bits of the stored value.
         /// @return The logical size in  bits of the container, not the vector size.
         inline uint64_t bitSize() const { return getNbElements() * getBitsPerElem(); }
@@ -103,6 +116,10 @@ class ByteSet
         /// @brief Gets the number of th ByteSet
         /// @return the size of the underlying vector
         inline uint64_t getNbElements() const { return vvalue.size(); }
+
+        inline virtual bool isEmpty() const override { return getNbElements() == 0; }
+        inline void clear() override { vvalue.clear(); }
+        inline virtual ByteSet<BYTE> serialize() const override { return RLPSerialize(false).asAligned(); }
 
         //********************************************* RLP  Helpers *************************************************/
 
@@ -127,8 +144,6 @@ class ByteSet
         inline ByteSet<BYTE> asAligned() const { return ByteSet<BYTE>(asInteger(), (getNbElements()*getBitsPerElem()+7)/8); }
 
         //********************************** Container manipulation interface ***************************************//
-
-        inline void clear() { vvalue.clear(); }
 
         ByteSet RLPSerialize(bool as_list) const;
         ByteSet RLPparse();

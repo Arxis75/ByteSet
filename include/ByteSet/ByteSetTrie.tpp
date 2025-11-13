@@ -1,5 +1,3 @@
-#include <ByteSet/ByteSetTrie.h>
-
 /// @brief creates a new Leaf or tries to mutate "this" into a Leaf: mutation keeps the parent consistant.
 /// WARNING:  If a new Object is created, the caller is in charge of assigning the right parent to the object.
 ///           A caller of this function should not assume that mutating "this" returns "this".
@@ -11,7 +9,8 @@
 /// @param value: the value of the Leaf
 /// @param do_mutate: if true, tries to mutate "this" into a leaf: might cause merge with the parent
 /// @return the Leaf pointer, which might differ from "this" even in a mutation scenario.
-ByteSetTrieNode* ByteSetTrieNode::createLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value, bool do_mutate) {
+template <typename T>
+ByteSetTrieNode<T>* ByteSetTrieNode<T>::createLeaf(const ByteSet<NIBBLE>& key, T&& value, bool do_mutate) {
     ByteSetTrieNode* leaf = nullptr;
     if(do_mutate) {
         auto parent = const_cast<ByteSetTrieNode*>(getParent<const ByteSetTrieNode*>());
@@ -25,7 +24,7 @@ ByteSetTrieNode* ByteSetTrieNode::createLeaf(const ByteSet<NIBBLE>& key, const B
     else
         leaf = new ByteSetTrieNode();
     leaf->m_key.push_back(key.withTerminator());
-    leaf->m_value = value;
+    leaf->m_value = std::move(value);
     leaf->m_children.reset();
     return leaf;
 }
@@ -40,7 +39,8 @@ ByteSetTrieNode* ByteSetTrieNode::createLeaf(const ByteSet<NIBBLE>& key, const B
 /// @param key: the key of the Extension
 /// @param do_mutate: if true, tries to mutate "this" into a Extension: might cause merge with the parent
 /// @return the Extension pointer, which might differ from "this" even in a mutation scenario.
-ByteSetTrieNode* ByteSetTrieNode::createExtension(const ByteSet<NIBBLE>& key, bool do_mutate) {
+template <typename T>
+ByteSetTrieNode<T>* ByteSetTrieNode<T>::createExtension(const ByteSet<NIBBLE>& key, bool do_mutate) {
     ByteSetTrieNode* extension = nullptr;
     if(do_mutate) {
         auto parent = const_cast<ByteSetTrieNode*>(getParent<const ByteSetTrieNode*>());
@@ -65,28 +65,30 @@ ByteSetTrieNode* ByteSetTrieNode::createExtension(const ByteSet<NIBBLE>& key, bo
 /// @param value: the value of the Branch
 /// @param do_mutate: if true, mutates "this" into a Branch
 /// @return the Branch pointer, which is always "this" in a mutation scenario (no merge with the parent).
-ByteSetTrieNode* ByteSetTrieNode::createBranch(const ByteSet<BYTE>& value, bool do_mutate) {
+template <typename T>
+ByteSetTrieNode<T>* ByteSetTrieNode<T>::createBranch(T&& value, bool do_mutate) {
     ByteSetTrieNode* branch = do_mutate ? this : new ByteSetTrieNode();
     branch->m_key.clear();
-    branch->m_value = value;
+    branch->m_value = std::move(value);
     branch->m_children.reset();
     branch->m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(16);
     return branch;
 }
 
-const ByteSet<BYTE> ByteSetTrieNode::hash() const {
+template <typename T>
+const ByteSet<BYTE> ByteSetTrieNode<T>::hash() const {
     ByteSet<BYTE> result;
 
     if(getType() == TYPE::EMPTY) {
-        result = result.RLPSerialize(false);
+        result = result.serialize();
         //cout << "Empty node " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32 || !getParent())
             result = result.keccak256();
         //cout << "Empty node " << dec << " hash = " << result.asString() << endl;
     }
     else if(getType() == TYPE::LEAF) {
-        result.push_back(m_key.HexToCompact().RLPSerialize(false));
-        result.push_back(m_value.RLPSerialize(false));
+        result.push_back(m_key.HexToCompact().serialize());
+        result.push_back(m_value.serialize());
         result = result.RLPSerialize(true);
         //cout << "Leaf " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32 || !getParent())
@@ -94,9 +96,9 @@ const ByteSet<BYTE> ByteSetTrieNode::hash() const {
         //cout << "Leaf " << dec << " hash = " << result.asString() << endl;
     }
     else if(getType() == TYPE::EXTN) {
-        result.push_back(m_key.HexToCompact().RLPSerialize(false));
+        result.push_back(m_key.HexToCompact().serialize());
         ByteSet<BYTE> h(m_children[0]->hash());
-        result.push_back(h.byteSize() < 32 ? h : h.RLPSerialize(false));    // < 32 Bytes => Value node, else Hash Node
+        result.push_back(h.byteSize() < 32 ? h : h.serialize());    // < 32 Bytes => Value node, else Hash Node
         result = result.RLPSerialize(true);
         //cout << "Extension " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32 || !getParent())
@@ -107,12 +109,12 @@ const ByteSet<BYTE> ByteSetTrieNode::hash() const {
         for(uint i=0;i<m_children.size();i++) {
             if(m_children[i]) {
                 ByteSet<BYTE> h(m_children[i]->hash());
-                result.push_back(h.byteSize() < 32 ? h : h.RLPSerialize(false));
+                result.push_back(h.byteSize() < 32 ? h : h.serialize());
             }
             else
                 result.push_back_elem(0x80);
         }
-        result.push_back(m_value.RLPSerialize(false));
+        result.push_back(m_value.serialize());
         result = result.RLPSerialize(true);
         //cout << "Branch " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32 || !getParent())
@@ -122,7 +124,8 @@ const ByteSet<BYTE> ByteSetTrieNode::hash() const {
     return result;
 } 
 
-void ByteSetTrieNode::connectChild(ByteSetTrieNode* child, uint child_index) {
+template <typename T>
+void ByteSetTrieNode<T>::connectChild(ByteSetTrieNode* child, uint child_index) {
     if(child) {
         assert(child_index < m_children.size() && !m_children[child_index]);
         child->setParent(this);
@@ -130,7 +133,8 @@ void ByteSetTrieNode::connectChild(ByteSetTrieNode* child, uint child_index) {
     }
 }
 
-ByteSetTrieNode* ByteSetTrieNode::disconnectChild(uint child_index) {
+template <typename T>
+ByteSetTrieNode<T>* ByteSetTrieNode<T>::disconnectChild(uint child_index) {
     ByteSetTrieNode* child = nullptr;
     assert(child_index < m_children.size());
     if(m_children[child_index]) {
@@ -140,40 +144,42 @@ ByteSetTrieNode* ByteSetTrieNode::disconnectChild(uint child_index) {
     return child;
 }
 
-ByteSetTrieNode* ByteSetTrieNode::insert(ByteSetTrieNode* parent, uint index_in_parent, ByteSetTrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value) {
+template <typename T>
+ByteSetTrieNode<T>* ByteSetTrieNode<T>::insert(ByteSetTrieNode* parent, uint index_in_parent, ByteSetTrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key, T&& value) {
     assert(parent && child);
     assert(!parent->m_children[index_in_parent]);
     ByteSetTrieNode* node;
     if(type == TYPE::LEAF) {
-        node = createLeaf(key, value);
+        node = createLeaf(key, std::move(value));
     }
     else if(type == TYPE::EXTN) {
         node = createExtension(key);
         node->connectChild(child, child_index);
     }
     else if(type == TYPE::BRAN) {
-        node = createBranch(value);
+        node = createBranch(std::move(value));
         node->connectChild(child, child_index);
     }
     parent->connectChild(node, index_in_parent);
     return node;
 }
 
-void ByteSetTrieNode::storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) {
+template <typename T>
+void ByteSetTrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
     ByteSet<NIBBLE> shared_nibbles, unshared_nibbles;
     switch(getType()) {
         case EMPTY:
             //First KV storage: EMPTY ROOT => LEAF
             m_key = key.withTerminator();
-            m_value = value;
+            m_value = std::move(value);
             break;
         case LEAF: {
-            if(!value.getNbElements())
+            if(value.isEmpty())
                 // (key,value) erasure
                 wipeK();
             else if(key == m_key.withoutTerminator())
                 //LEAF value update
-                m_value = value;
+                m_value = std::move(value);
             else {
                 //prune key and m_key of their common nibbles.
                 shared_nibbles = extractCommonNibbles(key, m_key);
@@ -181,11 +187,11 @@ void ByteSetTrieNode::storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) 
                 
                 //Save a copy of the pruned Leaf
                 ByteSetTrieNode* pruned_previous_leaf = nullptr;
-                ByteSet<BYTE> previous_value = m_value;
+                T previous_value(std::move(m_value));
                 uint pruned_previous_leaf_index = -1;
                 if(!m_key.isTerminator()) {
                     pruned_previous_leaf_index = m_key.pop_front_elem();
-                    pruned_previous_leaf = createLeaf(m_key, m_value);
+                    pruned_previous_leaf = createLeaf(m_key, std::move(previous_value));
                 }
 
                 if(shared_nibbles.getNbElements()) {
@@ -198,27 +204,27 @@ void ByteSetTrieNode::storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) 
                         branch = insert(ext, 0, pruned_previous_leaf, pruned_previous_leaf_index, BRAN);
                     else {
                         //create a sub-BRANCH with the former LEAF m_value
-                        branch = createBranch(previous_value);
+                        branch = createBranch(std::move(previous_value));
                         //and connect it to THIS EXTENSION
                         ext->connectChild(branch, 0);
                     }
 
                     //Continue the key parsing
-                    branch->storeKV(key, value);
+                    branch->storeKV(key, std::move(value));
                 }
                 else {
                     //No common nibbles: mutate from LEAF => BRANCH
-                    createBranch(EMPTY_VALUE, true);
+                    createBranch(T(), true);
                     
                     if(pruned_previous_leaf)
                         //Reconnect the pruned LEAF
                         this->connectChild(pruned_previous_leaf, pruned_previous_leaf_index);
                     else
                         //Stores the previous LEAF value
-                        m_value = previous_value;
+                        m_value = std::move(previous_value);
 
                     //Continue the key parsing
-                    storeKV(key, value);
+                    storeKV(key, std::move(value));
                 }
             }
             break;
@@ -233,14 +239,14 @@ void ByteSetTrieNode::storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) 
 
             if(!unshared_nibbles.getNbElements()) {
                 //Continue the key parsing under the existing child branch
-                m_children[0]->storeKV(key, value);
+                m_children[0]->storeKV(key, std::move(value));
             }
             else if(!shared_nibbles.getNbElements()) {
                 //Disconnect the previous child branch before mutation
                 auto previous_branch = disconnectChild(0);
 
                 //No common nibbles: mutate from EXTN => BRANCH
-                createBranch(EMPTY_VALUE, true);
+                createBranch(T(), true);
                 
                 uint64_t unshared_index = unshared_nibbles.pop_front_elem();
                 if(unshared_nibbles.getNbElements())
@@ -251,7 +257,7 @@ void ByteSetTrieNode::storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) 
                     connectChild(previous_branch, unshared_index);
 
                 //Continue the key parsing
-                storeKV(key, value);
+                storeKV(key, std::move(value));
             }
             else {
                 //Disconnect the previous child branch
@@ -269,24 +275,24 @@ void ByteSetTrieNode::storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) 
                     auto unshared_ext = insert(new_branch, new_branch_child_index, previous_branch, 0, EXTN, unshared_nibbles);
                 }
                 //Continue the key parsing under the new branch
-                new_branch->storeKV(key, value);
+                new_branch->storeKV(key, std::move(value));
             }
             break;
         }
         case BRAN: {
             if(!key.getNbElements())
-                m_value = value;
+                m_value = std::move(value);
             else {
                 uint64_t index = key.pop_front_elem();
 
                 if(!m_children[index]) {
                     //The key's first nibble placeholder is empty => new LEAF
-                    auto new_leaf = createLeaf(key, value);
+                    auto new_leaf = createLeaf(key, std::move(value));
                     connectChild(new_leaf, index);
                 }
                 else
                     //Continue the key parsing in the proper placeholder
-                    m_children[index]->storeKV(key, value);
+                    m_children[index]->storeKV(key, std::move(value));
             }
             break;
         }
@@ -295,7 +301,8 @@ void ByteSetTrieNode::storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) 
     }
 }
 
-int ByteSetTrieNode::getChildIndex(const ByteSetTrieNode* child) const {
+template <typename T>
+int ByteSetTrieNode<T>::getChildIndex(const ByteSetTrieNode* child) const {
     int index = -1;
     for(uint i=0;i<m_children.size();i++) {
         if(m_children[i].get() == child) {
@@ -306,8 +313,8 @@ int ByteSetTrieNode::getChildIndex(const ByteSetTrieNode* child) const {
     return index;
 }
 
-
-int ByteSetTrieNode::getFirstChildIndex() const
+template <typename T>
+int ByteSetTrieNode<T>::getFirstChildIndex() const
 {
     int first_child_found_index = -1;
     for(uint i=0;i<m_children.size();i++) {
@@ -319,7 +326,8 @@ int ByteSetTrieNode::getFirstChildIndex() const
     return first_child_found_index;
 }
 
-uint64_t ByteSetTrieNode::getChildrenCount() const {
+template <typename T>
+uint64_t ByteSetTrieNode<T>::getChildrenCount() const {
     int counter = 0;
     for(uint i=0;i<m_children.size();i++) {
         if(m_children[i])
@@ -328,7 +336,8 @@ uint64_t ByteSetTrieNode::getChildrenCount() const {
     return counter;
 }
 
-void ByteSetTrieNode::wipeK(uint index) {
+template <typename T>
+void ByteSetTrieNode<T>::wipeK(uint index) {
     auto parent = const_cast<ByteSetTrieNode*>(getParent<const ByteSetTrieNode*>());
     switch(getType()) {
         case EMPTY:
@@ -353,10 +362,10 @@ void ByteSetTrieNode::wipeK(uint index) {
                 if(m_children[index])
                     m_children[index].reset();
                 uint nb_children = getChildrenCount();
-                if(!nb_children && m_value.getNbElements())
+                if(!nb_children && !m_value.isEmpty())
                     //This BRANCH mutates to LEAF to integrate the m_value of the former BRANCH
-                    auto leaf = createLeaf(EMPTY_KEY, m_value, true);
-                else if(nb_children == 1 && !m_value.getNbElements()) {
+                    auto leaf = createLeaf(EMPTY_KEY, std::move(m_value), true);
+                else if(nb_children == 1 && m_value.isEmpty()) {
                     int only_child_index = getFirstChildIndex();
                     ByteSetTrieNode* only_child = m_children[only_child_index].release();
                     
@@ -366,7 +375,7 @@ void ByteSetTrieNode::wipeK(uint index) {
 
                     if(only_child->getType() == TYPE::LEAF) {
                         //This BRANCH mutates to LEAF to integrate the m_key/m_value of only_child
-                        auto leaf = createLeaf(new_key, only_child->m_value, true);              
+                        auto leaf = createLeaf(new_key, std::move(only_child->m_value), true);              
                     }
                     else if(only_child->getType() == TYPE::EXTN) {
                         auto child_extension_child = only_child->m_children[0].release();   //Disconnect only_child's child
@@ -387,7 +396,8 @@ void ByteSetTrieNode::wipeK(uint index) {
     }
 }
 
-ByteSet<NIBBLE> ByteSetTrieNode::extractCommonNibbles(ByteSet<NIBBLE> &key1, ByteSet<NIBBLE> &key2) const {
+template <typename T>
+ByteSet<NIBBLE> ByteSetTrieNode<T>::extractCommonNibbles(ByteSet<NIBBLE> &key1, ByteSet<NIBBLE> &key2) const {
     ByteSet<NIBBLE> result;
     while(key1.getNbElements() && key2.getNbElements() && key1.getElem(0) == key2.getElem(0)) {
         result.push_back_elem(key1.pop_front_elem());
@@ -396,7 +406,8 @@ ByteSet<NIBBLE> ByteSetTrieNode::extractCommonNibbles(ByteSet<NIBBLE> &key1, Byt
     return result;
 }
 
-void ByteSetTrieNode::dumpChildren() const {
+template <typename T>
+void ByteSetTrieNode<T>::dumpChildren() const {
     string type;
     auto toString = [](TYPE t) -> std::string {
         switch (t) {
@@ -409,10 +420,10 @@ void ByteSetTrieNode::dumpChildren() const {
     };
 
     if(getType() == TYPE::EXTN || getType() == TYPE::BRAN || !getParent()) {
-        cout << "Dumping " << toString(getType()) << " Node " << this << "(k:" << m_key.withoutTerminator().asString() << (m_key.hasTerminator() ? "10" : "") << " v:" << (m_value.getNbElements() ? "yes" : "no" ) <<" is " << toString(getType()) << ") :" << endl;
+        cout << "Dumping " << toString(getType()) << " Node " << this << "(k:" << m_key.withoutTerminator().asString() << (m_key.hasTerminator() ? "10" : "") << " v:" << (!m_value.isEmpty() ? "yes" : "no" ) <<" is " << toString(getType()) << ") :" << endl;
         for(int i=0;i<m_children.size();i++) {
             if(m_children[i])
-                cout << m_children[i].get() << "(k:" << m_children[i]->m_key.withoutTerminator().asString() << (m_children[i]->m_key.hasTerminator() ? "10" : "") << " v:" << (m_children[i]->m_value.getNbElements() ? "yes" : "no" ) <<" is " << toString(m_children[i]->getType()) << ") ";
+                cout << m_children[i].get() << "(k:" << m_children[i]->m_key.withoutTerminator().asString() << (m_children[i]->m_key.hasTerminator() ? "10" : "") << " v:" << (!m_children[i]->m_value.isEmpty() ? "yes" : "no" ) <<" is " << toString(m_children[i]->getType()) << ") ";
             else
                 cout << m_children[i].get() << "() ";
         }

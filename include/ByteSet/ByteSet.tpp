@@ -1,4 +1,3 @@
-#include <ByteSet/ByteSet.h>
 #include <ByteSet/Tools.h>
 
 template <ByteSetBitsPerElem BitsPerElement>
