@@ -1,7 +1,8 @@
 #include <ByteSet/ByteSetTrie.h>
 
-/// @brief creates a new Leaf or tries to mutate "this" into a Leaf
-///  WARNING: a caller of this function should not assume that mutating "this" returns "this".
+/// @brief creates a new Leaf or tries to mutate "this" into a Leaf: mutation keeps the parent consistant.
+/// WARNING:  If a new Object is created, the caller is in charge of assigning the right parent to the object.
+///           A caller of this function should not assume that mutating "this" returns "this".
 ///           The function might merge the Leaf with the parent when possible, and then return
 ///           the merged PARENT.
 ///           Best practive is to always do "auto mutated_this = createLeaf(..., true);"
@@ -13,7 +14,7 @@
 ByteSetTrieNode* ByteSetTrieNode::createLeaf(const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value, bool do_mutate) {
     ByteSetTrieNode* leaf = nullptr;
     if(do_mutate) {
-        auto parent = const_cast<ByteSetTrieNode*>(dynamic_cast<const ByteSetTrieNode*>(getParent()));
+        auto parent = const_cast<ByteSetTrieNode*>(getParent<const ByteSetTrieNode*>());
         if(parent && parent->getType() == TYPE::EXTN)
             leaf = parent;
         else {
@@ -29,8 +30,9 @@ ByteSetTrieNode* ByteSetTrieNode::createLeaf(const ByteSet<NIBBLE>& key, const B
     return leaf;
 }
 
-/// @brief creates a new Extension or tries to mutate "this" into a Extension
-///  WARNING: a caller of this function should not assume that mutating "this" returns "this".
+/// @brief creates a new Extension or tries to mutate "this" into a Extension: mutation keeps the parent consistant.
+/// WARNING:  If a new Object is created, the caller is in charge of assigning the right parent to the object.
+///           A caller of this function should not assume that mutating "this" returns "this".
 ///           The function might merge the Extension with the parent when possible, and then return
 ///           the merged PARENT.
 ///           Best practive is to always do "auto mutated_this = createExtension(..., true);"
@@ -41,7 +43,7 @@ ByteSetTrieNode* ByteSetTrieNode::createLeaf(const ByteSet<NIBBLE>& key, const B
 ByteSetTrieNode* ByteSetTrieNode::createExtension(const ByteSet<NIBBLE>& key, bool do_mutate) {
     ByteSetTrieNode* extension = nullptr;
     if(do_mutate) {
-        auto parent = const_cast<ByteSetTrieNode*>(dynamic_cast<const ByteSetTrieNode*>(getParent()));
+        auto parent = const_cast<ByteSetTrieNode*>(getParent<const ByteSetTrieNode*>());
         if(parent && parent->getType() == TYPE::EXTN)
             extension = parent;
         else {
@@ -58,7 +60,8 @@ ByteSetTrieNode* ByteSetTrieNode::createExtension(const ByteSet<NIBBLE>& key, bo
     return extension;
 }
 
-/// @brief creates a new Branch or tries to mutate "this" into a Branch.
+/// @brief creates a new Branch or tries to mutate "this" into a Branch: mutation keeps the parent consistant.
+/// WARNING:  If a new Object is created, the caller is in charge of assigning the right parent to the object.
 /// @param value: the value of the Branch
 /// @param do_mutate: if true, mutates "this" into a Branch
 /// @return the Branch pointer, which is always "this" in a mutation scenario (no merge with the parent).
@@ -139,6 +142,7 @@ ByteSetTrieNode* ByteSetTrieNode::disconnectChild(uint child_index) {
 
 ByteSetTrieNode* ByteSetTrieNode::insert(ByteSetTrieNode* parent, uint index_in_parent, ByteSetTrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key, const ByteSet<BYTE>& value) {
     assert(parent && child);
+    assert(!parent->m_children[index_in_parent]);
     ByteSetTrieNode* node;
     if(type == TYPE::LEAF) {
         node = createLeaf(key, value);
@@ -278,8 +282,7 @@ void ByteSetTrieNode::storeKV(ByteSet<NIBBLE> &key, const ByteSet<BYTE>& value) 
                 if(!m_children[index]) {
                     //The key's first nibble placeholder is empty => new LEAF
                     auto new_leaf = createLeaf(key, value);
-                    new_leaf->setParent(this);
-                    m_children[index].reset(new_leaf);
+                    connectChild(new_leaf, index);
                 }
                 else
                     //Continue the key parsing in the proper placeholder
@@ -326,7 +329,7 @@ uint64_t ByteSetTrieNode::getChildrenCount() const {
 }
 
 void ByteSetTrieNode::wipeK(uint index) {
-    auto parent = const_cast<ByteSetTrieNode*>(dynamic_cast<const ByteSetTrieNode*>(getParent()));
+    auto parent = const_cast<ByteSetTrieNode*>(getParent<const ByteSetTrieNode*>());
     switch(getType()) {
         case EMPTY:
             break;

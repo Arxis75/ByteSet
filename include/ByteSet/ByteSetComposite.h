@@ -8,7 +8,8 @@ class IByteSetContainer
     public:
         virtual ~IByteSetContainer() = default;
 
-        inline const IByteSetComposite* getParent() const { return m_parent; }
+        template<typename T = const IByteSetComposite*>
+            inline T getParent() const { return dynamic_cast<T>(m_parent); }
         inline void setParent(const IByteSetComposite* p) { m_parent = p; }
 
     protected:
@@ -98,14 +99,11 @@ class ByteSetField : public virtual IByteSetComponent {
         ByteSetField& operator=(const ByteSetField&) = delete;
         virtual ~ByteSetField() = default;
         
-        inline virtual void RLPparse(ByteSet<BYTE> &b) override { m_value = std::make_unique<ByteSet<BYTE>>(b); }
+        inline virtual void RLPparse(ByteSet<BYTE> &b) override { m_value = std::make_unique<ByteSet<BYTE>>(b); } //might call deleter
         inline virtual const ByteSet<BYTE> RLPSerialize() const override { return m_value->RLPSerialize(false); } //by copy
 
         inline const ByteSet<BYTE>& getValue() const { return *m_value.get(); }
         inline const Integer getIntValue() const { return m_value->getNbElements() ? m_value->asInteger() : Integer::zero; }
-
-        //inline void setValue(std::unique_ptr<ByteSet<BYTE>> &b) { return m_value.reset(b.release()); }
-        //inline std::unique_ptr<ByteSet<BYTE>> takeValue() { return std::move(m_value); }
 
     private:
         std::unique_ptr<ByteSet<BYTE>> m_value;
