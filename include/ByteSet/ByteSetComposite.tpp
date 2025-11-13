@@ -34,13 +34,13 @@ inline const ByteSet<BYTE> TypedByteSetComposite::RLPSerialize() const {
     return result;
 }
 
-inline void ByteSetComposite::clear() {
+inline void ByteSetComposite::reset() {
     while(m_children.size()) {
         unique_ptr<const IByteSetComponent> uchild = std::move(m_children[m_children.size()-1]);
         if(uchild) {
             auto cchild = dynamic_cast<const ByteSetComposite*>(uchild.get());
             if(cchild && cchild->getChildrenCount()) 
-                const_cast<ByteSetComposite*>(cchild)->clear();
+                const_cast<ByteSetComposite*>(cchild)->reset();
             else {
                 //delete cchild;                                    //delete handled solely by unique_ptr
                 m_children.pop_back();

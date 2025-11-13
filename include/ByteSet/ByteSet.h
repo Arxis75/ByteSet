@@ -118,7 +118,7 @@ class ByteSet : virtual public ITrieable
         inline uint64_t getNbElements() const { return vvalue.size(); }
 
         inline virtual bool isEmpty() const override { return getNbElements() == 0; }
-        inline void clear() override { vvalue.clear(); }
+        inline virtual void clear() override { vvalue.clear(); }
         inline virtual ByteSet<BYTE> serialize() const override { return RLPSerialize(false).asAligned(); }
 
         //********************************************* RLP  Helpers *************************************************/

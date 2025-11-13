@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <ByteSet/ByteSet.h>
-#include "Constructors_parameters.h"
+#include "Test_Constructors_parameters.h"
 
 TYPED_TEST_SUITE_P(MyStrTypedTest1);
 TYPED_TEST_SUITE_P(MyStrTypedTest2);
@@ -56,7 +56,7 @@ TYPED_TEST_P(MyStrTypedTest1, Empty_Constructor)
     ASSERT_EQ(b3.asInteger(), -1);  //-1 is the conventional value for an empty ByteSet
 }
 
-TEST(StrConstructorsTest, UpperCase_LowerCase)
+TEST(Test_str_Constructors, UpperCase_LowerCase)
 {
     ByteSet b_U("0xABCDEF");    //constructor (const char*)
     ByteSet b_l("0xabcdef");
@@ -195,7 +195,7 @@ TYPED_TEST_P(MyStrTypedTest3, Constructor_Truncation)
     ASSERT_EQ(b.asInteger(), val);
 }
 
-TEST(StrConstructorsTest, Empty_toInteger)
+TEST(Test_str_Constructors, Empty_toInteger)
 {
     ASSERT_EQ(Hex.toInteger(""), -1);   //-1 is the conventional value for an empty ByteSet
     ASSERT_EQ(Hex.toInteger("0x"), -1);
@@ -259,7 +259,7 @@ TYPED_TEST_P(MyStrTypedTest4, toInteger)
     ASSERT_EQ(f.toInteger(str), val);
 }
 
-TEST(StrConstructorsTest, Empty_asString)
+TEST(Test_str_Constructors, Empty_asString)
 {
     ByteSet b;
     ASSERT_EQ(b.asString(), "0x");              //Hex with header by default
@@ -279,7 +279,7 @@ TEST(StrConstructorsTest, Empty_asString)
     ASSERT_EQ(b.asString(Eth, false), "");
 }
 
-TEST(StrConstructorsTest, asString)
+TEST(Test_str_Constructors, asString)
 {
     //string asString(const ByteSetFormat &f = Hex, bool with_header = true, bool upper_case = true) const;
 

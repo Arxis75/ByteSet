@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <ByteSet/ByteSet.h>
 
-TEST(RLPSerializeTest, empty)
+TEST(Test_RLPSerialize, empty)
 {
     ByteSet<BIT> b1, r1;
     r1 = b1.RLPSerialize(false);
@@ -25,7 +25,7 @@ TEST(RLPSerializeTest, empty)
     ASSERT_EQ(r8, ByteSet<BYTE>(0xC0, 1));
 }
 
-TEST(RLPSerializeTest, zero)
+TEST(Test_RLPSerialize, zero)
 {
     ByteSet<BIT> b1(0), r1;
     r1 = b1.RLPSerialize(false);
@@ -49,7 +49,7 @@ TEST(RLPSerializeTest, zero)
     ASSERT_EQ(r8, ByteSet<BYTE>(0xC100, 2));
 }
 
-TEST(RLPSerializeTest, own_rlp)
+TEST(Test_RLPSerialize, own_rlp)
 {
     //----------- LOW BOUNDARY -------------
 
@@ -98,7 +98,7 @@ TEST(RLPSerializeTest, own_rlp)
     ASSERT_EQ(r8, ByteSet<BYTE>(0xC17F, 2));
 }
 
-TEST(RLPSerializeTest, x80_xC0_rlp)
+TEST(Test_RLPSerialize, x80_xC0_rlp)
 {
     //----------- LOW BOUNDARY -------------
 
@@ -148,7 +148,7 @@ TEST(RLPSerializeTest, x80_xC0_rlp)
 
 }
 
-TEST(RLPSerializeTest, xB7_xF7_rlp)
+TEST(Test_RLPSerialize, xB7_xF7_rlp)
 {
     //----------- LOW BOUNDARY -------------
     

@@ -8,7 +8,7 @@ constexpr bool is_constructible_with_value(Args&&... args) {
     return std::is_constructible_v<T, Args...>;
 }
 
-TEST(PtrConstructorsTest, Constructors)
+TEST(Test_ptr_Constructors, Constructors)
 { 
     const unsigned int cui[] = {0xAA, 0xBB, 0xCC};
     unsigned int ui[] = {0xAA, 0xBB, 0xCC};
@@ -46,7 +46,7 @@ TEST(PtrConstructorsTest, Constructors)
 void ccopy(const unsigned char* p, unsigned char* dest, uint64_t nb_elem) { memcpy(dest, p, nb_elem); }
 void zero(unsigned char* p, uint64_t nb_elem) { memset(p, 0, sizeof(nb_elem)); }
 
-TEST(PtrConstructorsTest, Ptr_Operator)
+TEST(Test_ptr_Constructors, Ptr_Operator)
 { 
     ByteSet b(0xFFFFFF, 3);
 
@@ -62,7 +62,7 @@ TEST(PtrConstructorsTest, Ptr_Operator)
     ASSERT_EQ(b.asInteger(), Integer::zero);
 }
 
-TEST(PtrConstructorsTest, Brackets_Operator)
+TEST(Test_ptr_Constructors, Brackets_Operator)
 { 
     unsigned char uc[] = {0xAA, 0xBB, 0xCC};
     ByteSet b(0xFFFFFF, 3);
@@ -78,7 +78,7 @@ TEST(PtrConstructorsTest, Brackets_Operator)
     ASSERT_EQ(uc[2], 0xFF);
 }
 
-TEST(PtrConstructorsTest, Value_Truncation)
+TEST(Test_ptr_Constructors, Value_Truncation)
 { 
     const unsigned char cuc[] = {0xAA, 0xBB, 0xCC};
     unsigned char uc[] = {0xAA, 0xBB, 0xCC};

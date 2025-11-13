@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 #include <ByteSet/ByteSet.h>
 
-#include "Constructors_parameters.h"
+#include "Test_Constructors_parameters.h"
 
-TEST(IntConstructorsTest, Empty_Constructor)
+TEST(Test_int_Constructors, Empty_Constructor)
 { 
     ///************* empty constructor **************
     ByteSet b1;                     //Aligned by default
@@ -153,7 +153,7 @@ TYPED_TEST(MyIntTypedTest, Constructors) {
     b.clear();
 }
 
-TEST(IntConstructorsTest, BigIntegerConstructor) {
+TEST(Test_int_Constructors, BigIntegerConstructor) {
     //Test with a Big Int
     Integer val("31075983100084779441602131509");   // 95 bits integer (11.875 Bytes)
     
@@ -190,7 +190,7 @@ TEST(IntConstructorsTest, BigIntegerConstructor) {
     b2.clear();
 }
 
-TEST(IntConstructorsTest, Value_Truncation)
+TEST(Test_int_Constructors, Value_Truncation)
 { 
     ///************* Int Constructor from explicit value (0x1000F) **************
     

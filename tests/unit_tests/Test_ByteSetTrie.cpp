@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include <ByteSet/ByteSetTrie.h>
+#include <ByteSet/TrieNode.h>
 
-TEST(ByteSetTrieTest, Mainnet_TxTrie_Block_10593417)
+TEST(Test_TrieNode, Mainnet_TxTrie_Block_10593417)
 {
     BlockTransactionsTrie btt;
     ByteSet<BYTE> value;
@@ -26,7 +26,7 @@ TEST(ByteSetTrieTest, Mainnet_TxTrie_Block_10593417)
     ASSERT_EQ(btt.hash(), ByteSet("0xab41f886be23cd786d8a69a72b0f988ea72e0b2e03970d0798f5e03763a442cc"));
 }
     
-TEST(ByteSetTrieTest, hex_encoded_securetrie_test)
+TEST(Test_TrieNode, hex_encoded_securetrie_test)
 {
     //https://github.com/ethereum/tests/blob/develop/TrieTests/hex_encoded_securetrie_test.json
 
@@ -93,7 +93,7 @@ TEST(ByteSetTrieTest, hex_encoded_securetrie_test)
     ASSERT_EQ(btt.hash(), ByteSet("0x40b37be88a49e2c08b8d33fcb03a0676ffd0481df54dfebd3512b8ec54f40cad"));
 }
 
-TEST(ByteSetTrieTest, trieanyorder)
+TEST(Test_TrieNode, trieanyorder)
 {
     //https://github.com/ethereum/tests/blob/develop/TrieTests/trieanyorder.json
 
@@ -260,7 +260,7 @@ TEST(ByteSetTrieTest, trieanyorder)
     ASSERT_EQ(btt.hash(), ByteSet("0x285505fcabe84badc8aa310e2aae17eddc7d120aabec8a476902c8184b3a3503"));
 }
 
-TEST(ByteSetTrieTest, trieanyorder_secureTrie)
+TEST(Test_TrieNode, trieanyorder_secureTrie)
 {
     //https://github.com/ethereum/tests/blob/develop/TrieTests/trieanyorder_secureTrie.json
 
@@ -367,7 +367,7 @@ TEST(ByteSetTrieTest, trieanyorder_secureTrie)
     ASSERT_EQ(btt.hash(), ByteSet("0xbc11c02c8ab456db0c4d2728b6a2a6210d06f26a2ace4f7d8bdfc72ddf2630ab"));
 }
 
-TEST(ByteSetTrieTest, trietest)
+TEST(Test_TrieNode, trietest)
 {
     //https://github.com/ethereum/tests/blob/develop/TrieTests/trietest.json
 
@@ -706,7 +706,7 @@ TEST(ByteSetTrieTest, trietest)
     ASSERT_EQ(btt.hash(), ByteSet("0x7a320748f780ad9ad5b0837302075ce0eeba6c26e3d8562c67ccc0f1b273298a"));
 }
 
-TEST(ByteSetTrieTest, trietest_secureTrie)
+TEST(Test_TrieNode, trietest_secureTrie)
 {
     //https://github.com/ethereum/tests/blob/develop/TrieTests/trietest.json
 
@@ -1001,7 +1001,7 @@ TEST(ByteSetTrieTest, trietest_secureTrie)
     ASSERT_EQ(btt.hash(), ByteSet("0x72adb52e9d9428f808e3e8045be18d3baa77881d0cfab89a17a2bcbacee2f320"));
 }
 
-TEST(ByteSetTrieTest, BranchWithValue_merging)
+TEST(Test_TrieNode, BranchWithValue_merging)
 {
     BlockTransactionsTrie btt;
     ByteSet<BYTE> value;

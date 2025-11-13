@@ -10,10 +10,10 @@
 /// @param do_mutate: if true, tries to mutate "this" into a leaf: might cause merge with the parent
 /// @return the Leaf pointer, which might differ from "this" even in a mutation scenario.
 template <typename T>
-ByteSetTrieNode<T>* ByteSetTrieNode<T>::createLeaf(const ByteSet<NIBBLE>& key, T&& value, bool do_mutate) {
-    ByteSetTrieNode* leaf = nullptr;
+TrieNode<T>* TrieNode<T>::createLeaf(const ByteSet<NIBBLE>& key, T&& value, bool do_mutate) {
+    TrieNode* leaf = nullptr;
     if(do_mutate) {
-        auto parent = const_cast<ByteSetTrieNode*>(getParent<const ByteSetTrieNode*>());
+        auto parent = const_cast<TrieNode*>(getParent<const TrieNode*>());
         if(parent && parent->getType() == TYPE::EXTN)
             leaf = parent;
         else {
@@ -22,7 +22,7 @@ ByteSetTrieNode<T>* ByteSetTrieNode<T>::createLeaf(const ByteSet<NIBBLE>& key, T
         }
     }
     else
-        leaf = new ByteSetTrieNode();
+        leaf = new TrieNode();
     leaf->m_key.push_back(key.withTerminator());
     leaf->m_value = std::move(value);
     leaf->m_children.reset();
@@ -40,10 +40,10 @@ ByteSetTrieNode<T>* ByteSetTrieNode<T>::createLeaf(const ByteSet<NIBBLE>& key, T
 /// @param do_mutate: if true, tries to mutate "this" into a Extension: might cause merge with the parent
 /// @return the Extension pointer, which might differ from "this" even in a mutation scenario.
 template <typename T>
-ByteSetTrieNode<T>* ByteSetTrieNode<T>::createExtension(const ByteSet<NIBBLE>& key, bool do_mutate) {
-    ByteSetTrieNode* extension = nullptr;
+TrieNode<T>* TrieNode<T>::createExtension(const ByteSet<NIBBLE>& key, bool do_mutate) {
+    TrieNode* extension = nullptr;
     if(do_mutate) {
-        auto parent = const_cast<ByteSetTrieNode*>(getParent<const ByteSetTrieNode*>());
+        auto parent = const_cast<TrieNode*>(getParent<const TrieNode*>());
         if(parent && parent->getType() == TYPE::EXTN)
             extension = parent;
         else {
@@ -52,11 +52,11 @@ ByteSetTrieNode<T>* ByteSetTrieNode<T>::createExtension(const ByteSet<NIBBLE>& k
         }
     }
     else
-        extension = new ByteSetTrieNode();
+        extension = new TrieNode();
     extension->m_key.push_back(key.withoutTerminator());
     extension->m_value.clear();
     extension->m_children.reset();
-    extension->m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(1);
+    extension->m_children = unique_arr<unique_ptr<TrieNode>>(1);
     return extension;
 }
 
@@ -66,17 +66,17 @@ ByteSetTrieNode<T>* ByteSetTrieNode<T>::createExtension(const ByteSet<NIBBLE>& k
 /// @param do_mutate: if true, mutates "this" into a Branch
 /// @return the Branch pointer, which is always "this" in a mutation scenario (no merge with the parent).
 template <typename T>
-ByteSetTrieNode<T>* ByteSetTrieNode<T>::createBranch(T&& value, bool do_mutate) {
-    ByteSetTrieNode* branch = do_mutate ? this : new ByteSetTrieNode();
+TrieNode<T>* TrieNode<T>::createBranch(T&& value, bool do_mutate) {
+    TrieNode* branch = do_mutate ? this : new TrieNode();
     branch->m_key.clear();
     branch->m_value = std::move(value);
     branch->m_children.reset();
-    branch->m_children = unique_arr<unique_ptr<ByteSetTrieNode>>(16);
+    branch->m_children = unique_arr<unique_ptr<TrieNode>>(16);
     return branch;
 }
 
 template <typename T>
-const ByteSet<BYTE> ByteSetTrieNode<T>::hash() const {
+const ByteSet<BYTE> TrieNode<T>::hash() const {
     ByteSet<BYTE> result;
 
     if(getType() == TYPE::EMPTY) {
@@ -125,7 +125,7 @@ const ByteSet<BYTE> ByteSetTrieNode<T>::hash() const {
 } 
 
 template <typename T>
-void ByteSetTrieNode<T>::connectChild(ByteSetTrieNode* child, uint child_index) {
+void TrieNode<T>::connectChild(TrieNode* child, uint child_index) {
     if(child) {
         assert(child_index < m_children.size() && !m_children[child_index]);
         child->setParent(this);
@@ -134,8 +134,8 @@ void ByteSetTrieNode<T>::connectChild(ByteSetTrieNode* child, uint child_index) 
 }
 
 template <typename T>
-ByteSetTrieNode<T>* ByteSetTrieNode<T>::disconnectChild(uint child_index) {
-    ByteSetTrieNode* child = nullptr;
+TrieNode<T>* TrieNode<T>::disconnectChild(uint child_index) {
+    TrieNode* child = nullptr;
     assert(child_index < m_children.size());
     if(m_children[child_index]) {
         m_children[child_index]->setParent(nullptr);
@@ -145,10 +145,10 @@ ByteSetTrieNode<T>* ByteSetTrieNode<T>::disconnectChild(uint child_index) {
 }
 
 template <typename T>
-ByteSetTrieNode<T>* ByteSetTrieNode<T>::insert(ByteSetTrieNode* parent, uint index_in_parent, ByteSetTrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key, T&& value) {
+TrieNode<T>* TrieNode<T>::insert(TrieNode* parent, uint index_in_parent, TrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key, T&& value) {
     assert(parent && child);
     assert(!parent->m_children[index_in_parent]);
-    ByteSetTrieNode* node;
+    TrieNode* node;
     if(type == TYPE::LEAF) {
         node = createLeaf(key, std::move(value));
     }
@@ -165,7 +165,7 @@ ByteSetTrieNode<T>* ByteSetTrieNode<T>::insert(ByteSetTrieNode* parent, uint ind
 }
 
 template <typename T>
-void ByteSetTrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
+void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
     ByteSet<NIBBLE> shared_nibbles, unshared_nibbles;
     switch(getType()) {
         case EMPTY:
@@ -186,7 +186,7 @@ void ByteSetTrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
                 unshared_nibbles = key;
                 
                 //Save a copy of the pruned Leaf
-                ByteSetTrieNode* pruned_previous_leaf = nullptr;
+                TrieNode* pruned_previous_leaf = nullptr;
                 T previous_value(std::move(m_value));
                 uint pruned_previous_leaf_index = -1;
                 if(!m_key.isTerminator()) {
@@ -198,7 +198,7 @@ void ByteSetTrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
                     //Some common nibbles: mutate from LEAF => EXTENSION
                     auto ext = createExtension(shared_nibbles, true);
 
-                    ByteSetTrieNode* branch = nullptr;
+                    TrieNode* branch = nullptr;
                     if(pruned_previous_leaf)
                         //insert a BRANCH as child of ext EXTENSION and reconnect the pruned LEAF
                         branch = insert(ext, 0, pruned_previous_leaf, pruned_previous_leaf_index, BRAN);
@@ -302,7 +302,7 @@ void ByteSetTrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
 }
 
 template <typename T>
-int ByteSetTrieNode<T>::getChildIndex(const ByteSetTrieNode* child) const {
+int TrieNode<T>::getChildIndex(const TrieNode* child) const {
     int index = -1;
     for(uint i=0;i<m_children.size();i++) {
         if(m_children[i].get() == child) {
@@ -314,7 +314,7 @@ int ByteSetTrieNode<T>::getChildIndex(const ByteSetTrieNode* child) const {
 }
 
 template <typename T>
-int ByteSetTrieNode<T>::getFirstChildIndex() const
+int TrieNode<T>::getFirstChildIndex() const
 {
     int first_child_found_index = -1;
     for(uint i=0;i<m_children.size();i++) {
@@ -327,7 +327,7 @@ int ByteSetTrieNode<T>::getFirstChildIndex() const
 }
 
 template <typename T>
-uint64_t ByteSetTrieNode<T>::getChildrenCount() const {
+uint64_t TrieNode<T>::getChildrenCount() const {
     int counter = 0;
     for(uint i=0;i<m_children.size();i++) {
         if(m_children[i])
@@ -337,8 +337,8 @@ uint64_t ByteSetTrieNode<T>::getChildrenCount() const {
 }
 
 template <typename T>
-void ByteSetTrieNode<T>::wipeK(uint index) {
-    auto parent = const_cast<ByteSetTrieNode*>(getParent<const ByteSetTrieNode*>());
+void TrieNode<T>::wipeK(uint index) {
+    auto parent = const_cast<TrieNode*>(getParent<const TrieNode*>());
     switch(getType()) {
         case EMPTY:
             break;
@@ -367,7 +367,7 @@ void ByteSetTrieNode<T>::wipeK(uint index) {
                     auto leaf = createLeaf(EMPTY_KEY, std::move(m_value), true);
                 else if(nb_children == 1 && m_value.isEmpty()) {
                     int only_child_index = getFirstChildIndex();
-                    ByteSetTrieNode* only_child = m_children[only_child_index].release();
+                    TrieNode* only_child = m_children[only_child_index].release();
                     
                     ByteSet<NIBBLE> new_key(only_child_index);
                     if(only_child->getType() != TYPE::BRAN)
@@ -397,7 +397,7 @@ void ByteSetTrieNode<T>::wipeK(uint index) {
 }
 
 template <typename T>
-ByteSet<NIBBLE> ByteSetTrieNode<T>::extractCommonNibbles(ByteSet<NIBBLE> &key1, ByteSet<NIBBLE> &key2) const {
+ByteSet<NIBBLE> TrieNode<T>::extractCommonNibbles(ByteSet<NIBBLE> &key1, ByteSet<NIBBLE> &key2) const {
     ByteSet<NIBBLE> result;
     while(key1.getNbElements() && key2.getNbElements() && key1.getElem(0) == key2.getElem(0)) {
         result.push_back_elem(key1.pop_front_elem());
@@ -407,7 +407,7 @@ ByteSet<NIBBLE> ByteSetTrieNode<T>::extractCommonNibbles(ByteSet<NIBBLE> &key1, 
 }
 
 template <typename T>
-void ByteSetTrieNode<T>::dumpChildren() const {
+void TrieNode<T>::dumpChildren() const {
     string type;
     auto toString = [](TYPE t) -> std::string {
         switch (t) {

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <ByteSet/ByteSet.h>
 
-TEST(HashingTest, keccak256)
+TEST(Test_Hashing, keccak256)
 { 
     ByteSet<BIT> b1;
     ASSERT_EQ(b1.keccak256().asString(), "0xC5D2460186F7233C927E7DB2DCC703C0E500B653CA82273B7BFAD8045D85A470");
@@ -18,7 +18,7 @@ TEST(HashingTest, keccak256)
     ASSERT_EQ(b8.keccak256().asString(), "0xA7A9E6E6BE9B2F9836461599F61874B7F84DFFE4C11DC9D3944D13FE4159FFA1");
 }
 
-TEST(HashingTest, sha256)
+TEST(Test_Hashing, sha256)
 { 
     ByteSet<BIT> b1;
     ASSERT_EQ(b1.sha256().asString(), "0xE3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855");
