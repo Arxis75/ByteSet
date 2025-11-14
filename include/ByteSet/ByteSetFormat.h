@@ -35,9 +35,6 @@ class ByteSetFormat
         std::string toCanonicalString(const std::string& val) const;
         std::string toUserString(const std::string& val, bool with_header = true) const;
 
-        template<typename U>
-            Integer toInteger(const std::string &str, U) const = delete; //force bool as 2nd parameter, avoid confusion with int
-
         Integer toInteger(const std::string &str, bool is_already_Canonical = false) const;
 
         char digitToChar(const char d, bool upper_case = true) const;

@@ -342,7 +342,8 @@ OPTIMIZE_OUTPUT_SLICE  = NO
 #
 # Note see also the list of default file extension mappings.
 
-EXTENSION_MAPPING      = tpp=C++ inl=C++
+EXTENSION_MAPPING      = tpp=C++
+#EXTENSION_MAPPING      = tpp=C++ inl=C++
 
 # If the MARKDOWN_SUPPORT tag is enabled then doxygen pre-processes all comments
 # according to the Markdown format, which allows for more readable
@@ -1407,7 +1408,7 @@ HTML_COLORSTYLE_GAMMA  = 80
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_TIMESTAMP         = NO
+#HTML_TIMESTAMP         = NO
 
 # If the HTML_DYNAMIC_MENUS tag is set to YES then the generated HTML
 # documentation will contain a main index with vertical navigation menus that
@@ -2075,7 +2076,7 @@ LATEX_BIB_STYLE        = plain
 # The default value is: NO.
 # This tag requires that the tag GENERATE_LATEX is set to YES.
 
-LATEX_TIMESTAMP        = NO
+#LATEX_TIMESTAMP        = NO
 
 # The LATEX_EMOJI_DIRECTORY tag is used to specify the (relative or absolute)
 # path from which the emoji images will be read. If a relative path is entered,

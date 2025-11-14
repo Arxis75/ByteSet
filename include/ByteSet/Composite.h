@@ -19,7 +19,7 @@ class IComponent
         const IComposite* m_parent;
 };
 
-class IRLPListComponent: public virtual IComponent
+class IRLPListComponent: virtual public IComponent
 {
     public:
         virtual ~IRLPListComponent() = default;
@@ -30,7 +30,7 @@ class IRLPListComponent: public virtual IComponent
 };
 
 
-class IComposite: public virtual IComponent
+class IComposite: virtual public IComponent
 {
     public:
         virtual ~IComposite() = default;
@@ -96,7 +96,7 @@ class TypedRLPListComposite : public RLPListComposite {
 
 //----------------------------------------------- LEAF ---------------------------------------------------
 
-class RLPListField : public virtual IRLPListComponent {
+class RLPListField : virtual public IRLPListComponent {
     public:
         RLPListField() : m_value(nullptr) {}
         RLPListField(const RLPListField&) = delete;
