@@ -2,11 +2,15 @@
 #include <ByteSet/IComponent.h>
 #include <ByteSet/ByteSetFormat.h>
 
-template <ByteSetBitsPerElem BitsPerElement = BYTE>
+enum RLPType {LIST, INT, BYTES, STR};
+
+template <BitsPerElem BitsPerElement = BYTE>
 class ByteSet : virtual public IComponent
 {
     public: 
         ByteSet() = default;
+        //ByteSet(ByteSet&&) noexcept = default;
+        //ByteSet& operator=(ByteSet&&) noexcept = default;
         virtual ~ByteSet() = default;
 
         //****************************** Array Constructors/Operators ****************************************//
@@ -45,7 +49,7 @@ class ByteSet : virtual public IComponent
         inline ByteSet& operator=(const char *str) { ByteSet b(str); swap(vvalue, b.vvalue); return *this; }
 
         //ostream
-        template <ByteSetBitsPerElem BPE>
+        template <BitsPerElem BPE>
             friend std::ostream& operator<<(std::ostream& out, const ByteSet<BPE>& b);
 
         //****************************************** PUSH/POP METHODS **************************************************//
@@ -117,8 +121,9 @@ class ByteSet : virtual public IComponent
         inline void addTerminator() { if(!hasTerminator()) push_back_elem(0x10); }
         inline void removeTerminator() { if(hasTerminator()) pop_back_elem(); }
 
-        ByteSet withTerminator() const;
-        ByteSet withoutTerminator() const;
+        const ByteSet withTerminator() const;
+        const ByteSet withoutTerminator() const;
+        
         ByteSet<BYTE> HexToCompact() const;
 
         inline ByteSet<BYTE> asAligned() const { return ByteSet<BYTE>(asInteger(), (getNbElements()*getBitsPerElem()+7)/8); }

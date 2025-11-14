@@ -129,7 +129,7 @@ using MyIntTypes = ::testing::Types<
 TYPED_TEST_SUITE(MyIntTypedTest, MyIntTypes);
 TYPED_TEST(MyIntTypedTest, Constructors) {
     using T = typename TestFixture::T;
-    const ByteSetBitsPerElem nb = TestFixture::nb_bits_per_elem;
+    const BitsPerElem nb = TestFixture::nb_bits_per_elem;
 
     //Fills the value with 1, except for the sign bit if present
     T val = (std::is_signed_v<T> ? 0x7F : 0xFF);

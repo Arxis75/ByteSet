@@ -2,15 +2,6 @@
 #include <ByteSet/IComponent.h>
 #include <ByteSet/ByteSet.h>
 
-class IComposite: virtual public IComponent
-{
-    public:
-        virtual ~IComposite() = default;
-
-        inline virtual void printChildren() const = 0;
-        inline virtual uint64_t getChildrenCount() const = 0;
-};
-
 class ByteSetComposite : public IComposite
 {
     public:
@@ -66,24 +57,5 @@ class TypedByteSetComposite : public ByteSetComposite {
     private:
         int64_t m_type;
 };
-
-//----------------------------------------------- LEAF ---------------------------------------------------
-
-/*class ByteSet : virtual public IComponent {
-    public:
-        ByteSet() : m_value(nullptr) {}
-        ByteSet(const ByteSet&) = delete;
-        ByteSet& operator=(const ByteSet&) = delete;
-        virtual ~ByteSet() = default;
-        
-        inline virtual void parse(ByteSet<BYTE> &b) override { m_value = std::make_unique<ByteSet<BYTE>>(b); } //might call deleter
-        inline virtual const ByteSet<BYTE> serialize() const override { return m_value->serialize(); } //by copy
-
-        inline const ByteSet<BYTE>& getValue() const { return *m_value.get(); }
-        inline const Integer getIntValue() const { return m_value->getNbElements() ? m_value->asInteger() : Integer::zero; }
-
-    private:
-        std::unique_ptr<ByteSet<BYTE>> m_value;
-};*/
 
 #include <ByteSet/Composite.tpp>

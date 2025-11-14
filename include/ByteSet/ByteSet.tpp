@@ -1,6 +1,6 @@
 #include <ByteSet/Tools.h>
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const unsigned char *p, uint64_t source_nb_bytes)
     : m_rlp_type(BYTES)
 { 
@@ -10,7 +10,7 @@ ByteSet<BitsPerElement>::ByteSet(const unsigned char *p, uint64_t source_nb_byte
         push_back_elem(p[i]);
 }
    
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const Integer &val, uint64_t nb_elem)
     : m_rlp_type(BYTES)
 {
@@ -26,7 +26,7 @@ ByteSet<BitsPerElement>::ByteSet(const Integer &val, uint64_t nb_elem)
     }
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const char *str, const ByteSetFormat &f, uint64_t target_nb_elem)
     : m_rlp_type(BYTES)
 {
@@ -63,7 +63,7 @@ ByteSet<BitsPerElement>::ByteSet(const char *str, const ByteSetFormat &f, uint64
     }
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 Integer ByteSet<BitsPerElement>::asInteger() const
 {
     Integer ret_value = (getNbElements() ? 0 : -1);     //-1 is the conventional value for an empty ByteSet
@@ -72,7 +72,7 @@ Integer ByteSet<BitsPerElement>::asInteger() const
     return ret_value;     
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 std::string ByteSet<BitsPerElement>::asString(const ByteSetFormat &f, bool with_header, bool upper_case) const
 {
     std::string str_result;
@@ -108,7 +108,7 @@ std::string ByteSet<BitsPerElement>::asString(const ByteSetFormat &f, bool with_
     return f.toUserString(str_result, with_header);
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 uint64_t ByteSet<BitsPerElement>::getStrNbElem(const std::string &str, const ByteSetFormat &f, bool is_already_Canonical) const
 {   
     uint64_t nb_elem = 0;
@@ -122,7 +122,7 @@ uint64_t ByteSet<BitsPerElement>::getStrNbElem(const std::string &str, const Byt
     return nb_elem; 
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 uint8_t ByteSet<BitsPerElement>::pop_front_elem()
 {
     assert(getNbElements());
@@ -131,7 +131,7 @@ uint8_t ByteSet<BitsPerElement>::pop_front_elem()
     return ret_value;
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 uint8_t ByteSet<BitsPerElement>::pop_back_elem()
 {
     assert(getNbElements());
@@ -140,7 +140,7 @@ uint8_t ByteSet<BitsPerElement>::pop_back_elem()
     return ret_val;
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::pop_front(uint64_t nb_element) {
     ByteSet ret_value;
     if(nb_element <= getNbElements())
@@ -149,7 +149,7 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::pop_front(uint64_t nb_element) 
     return ret_value;
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::pop_back(uint64_t nb_element) {
     ByteSet ret_value;
     if(nb_element <= getNbElements())
@@ -158,16 +158,16 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::pop_back(uint64_t nb_element) {
     return ret_value;
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::at(const uint64_t elem_offset, const uint64_t nb_element) const
 {
-    ByteSet ret_value = *this;
+    ByteSet ret_value(*this);
     ret_value.pop_front(elem_offset);
     ret_value.pop_back(getNbElements() - (elem_offset + nb_element));
     return ret_value;
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPSerialize(bool as_list) const
 {
     ByteSet result(*this);
@@ -185,7 +185,7 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPSerialize(bool as_list) cons
     return result;
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::parse()
 {
     assert(byteSize());
@@ -207,7 +207,7 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::parse()
     return result;
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::keccak256() const
 {
     ByteSet<BitsPerElement> result;
@@ -221,7 +221,7 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::keccak256() const
     return result;
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::sha256() const
 {
     ByteSet<BitsPerElement> result(0, 32);
@@ -236,28 +236,28 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::sha256() const
     return result;
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
-ByteSet<BitsPerElement> ByteSet<BitsPerElement>::withTerminator() const {
+template <BitsPerElem BitsPerElement>
+const ByteSet<BitsPerElement> ByteSet<BitsPerElement>::withTerminator() const {
     ByteSet result(*this);
     if(!result.getNbElements() || result.getElem(result.getNbElements()-1) != 0x10)
         result.push_back_elem(0x10);
     return result;
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
-ByteSet<BitsPerElement> ByteSet<BitsPerElement>::withoutTerminator() const {
+template <BitsPerElem BitsPerElement>
+const ByteSet<BitsPerElement> ByteSet<BitsPerElement>::withoutTerminator() const {
     ByteSet result(*this);
     if(result.getNbElements() && result.getElem(result.getNbElements()-1) == 0x10)
         result.pop_back_elem();
     return result;
 }
 
-template <ByteSetBitsPerElem BitsPerElement>
+template <BitsPerElem BitsPerElement>
 ByteSet<BYTE> ByteSet<BitsPerElement>::HexToCompact() const
 {
     assert(getBitsPerElem() == 4);
 
-    ByteSet tmp = withoutTerminator();
+    ByteSet tmp(withoutTerminator());
     if(tmp.getNbElements()%2)
         tmp.push_front_elem(0x1+2*hasTerminator());
     else {
@@ -268,7 +268,7 @@ ByteSet<BYTE> ByteSet<BitsPerElement>::HexToCompact() const
     return result;
 }
 
-template <ByteSetBitsPerElem bb>
+template <BitsPerElem bb>
 std::ostream& operator<<(std::ostream& out, const ByteSet<bb>& b)
 {
     //Dumps the vvalue vector as a raw Hex multi-bytes (or multi-bits) string

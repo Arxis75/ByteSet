@@ -23,6 +23,7 @@ TrieNode<T>* TrieNode<T>::createLeaf(const ByteSet<NIBBLE>& key, T&& value, bool
     }
     else
         leaf = new TrieNode();
+    
     leaf->m_key.push_back(key.withTerminator());
     leaf->m_value = std::move(value);
     leaf->m_children.reset();
@@ -66,10 +67,10 @@ TrieNode<T>* TrieNode<T>::createExtension(const ByteSet<NIBBLE>& key, bool do_mu
 /// @param do_mutate: if true, mutates "this" into a Branch
 /// @return the Branch pointer, which is always "this" in a mutation scenario (no merge with the parent).
 template <typename T>
-TrieNode<T>* TrieNode<T>::createBranch(T&& value, bool do_mutate) {
+TrieNode<T>* TrieNode<T>::createBranch(T* value, bool do_mutate) {
     TrieNode* branch = do_mutate ? this : new TrieNode();
     branch->m_key.clear();
-    branch->m_value = std::move(value);
+    branch->m_value = value ? std::move(*value) : std::move(T());
     branch->m_children.reset();
     branch->m_children = unique_arr<unique_ptr<TrieNode>>(16);
     return branch;
@@ -145,19 +146,21 @@ TrieNode<T>* TrieNode<T>::disconnectChild(uint child_index) {
 }
 
 template <typename T>
-TrieNode<T>* TrieNode<T>::insert(TrieNode* parent, uint index_in_parent, TrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key, T&& value) {
+TrieNode<T>* TrieNode<T>::insert(TrieNode* parent, uint index_in_parent, TrieNode* child, uint child_index, TYPE type, ByteSet<NIBBLE>* key, T* value) {
     assert(parent && child);
     assert(!parent->m_children[index_in_parent]);
     TrieNode* node;
     if(type == TYPE::LEAF) {
-        node = createLeaf(key, std::move(value));
+        assert(key && value);
+        node = createLeaf(*key, std::move(*value));
     }
     else if(type == TYPE::EXTN) {
-        node = createExtension(key);
+        assert(key);
+        node = createExtension(*key);
         node->connectChild(child, child_index);
     }
     else if(type == TYPE::BRAN) {
-        node = createBranch(std::move(value));
+        node = createBranch(value);
         node->connectChild(child, child_index);
     }
     parent->connectChild(node, index_in_parent);
@@ -204,7 +207,7 @@ void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
                         branch = insert(ext, 0, pruned_previous_leaf, pruned_previous_leaf_index, BRAN);
                     else {
                         //create a sub-BRANCH with the former LEAF m_value
-                        branch = createBranch(std::move(previous_value));
+                        branch = createBranch(&previous_value);
                         //and connect it to THIS EXTENSION
                         ext->connectChild(branch, 0);
                     }
@@ -214,7 +217,7 @@ void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
                 }
                 else {
                     //No common nibbles: mutate from LEAF => BRANCH
-                    createBranch(T(), true);
+                    createBranch(nullptr, true);
                     
                     if(pruned_previous_leaf)
                         //Reconnect the pruned LEAF
@@ -246,12 +249,12 @@ void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
                 auto previous_branch = disconnectChild(0);
 
                 //No common nibbles: mutate from EXTN => BRANCH
-                createBranch(T(), true);
+                createBranch(nullptr, true);
                 
                 uint64_t unshared_index = unshared_nibbles.pop_front_elem();
                 if(unshared_nibbles.getNbElements())
                     //Insert a new child EXTENSION between the mutated branch (parent) and the previous branch (child)
-                    auto unshared_ext = insert(this, unshared_index, previous_branch, 0, EXTN, unshared_nibbles);
+                    auto unshared_ext = insert(this, unshared_index, previous_branch, 0, EXTN, &unshared_nibbles);
                 else
                     //Reconnect the previous child branch
                     connectChild(previous_branch, unshared_index);
@@ -272,7 +275,7 @@ void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
                     previous_branch = new_branch->disconnectChild(new_branch_child_index);
 
                     //Insert a new child EXTENSION between the newly created branch (parent) and the previous branch (child)
-                    auto unshared_ext = insert(new_branch, new_branch_child_index, previous_branch, 0, EXTN, unshared_nibbles);
+                    auto unshared_ext = insert(new_branch, new_branch_child_index, previous_branch, 0, EXTN, &unshared_nibbles);
                 }
                 //Continue the key parsing under the new branch
                 new_branch->storeKV(key, std::move(value));
@@ -420,7 +423,7 @@ void TrieNode<T>::printChildren() const {
     };
 
     if(getType() == TYPE::EXTN || getType() == TYPE::BRAN || !getParent()) {
-        cout << "Dumping " << toString(getType()) << " Node " << this << "(k:" << m_key.withoutTerminator().asString() << (m_key.hasTerminator() ? "10" : "") << " v:" << (!m_value.isEmpty() ? "yes" : "no" ) <<" is " << toString(getType()) << ") :" << endl;
+        cout << "Dumping " << toString(getType()) << " Node " << this << "(k:" << m_key.asString() << (m_key.hasTerminator() ? "10" : "") << " v:" << (!m_value.isEmpty() ? "yes" : "no" ) <<" is " << toString(getType()) << ") :" << endl;
         for(int i=0;i<m_children.size();i++) {
             if(m_children[i])
                 cout << m_children[i].get() << "(k:" << m_children[i]->m_key.withoutTerminator().asString() << (m_children[i]->m_key.hasTerminator() ? "10" : "") << " v:" << (!m_children[i]->m_value.isEmpty() ? "yes" : "no" ) <<" is " << toString(m_children[i]->getType()) << ") ";

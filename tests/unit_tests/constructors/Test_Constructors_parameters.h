@@ -5,10 +5,10 @@ using std::string;
 //********************************* int_Constructors *******************************/
 
 // Template parameters
-template <typename T, const ByteSetBitsPerElem B>
+template <typename T, const BitsPerElem B>
 struct MyIntType {
     using type = T;                                 // int, double, etc.
-    static constexpr const ByteSetBitsPerElem nb_bits_per_elem = B;
+    static constexpr const BitsPerElem nb_bits_per_elem = B;
 };
 
 // Template test
@@ -16,15 +16,15 @@ template <typename Param>
 class MyIntTypedTest : public ::testing::Test {
 public:
     using T = typename Param::type;
-    static constexpr const ByteSetBitsPerElem nb_bits_per_elem = Param::nb_bits_per_elem;
+    static constexpr const BitsPerElem nb_bits_per_elem = Param::nb_bits_per_elem;
 };
 
 //********************************* str_Constructors *******************************/
 
 // Template parameters
-template <const ByteSetBitsPerElem A, const ByteSetFormat &B, const string &C, const Integer &D, const int E>
+template <const BitsPerElem A, const ByteSetFormat &B, const string &C, const Integer &D, const int E>
 struct StrType {
-    static constexpr const ByteSetBitsPerElem bits_per_elem = A;
+    static constexpr const BitsPerElem bits_per_elem = A;
     static constexpr const ByteSetFormat &f = B;
     static constexpr const string &str = C;
     static constexpr const Integer &val = D;
@@ -35,7 +35,7 @@ struct StrType {
 template <typename Param>
 class MyStrTypedTest1 : public ::testing::Test {
 public:
-    static constexpr const ByteSetBitsPerElem bits_per_elem = Param::bits_per_elem;
+    static constexpr const BitsPerElem bits_per_elem = Param::bits_per_elem;
     static constexpr const ByteSetFormat& f = Param::f;
     static constexpr const string& str = Param::str;
     static constexpr const Integer& val = Param::val;

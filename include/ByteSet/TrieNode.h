@@ -32,14 +32,14 @@ class TrieNode : public IComposite
     protected:
         TrieNode* createLeaf(const ByteSet<NIBBLE>& key, T&& value, bool do_mutate = false);
         TrieNode* createExtension(const ByteSet<NIBBLE>& key, bool do_mutate = false);
-        TrieNode* createBranch(T&& value, bool do_mutate = false);
+        TrieNode* createBranch(T* value = nullptr, bool do_mutate = false);
 
         void storeKV(ByteSet<NIBBLE> &key, T&& value);
         void wipeK(uint index = 0);
 
         void connectChild(TrieNode* child, uint child_index);
         TrieNode* disconnectChild(uint child_index);
-        TrieNode* insert(TrieNode* parent, uint index_in_parent, TrieNode* child, uint child_index, TYPE type, const ByteSet<NIBBLE>& key = EMPTY_KEY, T&& value = T());
+        TrieNode* insert(TrieNode* parent, uint index_in_parent, TrieNode* child, uint child_index, TYPE type, ByteSet<NIBBLE>* key = nullptr, T* value = nullptr);
         int getChildIndex(const TrieNode* child) const;
         int getFirstChildIndex() const;
 

@@ -1,13 +1,13 @@
 #pragma once
+#include <cstdint>
 
-enum RLPType {LIST, INT, BYTES, STR};
-enum ByteSetBitsPerElem {ONE = 1, FOUR = 4, EIGHT = 8};
+enum BitsPerElem {ONE = 1, FOUR = 4, EIGHT = 8};
 
-constexpr ByteSetBitsPerElem BIT = ByteSetBitsPerElem::ONE;
-constexpr ByteSetBitsPerElem NIBBLE = ByteSetBitsPerElem::FOUR;
-constexpr ByteSetBitsPerElem BYTE = ByteSetBitsPerElem::EIGHT;
+constexpr BitsPerElem BIT = BitsPerElem::ONE;
+constexpr BitsPerElem NIBBLE = BitsPerElem::FOUR;
+constexpr BitsPerElem BYTE = BitsPerElem::EIGHT;
 
-template <ByteSetBitsPerElem> class ByteSet;
+template <BitsPerElem> class ByteSet;
 
 class IComposite;
 class IComponent
@@ -32,4 +32,14 @@ class IComponent
 
     private:
         const IComposite* m_parent;
+};
+
+
+class IComposite: virtual public IComponent
+{
+    public:
+        virtual ~IComposite() = default;
+
+        inline virtual void printChildren() const = 0;
+        inline virtual uint64_t getChildrenCount() const = 0;
 };

@@ -34,7 +34,7 @@ using MyStrTypes1 = ::testing::Types<
 
 TYPED_TEST_P(MyStrTypedTest1, Empty_Constructor)
 {
-    const ByteSetBitsPerElem bits_per_elem = TestFixture::bits_per_elem;
+    const BitsPerElem bits_per_elem = TestFixture::bits_per_elem;
     const ByteSetFormat& f = TestFixture::f;
 
     ///* empty constructors with no explicit format (=Hex) & no explicit size (=0) *
@@ -110,7 +110,7 @@ using MyStrTypes2 = ::testing::Types<
 >;
 
 TYPED_TEST_P(MyStrTypedTest2, Constructor) {
-    const ByteSetBitsPerElem bits_per_elem
+    const BitsPerElem bits_per_elem
  = TestFixture::bits_per_elem;
     const ByteSetFormat& f = TestFixture::f;
     const string str = TestFixture::str;
@@ -138,7 +138,7 @@ TYPED_TEST_P(MyStrTypedTest2, Constructor) {
 }
 
 TYPED_TEST_P(MyStrTypedTest2, Constructor_0padding) {
-    const ByteSetBitsPerElem bits_per_elem
+    const BitsPerElem bits_per_elem
  = TestFixture::bits_per_elem;
     const ByteSetFormat& f = TestFixture::f;
     const string str = TestFixture::str;
@@ -183,7 +183,7 @@ using MyStrTypes3 = ::testing::Types<
 
 TYPED_TEST_P(MyStrTypedTest3, Constructor_Truncation)
 {
-    const ByteSetBitsPerElem bits_per_elem
+    const BitsPerElem bits_per_elem
  = TestFixture::bits_per_elem;
     const ByteSetFormat& f = TestFixture::f;
     const string str = TestFixture::str;
