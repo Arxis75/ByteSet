@@ -83,7 +83,7 @@ const ByteSet<BYTE> TrieNode<T>::hash() const {
     if(getType() == TYPE::EMPTY) {
         result = result.serialize();
         //cout << "Empty node " << dec << " rlp = " << result.asString() << endl;
-        if(result.byteSize() >= 32 || !getParent())
+        if(result.byteSize() >= 32 || isRoot())
             result = result.keccak256();
         //cout << "Empty node " << dec << " hash = " << result.asString() << endl;
     }

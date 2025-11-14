@@ -30,6 +30,7 @@ class TrieNode : public IComposite
         inline void clear() override { m_children.reset(); m_key.clear(); m_value.clear(); }
 
     protected:
+        inline virtual const bool isRoot() const { return false; }
         TrieNode* createLeaf(const ByteSet<NIBBLE>& key, T&& value, bool do_mutate = false);
         TrieNode* createExtension(const ByteSet<NIBBLE>& key, bool do_mutate = false);
         TrieNode* createBranch(T* value = nullptr, bool do_mutate = false);
@@ -62,6 +63,9 @@ class SecureTrieNode : public TrieNode<T>
             ByteSet<NIBBLE> tmp = m_is_secure ? key.keccak256() : key;
             TrieNode<T>::storeKV(tmp, std::move(value)); 
         }
+
+    protected:
+        inline virtual const bool isRoot() const override { return true; }
 
     private:
         const bool m_is_secure;
