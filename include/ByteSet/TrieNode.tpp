@@ -407,7 +407,7 @@ ByteSet<NIBBLE> TrieNode<T>::extractCommonNibbles(ByteSet<NIBBLE> &key1, ByteSet
 }
 
 template <typename T>
-void TrieNode<T>::dumpChildren() const {
+void TrieNode<T>::printChildren() const {
     string type;
     auto toString = [](TYPE t) -> std::string {
         switch (t) {
@@ -430,7 +430,7 @@ void TrieNode<T>::dumpChildren() const {
         cout << endl << endl;
         for(int i=0;i<m_children.size();i++) {
             if(m_children[i])
-                m_children[i]->dumpChildren();
+                m_children[i]->printChildren();
         }
     }
 }

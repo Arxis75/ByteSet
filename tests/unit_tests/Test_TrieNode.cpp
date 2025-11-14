@@ -3,7 +3,7 @@
 
 TEST(Test_TrieNode, Mainnet_TxTrie_Block_10593417)
 {
-    BlockTransactionsTrie btt;
+    SecureTrieNode btt;
     ByteSet<BYTE> value;
     ByteSet<NIBBLE> key;
 
@@ -30,7 +30,7 @@ TEST(Test_TrieNode, hex_encoded_securetrie_test)
 {
     //https://github.com/ethereum/tests/blob/develop/TrieTests/hex_encoded_securetrie_test.json
 
-    BlockTransactionsTrie btt(true);
+    SecureTrieNode btt(true);
     ByteSet<NIBBLE> key;
     ByteSet<BYTE> value;
 
@@ -97,7 +97,7 @@ TEST(Test_TrieNode, trieanyorder)
 {
     //https://github.com/ethereum/tests/blob/develop/TrieTests/trieanyorder.json
 
-    BlockTransactionsTrie btt;
+    SecureTrieNode btt;
     ByteSet<NIBBLE> key;
     ByteSet<BYTE> value;
 
@@ -264,7 +264,7 @@ TEST(Test_TrieNode, trieanyorder_secureTrie)
 {
     //https://github.com/ethereum/tests/blob/develop/TrieTests/trieanyorder_secureTrie.json
 
-    BlockTransactionsTrie btt(true);
+    SecureTrieNode btt(true);
     ByteSet<NIBBLE> key;
     ByteSet<BYTE> value;
 
@@ -371,7 +371,7 @@ TEST(Test_TrieNode, trietest)
 {
     //https://github.com/ethereum/tests/blob/develop/TrieTests/trietest.json
 
-    BlockTransactionsTrie btt;
+    SecureTrieNode btt;
     ByteSet<NIBBLE> key;
     ByteSet<BYTE> value;
     
@@ -710,7 +710,7 @@ TEST(Test_TrieNode, trietest_secureTrie)
 {
     //https://github.com/ethereum/tests/blob/develop/TrieTests/trietest.json
 
-    BlockTransactionsTrie btt(true);
+    SecureTrieNode btt(true);
     ByteSet<NIBBLE> key;
     ByteSet<BYTE> value;
     
@@ -1003,7 +1003,7 @@ TEST(Test_TrieNode, trietest_secureTrie)
 
 TEST(Test_TrieNode, BranchWithValue_merging)
 {
-    BlockTransactionsTrie btt;
+    SecureTrieNode btt;
     ByteSet<BYTE> value;
     ByteSet<NIBBLE> key;
 

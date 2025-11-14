@@ -1,55 +1,55 @@
 #pragma once
 #include <ByteSet/ByteSet.h>
 
-class IByteSetComposite;
+class IComposite;
 
-class IByteSetContainer
+class IComponent
 {
     public:
-        virtual ~IByteSetContainer() = default;
+        virtual ~IComponent() = default;
 
-        template<typename T = const IByteSetComposite*>
+        template<typename T = const IComposite*>
             inline T getParent() const { return dynamic_cast<T>(m_parent); }
-        inline void setParent(const IByteSetComposite* p) { m_parent = p; }
+        inline void setParent(const IComposite* p) { m_parent = p; }
 
     protected:
-        IByteSetContainer() : m_parent(nullptr) {}
+        IComponent() : m_parent(nullptr) {}
 
     private:
-        const IByteSetComposite* m_parent;
+        const IComposite* m_parent;
 };
 
-class IByteSetComponent: public virtual IByteSetContainer
+class IRLPListComponent: public virtual IComponent
 {
     public:
-        virtual ~IByteSetComponent() = default;
+        virtual ~IRLPListComponent() = default;
 
         inline virtual void RLPparse(ByteSet<BYTE> &b) = 0;
         inline virtual const ByteSet<BYTE> RLPSerialize() const = 0;
-        inline virtual const IByteSetComposite* getComposite() const { return nullptr; }
+        inline virtual const IComposite* getComposite() const { return nullptr; }
 };
 
 
-class IByteSetComposite: public virtual IByteSetContainer
+class IComposite: public virtual IComponent
 {
     public:
-        virtual ~IByteSetComposite() = default;
+        virtual ~IComposite() = default;
 
-        inline virtual void dumpChildren() const = 0;
+        inline virtual void printChildren() const = 0;
         inline virtual uint64_t getChildrenCount() const = 0;
 };
 
-class ByteSetComposite : public IByteSetComponent, public IByteSetComposite
+class RLPListComposite : public IRLPListComponent, public IComposite
 {
     public:
-        ByteSetComposite(const ByteSetComposite&) = delete;
-        ByteSetComposite& operator=(const ByteSetComposite&) = delete;
-        ByteSetComposite(ByteSetComposite&&) noexcept = default;
-        ByteSetComposite& operator=(ByteSetComposite&&) noexcept = default;
-        inline virtual ~ByteSetComposite() { reset(); }
+        RLPListComposite(const RLPListComposite&) = delete;
+        RLPListComposite& operator=(const RLPListComposite&) = delete;
+        RLPListComposite(RLPListComposite&&) noexcept = default;
+        RLPListComposite& operator=(RLPListComposite&&) noexcept = default;
+        inline virtual ~RLPListComposite() { reset(); }
 
         virtual const ByteSet<BYTE> RLPSerialize() const override;
-        inline virtual const IByteSetComposite* getComposite() const override { return this; }
+        inline virtual const IComposite* getComposite() const override { return this; }
 
         template<typename T>
             void create(ByteSet<BYTE> &b);
@@ -58,14 +58,14 @@ class ByteSetComposite : public IByteSetComponent, public IByteSetComposite
         template<typename T>
            inline const T* get(uint64_t index) const { return (index < m_children.size() ? dynamic_cast<const T*>(m_children[index].get()) : nullptr); }
         
-        virtual void dumpChildren() const override;
+        virtual void printChildren() const override;
         
         inline virtual uint64_t getChildrenCount() const override { return m_children.size(); }
 
     protected:
-        ByteSetComposite() = default;
+        RLPListComposite() = default;
         
-        inline virtual void push_back(IByteSetComponent *f) { f->setParent(this); m_children.emplace_back(f); }
+        inline virtual void push_back(IRLPListComponent *f) { f->setParent(this); m_children.emplace_back(f); }
 
         inline virtual uint64_t getType() const { return 0; }
         inline virtual void setType(uint64_t type) { }
@@ -73,14 +73,14 @@ class ByteSetComposite : public IByteSetComponent, public IByteSetComposite
         virtual void reset();
 
     private:
-        std::vector<std::unique_ptr<const IByteSetComponent>> m_children;
+        std::vector<std::unique_ptr<const IRLPListComponent>> m_children;
 };
 
-class TypedByteSetComposite : public ByteSetComposite {
+class TypedRLPListComposite : public RLPListComposite {
     public:
-        virtual ~TypedByteSetComposite() = default;
-        TypedByteSetComposite(TypedByteSetComposite&&) noexcept = default;
-        TypedByteSetComposite& operator=(TypedByteSetComposite&&) noexcept = default;
+        virtual ~TypedRLPListComposite() = default;
+        TypedRLPListComposite(TypedRLPListComposite&&) noexcept = default;
+        TypedRLPListComposite& operator=(TypedRLPListComposite&&) noexcept = default;
 
         virtual const ByteSet<BYTE> RLPSerialize() const override;
 
@@ -88,7 +88,7 @@ class TypedByteSetComposite : public ByteSetComposite {
         inline virtual void setType(uint64_t type) override { m_type = type; }
     
     protected:
-        TypedByteSetComposite() : m_type(0) {}  // 0 = Legacy (without type)
+        TypedRLPListComposite() : m_type(0) {}  // 0 = Legacy (without type)
 
     private:
         int64_t m_type;
@@ -96,12 +96,12 @@ class TypedByteSetComposite : public ByteSetComposite {
 
 //----------------------------------------------- LEAF ---------------------------------------------------
 
-class ByteSetField : public virtual IByteSetComponent {
+class RLPListField : public virtual IRLPListComponent {
     public:
-        ByteSetField() : m_value(nullptr) {}
-        ByteSetField(const ByteSetField&) = delete;
-        ByteSetField& operator=(const ByteSetField&) = delete;
-        virtual ~ByteSetField() = default;
+        RLPListField() : m_value(nullptr) {}
+        RLPListField(const RLPListField&) = delete;
+        RLPListField& operator=(const RLPListField&) = delete;
+        virtual ~RLPListField() = default;
         
         inline virtual void RLPparse(ByteSet<BYTE> &b) override { m_value = std::make_unique<ByteSet<BYTE>>(b); } //might call deleter
         inline virtual const ByteSet<BYTE> RLPSerialize() const override { return m_value->RLPSerialize(false); } //by copy
@@ -113,4 +113,4 @@ class ByteSetField : public virtual IByteSetComponent {
         std::unique_ptr<ByteSet<BYTE>> m_value;
 };
 
-#include <ByteSet/ByteSetComposite.tpp>
+#include <ByteSet/Composite.tpp>

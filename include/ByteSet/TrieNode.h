@@ -1,9 +1,9 @@
 #pragma once
-#include <ByteSet/ByteSetComposite.h>
+#include <ByteSet/Composite.h>
 #include <ByteSet/Tools.h>
 
 template <typename T = ByteSet<BYTE>>
-class TrieNode : public IByteSetComposite
+class TrieNode : public IComposite
 {
     static_assert(std::is_base_of_v<ITrieable, T>, "Trie value type must inherit from ITrieable");
 
@@ -19,7 +19,7 @@ class TrieNode : public IByteSetComposite
         virtual const ByteSet<BYTE> hash() const;
         
         virtual uint64_t getChildrenCount() const override;
-        virtual void dumpChildren() const override;
+        virtual void printChildren() const override;
 
         inline TYPE getType() const { return m_children.size() == 16 ? BRAN : (m_children.size() == 0 ? (!m_value.isEmpty() ? LEAF : EMPTY) : EXTN);}
 
@@ -48,11 +48,11 @@ class TrieNode : public IByteSetComposite
 };
 
 template <typename T = ByteSet<BYTE>>
-class BlockTransactionsTrie : public TrieNode<T>
+class SecureTrieNode : public TrieNode<T>
 {
     public:
-        BlockTransactionsTrie(bool is_secure = false) : TrieNode<T>(), m_is_secure(is_secure) {}
-        virtual ~BlockTransactionsTrie() = default;
+        SecureTrieNode(bool is_secure = false) : TrieNode<T>(), m_is_secure(is_secure) {}
+        virtual ~SecureTrieNode() = default;
 
         inline void store(ByteSet<NIBBLE> &key, T& value) {
             ByteSet<NIBBLE> tmp = m_is_secure ? key.keccak256() : key;
