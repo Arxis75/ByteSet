@@ -9,8 +9,6 @@ class ByteSet : virtual public IComponent
 {
     public: 
         ByteSet() = default;
-        //ByteSet(ByteSet&&) noexcept = default;
-        //ByteSet& operator=(ByteSet&&) noexcept = default;
         virtual ~ByteSet() = default;
 
         //****************************** Array Constructors/Operators ****************************************//

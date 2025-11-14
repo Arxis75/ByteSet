@@ -238,7 +238,7 @@ void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
             //unshared are what's left of m_key
             unshared_nibbles = m_key;  
             //Shrink the existing EXTN node's m_key to only shared_nibbles 
-            m_key = shared_nibbles;    
+            m_key = shared_nibbles;
 
             if(!unshared_nibbles.getNbElements()) {
                 //Continue the key parsing under the existing child branch

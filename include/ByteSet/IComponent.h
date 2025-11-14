@@ -42,4 +42,7 @@ class IComposite: virtual public IComponent
 
         inline virtual void printChildren() const = 0;
         inline virtual uint64_t getChildrenCount() const = 0;
+    
+    protected:
+        IComposite() = default;
 };

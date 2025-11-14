@@ -14,23 +14,27 @@ class TrieNode : public IComposite
         TrieNode() = default;
         TrieNode(const TrieNode&) = delete;
         TrieNode& operator=(const TrieNode&) = delete;
+        TrieNode(TrieNode&&) noexcept = default;
+        TrieNode& operator=(TrieNode&&) noexcept = default;
         virtual ~TrieNode() = default; //{ cout << "-- node " << this << " deleted. --" << endl; }
 
-        virtual const ByteSet<BYTE> hash() const;
-        
-        virtual uint64_t getChildrenCount() const override;
-        virtual void printChildren() const override;
-
-        inline TYPE getType() const { return m_children.size() == 16 ? BRAN : (m_children.size() == 0 ? (!m_value.isEmpty() ? LEAF : EMPTY) : EXTN);}
-
         //*********************************** ICOMPONENT INTERFACE ************************************************/
-        inline virtual void  parse(ByteSet<BYTE> &b) override { /*TODO*/};
+        inline virtual void  parse(ByteSet<BYTE> &b) override { /*TODO*/ };
         inline virtual const ByteSet<BYTE> serialize() const override { return TrieNode<T>::hash(); }
         inline virtual bool isEmpty() const override { return TrieNode<T>::getType() ==  TrieNode<T>::TYPE::EMPTY; }
         inline void clear() override { m_children.reset(); m_key.clear(); m_value.clear(); }
+        //**********************************************************************************************************
+
+         //*********************************** ICOMPOSITE INTERFACE ************************************************/
+        virtual uint64_t getChildrenCount() const override;
+        virtual void printChildren() const override;
+        //**********************************************************************************************************
+
+        virtual const ByteSet<BYTE> hash() const;
+        inline TYPE getType() const { return m_children.size() == 16 ? BRAN : (m_children.size() == 0 ? (!m_value.isEmpty() ? LEAF : EMPTY) : EXTN);}
+        inline virtual const bool isRoot() const { return false; }
 
     protected:
-        inline virtual const bool isRoot() const { return false; }
         TrieNode* createLeaf(const ByteSet<NIBBLE>& key, T&& value, bool do_mutate = false);
         TrieNode* createExtension(const ByteSet<NIBBLE>& key, bool do_mutate = false);
         TrieNode* createBranch(T* value = nullptr, bool do_mutate = false);
@@ -64,7 +68,6 @@ class SecureTrieNode : public TrieNode<T>
             TrieNode<T>::storeKV(tmp, std::move(value)); 
         }
 
-    protected:
         inline virtual const bool isRoot() const override { return true; }
 
     private:
