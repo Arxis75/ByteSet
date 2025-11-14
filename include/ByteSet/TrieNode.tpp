@@ -92,7 +92,7 @@ const ByteSet<BYTE> TrieNode<T>::hash() const {
         result.push_back(m_value.serialize());
         result = result.RLPSerialize(true);
         //cout << "Leaf " << dec << " rlp = " << result.asString() << endl;
-        if(result.byteSize() >= 32 || !getParent())
+        if(result.byteSize() >= 32 || isRoot())
             result = result.keccak256();
         //cout << "Leaf " << dec << " hash = " << result.asString() << endl;
     }
@@ -102,7 +102,7 @@ const ByteSet<BYTE> TrieNode<T>::hash() const {
         result.push_back(h.byteSize() < 32 ? h : h.serialize());    // < 32 Bytes => Value node, else Hash Node
         result = result.RLPSerialize(true);
         //cout << "Extension " << dec << " rlp = " << result.asString() << endl;
-        if(result.byteSize() >= 32 || !getParent())
+        if(result.byteSize() >= 32 || isRoot())
             result = result.keccak256();
         //cout << "Extension " << dec << " hash = " << result.asString() << endl;
     }
@@ -118,7 +118,7 @@ const ByteSet<BYTE> TrieNode<T>::hash() const {
         result.push_back(m_value.serialize());
         result = result.RLPSerialize(true);
         //cout << "Branch " << dec << " rlp = " << result.asString() << endl;
-        if(result.byteSize() >= 32 || !getParent())
+        if(result.byteSize() >= 32 || isRoot())
             result = result.keccak256();
         //cout << "Branch " << dec << " hash = " << result.asString() << endl;
     }
