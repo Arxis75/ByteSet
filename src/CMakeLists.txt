@@ -19,4 +19,4 @@ target_include_directories(LibByteSet
           ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(LibByteSet PUBLIC givaro::givaro ethash::keccak PRIVATE OpenSSL::Crypto ${CMAKE_DL_LIBS} nlohmann_json::nlohmann_json libcurl)
+target_link_libraries(LibByteSet PUBLIC givaro::givaro ethash::keccak PRIVATE OpenSSL::Crypto ${CMAKE_DL_LIBS})
