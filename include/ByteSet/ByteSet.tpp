@@ -186,7 +186,7 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPSerialize(bool as_list) cons
 }
 
 template <ByteSetBitsPerElem BitsPerElement>
-ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPparse()
+ByteSet<BitsPerElement> ByteSet<BitsPerElement>::parse()
 {
     assert(byteSize());
     

@@ -5,7 +5,7 @@
 template <typename T = ByteSet<BYTE>>
 class TrieNode : public IComposite
 {
-    static_assert(std::is_base_of_v<ITrieable, T>, "Trie value type must inherit from ITrieable");
+    static_assert(std::is_base_of_v<IComponent, T>, "Trie value type must inherit from IComponent");
 
         inline static const ByteSet<NIBBLE> EMPTY_KEY = ByteSet<NIBBLE>();
 
@@ -23,7 +23,11 @@ class TrieNode : public IComposite
 
         inline TYPE getType() const { return m_children.size() == 16 ? BRAN : (m_children.size() == 0 ? (!m_value.isEmpty() ? LEAF : EMPTY) : EXTN);}
 
-        inline void clear() { m_children.reset(); m_key.clear(); m_value.clear(); }
+        //*********************************** ICOMPONENT INTERFACE ************************************************/
+        inline virtual void  parse(ByteSet<BYTE> &b) override { /*TODO*/};
+        inline virtual const ByteSet<BYTE> serialize() const override { return TrieNode<T>::hash(); }
+        inline virtual bool isEmpty() const override { return TrieNode<T>::getType() ==  TrieNode<T>::TYPE::EMPTY; }
+        inline void clear() override { m_children.reset(); m_key.clear(); m_value.clear(); }
 
     protected:
         TrieNode* createLeaf(const ByteSet<NIBBLE>& key, T&& value, bool do_mutate = false);

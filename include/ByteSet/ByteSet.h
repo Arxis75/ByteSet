@@ -1,30 +1,9 @@
 #pragma once
+#include <ByteSet/IComponent.h>
 #include <ByteSet/ByteSetFormat.h>
 
-enum RLPType {LIST, INT, BYTES, STR};
-enum ByteSetBitsPerElem {ONE = 1, FOUR = 4, EIGHT = 8};
-
-constexpr ByteSetBitsPerElem BIT = ByteSetBitsPerElem::ONE;
-constexpr ByteSetBitsPerElem NIBBLE = ByteSetBitsPerElem::FOUR;
-constexpr ByteSetBitsPerElem BYTE = ByteSetBitsPerElem::EIGHT;
-
-template <ByteSetBitsPerElem> class ByteSet;
-
-class ITrieable
-{
-    public:
-        virtual ~ITrieable() = default;
-
-        inline virtual bool isEmpty() const = 0;
-        inline virtual void clear() = 0;
-        inline virtual ByteSet<BYTE> serialize() const = 0;
-    
-    protected:
-        ITrieable() = default;
-};
-
 template <ByteSetBitsPerElem BitsPerElement = BYTE>
-class ByteSet : virtual public ITrieable
+class ByteSet : virtual public IComponent
 {
     public: 
         ByteSet() = default;
@@ -119,8 +98,9 @@ class ByteSet : virtual public ITrieable
 
         inline virtual bool isEmpty() const override { return getNbElements() == 0; }
         inline virtual void clear() override { vvalue.clear(); }
-        inline virtual ByteSet<BYTE> serialize() const override { return RLPSerialize(false).asAligned(); }
-
+        inline virtual const ByteSet<BYTE> serialize() const override { return RLPSerialize(false).asAligned(); }
+        inline virtual const IComposite* getComposite() const override { return nullptr; }
+        inline virtual void parse(ByteSet<BYTE> &b) override { /*TODO*/ }
         //********************************************* RLP  Helpers *************************************************/
 
         RLPType getRLPType() const { return m_rlp_type; }
@@ -146,7 +126,7 @@ class ByteSet : virtual public ITrieable
         //********************************** Container manipulation interface ***************************************//
 
         ByteSet RLPSerialize(bool as_list) const;
-        ByteSet RLPparse();
+        ByteSet parse();
         ByteSet keccak256() const;
         ByteSet sha256() const;
 

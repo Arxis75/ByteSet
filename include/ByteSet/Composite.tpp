@@ -2,31 +2,31 @@
 #include <ByteSet/Tools.h>
 
 template<typename T>
-void RLPListComposite::create(ByteSet<BYTE> &b) {
+void ByteSetComposite::create(ByteSet<BYTE> &b) {
         bool has_list_header = b.hasRLPListHeader();
-        ByteSet payload = b.RLPparse();
+        ByteSet payload = b.parse();
         T* item = new T();
-        if(auto typed_item = dynamic_cast<TypedRLPListComposite*>(item); typed_item && !has_list_header) { 
+        if(auto typed_item = dynamic_cast<TypedByteSetComposite*>(item); typed_item && !has_list_header) { 
             typed_item->setType(payload.pop_front_elem());
-            payload = payload.RLPparse();
+            payload = payload.parse();
         }
-        item->RLPparse(payload);
+        item->parse(payload);
         push_back(item);  //implicit call of unique_ptr ctor
 }
 
-inline const ByteSet<BYTE> RLPListComposite::RLPSerialize() const
+inline const ByteSet<BYTE> ByteSetComposite::serialize() const
 {
     ByteSet<BYTE> rlp;
     for(uint64_t i=0; i<m_children.size(); i++) {
         if(m_children[i])
-            rlp.push_back(m_children[i]->RLPSerialize());
+            rlp.push_back(m_children[i]->serialize());
     }
     rlp =  rlp.RLPSerialize(true);
     return rlp;
 }
 
-inline const ByteSet<BYTE> TypedRLPListComposite::RLPSerialize() const {
-    ByteSet result = RLPListComposite::RLPSerialize();
+inline const ByteSet<BYTE> TypedByteSetComposite::serialize() const {
+    ByteSet result = ByteSetComposite::serialize();
     if(uint8_t type = getType(); type) {
         result.push_front_elem(type);
         result = result.RLPSerialize(false);
@@ -34,17 +34,17 @@ inline const ByteSet<BYTE> TypedRLPListComposite::RLPSerialize() const {
     return result;
 }
 
-inline void RLPListComposite::reset() {
+inline void ByteSetComposite::clear() {
     while(m_children.size()) {
-        unique_ptr<const IRLPListComponent> uchild = std::move(m_children[m_children.size()-1]);
+        unique_ptr<const IComponent> uchild = std::move(m_children[m_children.size()-1]);
         if(uchild) {
-            auto cchild = dynamic_cast<const RLPListComposite*>(uchild.get());
+            auto cchild = dynamic_cast<const ByteSetComposite*>(uchild.get());
             if(cchild && cchild->getChildrenCount()) 
-                const_cast<RLPListComposite*>(cchild)->reset();
+                const_cast<ByteSetComposite*>(cchild)->clear();
             else {
                 //delete cchild;                                    //delete handled solely by unique_ptr
                 m_children.pop_back();
-                //printChildren();
+                //dumpChildren();
             }
         }
         else {
@@ -52,12 +52,12 @@ inline void RLPListComposite::reset() {
                 //delete m_children[m_children.size()-1].get();     //delete handled solely by unique_ptr
             }
             m_children.pop_back();
-            //printChildren();
+            //dumpChildren();
         }
     }
 }
 
-inline void RLPListComposite::printChildren() const
+inline void ByteSetComposite::printChildren() const
 {
     if(m_children.size())
         for(int i=0;i<m_children.size();i++) {
@@ -68,7 +68,7 @@ inline void RLPListComposite::printChildren() const
                 if(!m_children[i]->getComposite())
                     cout << "F";
                 else {
-                    cout << "C:" << dec << dynamic_cast<const RLPListComposite*>(m_children[i].get())->getChildrenCount();
+                    cout << "C:" << dec << dynamic_cast<const ByteSetComposite*>(m_children[i].get())->getChildrenCount();
                 }
                 cout << " P:" << hex << m_children[i]->getParent();
             }
