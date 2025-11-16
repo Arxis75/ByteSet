@@ -4,7 +4,9 @@ set(GIVARO_LIB_DIR ${GIVARO_INSTALL}/lib)
 set(GIVARO_LIBRARY ${GIVARO_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}givaro${CMAKE_STATIC_LIBRARY_SUFFIX})
 set(GIVARO_INCLUDE_DIR ${GIVARO_INSTALL}/include)
 
+#The following test avoids the lib rebuilding when it is already available at the project level (parent host building it for example).
 if(NOT TARGET givaro::givaro)
+  #The following test avoids to rebuild the lib when erasing the project buid folder.
   find_library(libgivaro NAMES libgivaro.a PATHS "${GIVARO_LIB_DIR}" NO_DEFAULT_PATH)
   if(NOT libgivaro)
     message(STATUS "👉 Third-party: creating target 'givaro'")

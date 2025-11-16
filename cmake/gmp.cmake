@@ -6,7 +6,9 @@ set(GMP_CXX_LIBRARY ${GMP_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}gmpxx${CMAKE_ST
 set(GMP_LIBRARIES ${GMP_C_LIBRARY} ${GMP_CXX_LIBRARY})
 set(GMP_INCLUDE_DIR ${GMP_INSTALL_DIR}/include)
 
+#The following test avoids the lib rebuilding when it is already available at the project level (parent host building it for example).
 if(NOT (TARGET gmp::gmp AND TARGET gmp::gmpxx))
+  #The following test avoids to rebuild the lib when erasing the project buid folder.
   find_library(libgmp NAMES libgmp.a PATHS "${GMP_LIB_DIR}" NO_DEFAULT_PATH)
   find_library(libgmpxx NAMES libgmpxx.a PATHS "${GMP_LIB_DIR}" NO_DEFAULT_PATH)
   if(NOT libgmp OR NOT libgmpxx)

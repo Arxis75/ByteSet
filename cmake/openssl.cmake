@@ -6,7 +6,9 @@ set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}cryp
 set(OPENSSL_LIBRARIES ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY})
 set(OPENSSL_INCLUDE_DIR ${OPENSSL_INSTALL_DIR}/include)
 
+#The following test avoids the lib rebuilding when it is already available at the project level (parent host building it for example).
 if(NOT (TARGET OpenSSL::SSL AND TARGET OpenSSL::Crypto))
+  #The following test avoids to rebuild the lib when erasing the project buid folder.
   find_library(libOpenSSL NAMES libssl.a PATHS "${OPENSSL_LIB_DIR}" NO_DEFAULT_PATH)
   find_library(libCrypto NAMES libcrypto.a PATHS "${OPENSSL_LIB_DIR}" NO_DEFAULT_PATH)
   if(NOT libOpenSSL OR NOT libCrypto)

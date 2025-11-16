@@ -1,6 +1,7 @@
 set(PREFIX ${CMAKE_SOURCE_DIR}/build-external/ethash-1.1.0)
 set(INSTALL ${PREFIX}/install)
 
+#The following test avoids the lib rebuilding when it is already available at the project level (parent host building it for example).
 if(NOT TARGET ethash::ethash)
     message(STATUS "👉 Third-party: creating target 'ethash'")
 
