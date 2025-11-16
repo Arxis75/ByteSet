@@ -16,4 +16,13 @@ if(NOT TARGET GTest::gtest)
         SUBBUILD_DIR "${INSTALL}-subbuild"
     )
     FetchContent_MakeAvailable(gtest)
+
+    # Force all four gtest/gmock libraries into custom folder
+    foreach(tgt gtest gtest_main gmock gmock_main)
+        set_target_properties(${tgt} PROPERTIES
+            ARCHIVE_OUTPUT_DIRECTORY "${INSTALL}/lib"
+            LIBRARY_OUTPUT_DIRECTORY "${INSTALL}/lib"
+            RUNTIME_OUTPUT_DIRECTORY "${INSTALL}/lib"
+        )
+    endforeach()
 endif()
