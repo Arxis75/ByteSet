@@ -18,11 +18,11 @@ class TrieNode : public IComposite
         inline virtual const ByteSet<BYTE> serialize() const override { return TrieNode<T>::hash(); }
         virtual void print() const override;
         inline virtual bool isEmpty() const override { return TrieNode<T>::getType() ==  TrieNode<T>::TYPE::EMPTY; }
-        inline void clear() override { m_children.reset(); m_key.clear(); m_value.clear(); }
+        inline void clear() override { m_children.reset(); m_key.clear(); m_value.reset(); }
         //**********************************************************************************************************
 
         virtual const ByteSet<BYTE> hash() const;
-        inline TYPE getType() const { return m_children.size() == 16 ? BRAN : (m_children.size() == 0 ? (!m_value.isEmpty() ? LEAF : EMPTY) : EXTN);}
+        inline TYPE getType() const { return m_children.size() == 16 ? BRAN : (m_children.size() == 0 ? (m_value ? LEAF : EMPTY) : EXTN);}
         inline virtual const bool isRoot() const { return false; }
 
     protected:
@@ -35,11 +35,11 @@ class TrieNode : public IComposite
         inline virtual uint getChildrenContainerSize() const override { return m_children.size(); }
         //**********************************************************************************************************
 
-        TrieNode* createLeaf(const ByteSet<NIBBLE>& key, const T&& value, bool do_mutate = false);
+        TrieNode* createLeaf(const ByteSet<NIBBLE>& key, const T* value, bool do_mutate = false);
         TrieNode* createExtension(const ByteSet<NIBBLE>& key, bool do_mutate = false);
         TrieNode* createBranch(const T* value = nullptr, bool do_mutate = false);
 
-        void storeKV(ByteSet<NIBBLE> &key, T&& value);
+        void storeKV(ByteSet<NIBBLE> &key, const T* value);
         void wipeK(uint index = 0);
 
         void connectChild(TrieNode* child, uint child_index);
@@ -53,7 +53,7 @@ class TrieNode : public IComposite
     protected:
         unique_arr<std::unique_ptr<TrieNode>> m_children;
         ByteSet<NIBBLE> m_key;
-        T m_value;
+        unique_ptr<const T> m_value;
 };
 
 template <typename T = ByteSet<BYTE>>
@@ -63,9 +63,9 @@ class TrieRoot : public TrieNode<T>
         TrieRoot(bool is_secure = false) : TrieNode<T>(), m_is_secure(is_secure) {}
         virtual ~TrieRoot() = default;
 
-        inline void store(ByteSet<NIBBLE> &key, T& value) {
+        inline void store(ByteSet<NIBBLE> &key, const T* value) {
             ByteSet<NIBBLE> tmp = m_is_secure ? key.keccak256() : key;
-            TrieNode<T>::storeKV(tmp, std::move(value)); 
+            TrieNode<T>::storeKV(tmp, value); 
         }
 
         inline virtual const bool isRoot() const override { return true; }

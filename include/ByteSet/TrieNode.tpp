@@ -19,7 +19,7 @@ void TrieNode<T>::addChild(IComponent *child, const ByteSet<NIBBLE>& key) {
 /// @param do_mutate: if true, tries to mutate "this" into a leaf: might cause merge with the parent
 /// @return the Leaf pointer, which might differ from "this" even in a mutation scenario.
 template <typename T>
-TrieNode<T>* TrieNode<T>::createLeaf(const ByteSet<NIBBLE>& key, const T&& value, bool do_mutate) {
+TrieNode<T>* TrieNode<T>::createLeaf(const ByteSet<NIBBLE>& key, const T* value, bool do_mutate) {
     TrieNode* leaf = nullptr;
     if(do_mutate) {
         auto parent = const_cast<TrieNode*>(dynamic_cast<const TrieNode*>(getParent()));
@@ -34,7 +34,7 @@ TrieNode<T>* TrieNode<T>::createLeaf(const ByteSet<NIBBLE>& key, const T&& value
         leaf = new TrieNode();
     
     leaf->m_key.push_back(key.withTerminator());
-    leaf->m_value = std::move(value);
+    leaf->m_value.reset(value);
     leaf->m_children.reset();
     return leaf;
 }
@@ -64,7 +64,7 @@ TrieNode<T>* TrieNode<T>::createExtension(const ByteSet<NIBBLE>& key, bool do_mu
     else
         extension = new TrieNode();
     extension->m_key.push_back(key.withoutTerminator());
-    extension->m_value.clear();
+    extension->m_value.reset();
     extension->m_children.reset();
     extension->m_children = unique_arr<unique_ptr<TrieNode>>(1);
     return extension;
@@ -79,7 +79,7 @@ template <typename T>
 TrieNode<T>* TrieNode<T>::createBranch(const T* value, bool do_mutate) {
     TrieNode* branch = do_mutate ? this : new TrieNode();
     branch->m_key.clear();
-    branch->m_value = value ? std::move(*value) : std::move(T());
+    branch->m_value.reset(value ? value : new T());
     branch->m_children.reset();
     branch->m_children = unique_arr<unique_ptr<TrieNode>>(16);
     return branch;
@@ -98,7 +98,7 @@ const ByteSet<BYTE> TrieNode<T>::hash() const {
     }
     else if(getType() == TYPE::LEAF) {
         result.push_back(m_key.HexToCompact().serialize());
-        result.push_back(m_value.serialize());
+        result.push_back(m_value->serialize());
         result = result.RLPSerialize(true);
         //cout << "Leaf " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32 || isRoot())
@@ -124,7 +124,7 @@ const ByteSet<BYTE> TrieNode<T>::hash() const {
             else
                 result.push_back_elem(0x80);
         }
-        result.push_back(m_value.serialize());
+        result.push_back(m_value->serialize());
         result = result.RLPSerialize(true);
         //cout << "Branch " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32 || isRoot())
@@ -161,7 +161,7 @@ TrieNode<T>* TrieNode<T>::insert(TrieNode* parent, uint index_in_parent, TrieNod
     TrieNode* node;
     if(type == TYPE::LEAF) {
         assert(key && value);
-        node = createLeaf(*key, std::move(*value));
+        node = createLeaf(*key, value);
     }
     else if(type == TYPE::EXTN) {
         assert(key);
@@ -177,21 +177,21 @@ TrieNode<T>* TrieNode<T>::insert(TrieNode* parent, uint index_in_parent, TrieNod
 }
 
 template <typename T>
-void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
+void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, const T* value) {
     ByteSet<NIBBLE> shared_nibbles, unshared_nibbles;
     switch(getType()) {
         case EMPTY:
             //First KV storage: EMPTY ROOT => LEAF
             m_key = key.withTerminator();
-            m_value = std::move(value);
+            m_value.reset(value);
             break;
         case LEAF: {
-            if(value.isEmpty())
+            if(value->isEmpty())
                 // (key,value) erasure
                 wipeK();
             else if(key == m_key.withoutTerminator())
                 //LEAF value update
-                m_value = std::move(value);
+                m_value.reset(value);
             else {
                 //prune key and m_key of their common nibbles.
                 shared_nibbles = extractCommonNibbles(key, m_key);
@@ -199,11 +199,11 @@ void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
                 
                 //Save a copy of the pruned Leaf
                 TrieNode* pruned_previous_leaf = nullptr;
-                T previous_value(std::move(m_value));
+                unique_ptr<const T> previous_value(m_value.release());
                 uint pruned_previous_leaf_index = -1;
                 if(!m_key.isTerminator()) {
                     pruned_previous_leaf_index = m_key.pop_front_elem();
-                    pruned_previous_leaf = createLeaf(m_key, std::move(previous_value));
+                    pruned_previous_leaf = createLeaf(m_key, previous_value.release());
                 }
 
                 if(shared_nibbles.getNbElements()) {
@@ -216,13 +216,13 @@ void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
                         branch = insert(ext, 0, pruned_previous_leaf, pruned_previous_leaf_index, BRAN);
                     else {
                         //create a sub-BRANCH with the former LEAF m_value
-                        branch = createBranch(&previous_value);
+                        branch = createBranch(previous_value.release());
                         //and connect it to THIS EXTENSION
                         ext->connectChild(branch, 0);
                     }
 
                     //Continue the key parsing
-                    branch->storeKV(key, std::move(value));
+                    branch->storeKV(key, value);
                 }
                 else {
                     //No common nibbles: mutate from LEAF => BRANCH
@@ -233,10 +233,10 @@ void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
                         this->connectChild(pruned_previous_leaf, pruned_previous_leaf_index);
                     else
                         //Stores the previous LEAF value
-                        m_value = std::move(previous_value);
+                        m_value.reset(previous_value.release());
 
                     //Continue the key parsing
-                    storeKV(key, std::move(value));
+                    storeKV(key, value);
                 }
             }
             break;
@@ -251,7 +251,7 @@ void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
 
             if(!unshared_nibbles.getNbElements()) {
                 //Continue the key parsing under the existing child branch
-                m_children[0]->storeKV(key, std::move(value));
+                m_children[0]->storeKV(key, value);
             }
             else if(!shared_nibbles.getNbElements()) {
                 //Disconnect the previous child branch before mutation
@@ -269,7 +269,7 @@ void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
                     connectChild(previous_branch, unshared_index);
 
                 //Continue the key parsing
-                storeKV(key, std::move(value));
+                storeKV(key, value);
             }
             else {
                 //Disconnect the previous child branch
@@ -287,24 +287,24 @@ void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, T&& value) {
                     auto unshared_ext = insert(new_branch, new_branch_child_index, previous_branch, 0, EXTN, &unshared_nibbles);
                 }
                 //Continue the key parsing under the new branch
-                new_branch->storeKV(key, std::move(value));
+                new_branch->storeKV(key, value);
             }
             break;
         }
         case BRAN: {
             if(!key.getNbElements())
-                m_value = std::move(value);
+                m_value.reset(value);
             else {
                 uint64_t index = key.pop_front_elem();
 
                 if(!m_children[index]) {
                     //The key's first nibble placeholder is empty => new LEAF
-                    auto new_leaf = createLeaf(key, std::move(value));
+                    auto new_leaf = createLeaf(key, value);
                     connectChild(new_leaf, index);
                 }
                 else
                     //Continue the key parsing in the proper placeholder
-                    m_children[index]->storeKV(key, std::move(value));
+                    m_children[index]->storeKV(key, value);
             }
             break;
         }
@@ -360,7 +360,7 @@ void TrieNode<T>::wipeK(uint index) {
                 else {
                     //Root erasure
                     m_key.clear();
-                    m_value.clear();
+                    m_value.reset();
                 }
             break;
         }
@@ -374,10 +374,10 @@ void TrieNode<T>::wipeK(uint index) {
                 if(m_children[index])
                     m_children[index].reset();
                 uint nb_children = getChildrenCount();
-                if(!nb_children && !m_value.isEmpty())
+                if(!nb_children && !m_value->isEmpty())
                     //This BRANCH mutates to LEAF to integrate the m_value of the former BRANCH
-                    auto leaf = createLeaf(EMPTY_KEY, std::move(m_value), true);
-                else if(nb_children == 1 && m_value.isEmpty()) {
+                    auto leaf = createLeaf(EMPTY_KEY, m_value.release(), true);
+                else if(nb_children == 1 && m_value->isEmpty()) {
                     int only_child_index = getFirstChildIndex();
                     TrieNode* only_child = m_children[only_child_index].release();
                     
@@ -387,7 +387,7 @@ void TrieNode<T>::wipeK(uint index) {
 
                     if(only_child->getType() == TYPE::LEAF) {
                         //This BRANCH mutates to LEAF to integrate the m_key/m_value of only_child
-                        auto leaf = createLeaf(new_key, std::move(only_child->m_value), true);              
+                        auto leaf = createLeaf(new_key, only_child->m_value.release(), true);              
                     }
                     else if(only_child->getType() == TYPE::EXTN) {
                         auto child_extension_child = only_child->m_children[0].release();   //Disconnect only_child's child
@@ -432,10 +432,10 @@ void TrieNode<T>::print() const {
     };
 
     if(getType() == TYPE::EXTN || getType() == TYPE::BRAN || !getParent()) {
-        cout << "Dumping " << toString(getType()) << " Node " << this << "(k:" << m_key.asString() << (m_key.hasTerminator() ? "10" : "") << " v:" << (!m_value.isEmpty() ? "yes" : "no" ) <<" is " << toString(getType()) << ") :" << endl;
+        cout << "Dumping " << toString(getType()) << " Node " << this << "(k:" << m_key.asString() << (m_key.hasTerminator() ? "10" : "") << " v:" << (!m_value->isEmpty() ? "yes" : "no" ) <<" is " << toString(getType()) << ") :" << endl;
         for(int i=0;i<m_children.size();i++) {
             if(m_children[i])
-                cout << m_children[i].get() << "(k:" << m_children[i]->m_key.withoutTerminator().asString() << (m_children[i]->m_key.hasTerminator() ? "10" : "") << " v:" << (!m_children[i]->m_value.isEmpty() ? "yes" : "no" ) <<" is " << toString(m_children[i]->getType()) << ") ";
+                cout << m_children[i].get() << "(k:" << m_children[i]->m_key.withoutTerminator().asString() << (m_children[i]->m_key.hasTerminator() ? "10" : "") << " v:" << (!m_children[i]->m_value->isEmpty() ? "yes" : "no" ) <<" is " << toString(m_children[i]->getType()) << ") ";
             else
                 cout << m_children[i].get() << "() ";
         }
