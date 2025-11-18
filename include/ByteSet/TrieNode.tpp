@@ -79,7 +79,7 @@ template <typename T>
 TrieNode<T>* TrieNode<T>::createBranch(const T* value, bool do_mutate) {
     TrieNode* branch = do_mutate ? this : new TrieNode();
     branch->m_key.clear();
-    branch->m_value.reset(value ? value : new T());
+    branch->m_value.reset(value);
     branch->m_children.reset();
     branch->m_children = unique_arr<unique_ptr<TrieNode>>(16);
     return branch;
@@ -124,7 +124,7 @@ const ByteSet<BYTE> TrieNode<T>::hash() const {
             else
                 result.push_back_elem(0x80);
         }
-        result.push_back(m_value->serialize());
+        result.push_back(m_value ? m_value->serialize() : ByteSet<BYTE>(0x80));
         result = result.RLPSerialize(true);
         //cout << "Branch " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32 || isRoot())
@@ -374,10 +374,10 @@ void TrieNode<T>::wipeK(uint index) {
                 if(m_children[index])
                     m_children[index].reset();
                 uint nb_children = getChildrenCount();
-                if(!nb_children && !m_value->isEmpty())
+                if(!nb_children && m_value)
                     //This BRANCH mutates to LEAF to integrate the m_value of the former BRANCH
                     auto leaf = createLeaf(EMPTY_KEY, m_value.release(), true);
-                else if(nb_children == 1 && m_value->isEmpty()) {
+                else if(nb_children == 1 && !m_value) {
                     int only_child_index = getFirstChildIndex();
                     TrieNode* only_child = m_children[only_child_index].release();
                     
@@ -432,10 +432,10 @@ void TrieNode<T>::print() const {
     };
 
     if(getType() == TYPE::EXTN || getType() == TYPE::BRAN || !getParent()) {
-        cout << "Dumping " << toString(getType()) << " Node " << this << "(k:" << m_key.asString() << (m_key.hasTerminator() ? "10" : "") << " v:" << (!m_value->isEmpty() ? "yes" : "no" ) <<" is " << toString(getType()) << ") :" << endl;
+        cout << "Dumping " << toString(getType()) << " Node " << this << "(k:" << m_key.asString() << (m_key.hasTerminator() ? "10" : "") << " v:" << (m_value ? "yes" : "no" ) <<" is " << toString(getType()) << ") :" << endl;
         for(int i=0;i<m_children.size();i++) {
             if(m_children[i])
-                cout << m_children[i].get() << "(k:" << m_children[i]->m_key.withoutTerminator().asString() << (m_children[i]->m_key.hasTerminator() ? "10" : "") << " v:" << (!m_children[i]->m_value->isEmpty() ? "yes" : "no" ) <<" is " << toString(m_children[i]->getType()) << ") ";
+                cout << m_children[i].get() << "(k:" << m_children[i]->m_key.withoutTerminator().asString() << (m_children[i]->m_key.hasTerminator() ? "10" : "") << " v:" << (m_children[i]->m_value ? "yes" : "no" ) <<" is " << toString(m_children[i]->getType()) << ") ";
             else
                 cout << m_children[i].get() << "() ";
         }
