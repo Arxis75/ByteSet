@@ -27,6 +27,7 @@ class TrieNode : public IComposite
 
     protected:
         TrieNode() = default;
+
          //*********************************** ICOMPOSITE INTERFACE ************************************************
         virtual IComponent* newChild(uint creation_index = 0) override { return new T(); }
         virtual void addChild(IComponent *child, const ByteSet<NIBBLE>& key) override;
@@ -37,7 +38,7 @@ class TrieNode : public IComposite
 
         TrieNode* createLeaf(const ByteSet<NIBBLE>& key, const T* value, bool do_mutate = false);
         TrieNode* createExtension(const ByteSet<NIBBLE>& key, bool do_mutate = false);
-        TrieNode* createBranch(const T* value = nullptr, bool do_mutate = false);
+        TrieNode* createBranch(const T* value, bool do_mutate = false);
 
         void storeKV(ByteSet<NIBBLE> &key, const T* value);
         void wipeK(uint index = 0);
@@ -51,7 +52,7 @@ class TrieNode : public IComposite
         ByteSet<NIBBLE> extractCommonNibbles(ByteSet<NIBBLE> &key1, ByteSet<NIBBLE> &key2) const;
 
     protected:
-        unique_arr<std::unique_ptr<TrieNode>> m_children;
+        unique_arr<unique_ptr<TrieNode>> m_children;
         ByteSet<NIBBLE> m_key;
         unique_ptr<const T> m_value;
 };
@@ -64,8 +65,8 @@ class TrieRoot : public TrieNode<T>
         virtual ~TrieRoot() = default;
 
         inline void store(ByteSet<NIBBLE> &key, const T* value) {
-            ByteSet<NIBBLE> tmp = m_is_secure ? key.keccak256() : key;
-            TrieNode<T>::storeKV(tmp, value); 
+            ByteSet<NIBBLE> secure_key = m_is_secure ? key.keccak256() : key;
+            TrieNode<T>::storeKV(secure_key, value); 
         }
 
         inline virtual const bool isRoot() const override { return true; }
