@@ -1,10 +1,13 @@
+#pragma once
+#include <ByteSet/TrieNode.h>
+
 template <typename T>
 void TrieNode<T>::addChild(IComponent *child, const ByteSet<NIBBLE>& key) {
-    /*auto value = dynamic_cast<T*>(child);
+    auto value = dynamic_cast<T*>(child);
     assert(value);
     child->setParent(this);
-    ByteSet<NIBBLE> tmp_key(key.RLPSerialize(false));
-    storeKV(tmp_key, value);*/
+    ByteSet<NIBBLE> tmp_key(key);
+    storeKV(tmp_key, value);
 }
 
 /// @brief creates a new Leaf or tries to mutate "this" into a Leaf: mutation keeps the parent consistant.
