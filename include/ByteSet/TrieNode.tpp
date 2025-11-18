@@ -122,9 +122,9 @@ const ByteSet<BYTE> TrieNode<T>::hash() const {
                 result.push_back(h.byteSize() < 32 ? h : h.serialize());
             }
             else
-                result.push_back_elem(0x80);
+                result.push_back(ByteSet<BYTE>::EMPTY.serialize());
         }
-        result.push_back(m_value ? m_value->serialize() : ByteSet<BYTE>(0x80));
+        result.push_back(m_value ? m_value->serialize() : ByteSet<BYTE>::EMPTY.serialize());
         result = result.RLPSerialize(true);
         //cout << "Branch " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32 || isRoot())
@@ -181,12 +181,14 @@ void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, const T* value) {
     ByteSet<NIBBLE> shared_nibbles, unshared_nibbles;
     switch(getType()) {
         case EMPTY:
-            //First KV storage: EMPTY ROOT => LEAF
-            m_key = key.withTerminator();
-            m_value.reset(value);
+            if(value) {
+                //First KV storage: EMPTY ROOT => LEAF
+                m_key = key.withTerminator();
+                m_value.reset(value);
+            }
             break;
         case LEAF: {
-            if(value->isEmpty())
+            if(!value)
                 // (key,value) erasure
                 wipeK();
             else if(key == m_key.withoutTerminator())
