@@ -8,7 +8,9 @@ template <BitsPerElem BitsPerElement = BYTE>
 class ByteSet : virtual public IComponent
 {
     public: 
-        ByteSet() = default;
+        inline static const ByteSet EMPTY = ByteSet();
+
+        ByteSet() : IComponent(), m_rlp_type(BYTES) {}
         virtual ~ByteSet() = default;
 
         //****************************** Array Constructors/Operators ****************************************//
@@ -98,11 +100,14 @@ class ByteSet : virtual public IComponent
         /// @return the size of the underlying vector
         inline uint64_t getNbElements() const { return vvalue.size(); }
 
-        inline virtual bool isEmpty() const override { return getNbElements() == 0; }
-        inline virtual void clear() override { vvalue.clear(); }
-        inline virtual const ByteSet<BYTE> serialize() const override { return RLPSerialize(false).asAligned(); }
-        inline virtual const IComposite* getComposite() const override { return nullptr; }
+        /******************************************* ICOMPONENT INTERFACE *********************************************/
+
         inline virtual void parse(ByteSet<BYTE> &b) override { /*TODO*/ }
+        inline virtual const ByteSet<BYTE> serialize() const override { return RLPSerialize(false).asAligned(); }
+        inline virtual void print() const override { cout << asString() << endl; }
+        inline virtual bool isEmpty() const override { return getNbElements() == 0; }
+        inline virtual void clear() override { vvalue.clear(); }  
+
         //********************************************* RLP  Helpers *************************************************/
 
         RLPType getRLPType() const { return m_rlp_type; }

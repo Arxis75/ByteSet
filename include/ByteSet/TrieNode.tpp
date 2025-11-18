@@ -1,3 +1,12 @@
+template <typename T>
+void TrieNode<T>::addChild(IComponent *child, const ByteSet<NIBBLE>& key) {
+    /*auto value = dynamic_cast<T*>(child);
+    assert(value);
+    child->setParent(this);
+    ByteSet<NIBBLE> tmp_key(key.RLPSerialize(false));
+    storeKV(tmp_key, value);*/
+}
+
 /// @brief creates a new Leaf or tries to mutate "this" into a Leaf: mutation keeps the parent consistant.
 /// WARNING:  If a new Object is created, the caller is in charge of assigning the right parent to the object.
 ///           A caller of this function should not assume that mutating "this" returns "this".
@@ -10,10 +19,10 @@
 /// @param do_mutate: if true, tries to mutate "this" into a leaf: might cause merge with the parent
 /// @return the Leaf pointer, which might differ from "this" even in a mutation scenario.
 template <typename T>
-TrieNode<T>* TrieNode<T>::createLeaf(const ByteSet<NIBBLE>& key, T&& value, bool do_mutate) {
+TrieNode<T>* TrieNode<T>::createLeaf(const ByteSet<NIBBLE>& key, const T&& value, bool do_mutate) {
     TrieNode* leaf = nullptr;
     if(do_mutate) {
-        auto parent = const_cast<TrieNode*>(getParent<const TrieNode*>());
+        auto parent = const_cast<TrieNode*>(dynamic_cast<const TrieNode*>(getParent()));
         if(parent && parent->getType() == TYPE::EXTN)
             leaf = parent;
         else {
@@ -44,7 +53,7 @@ template <typename T>
 TrieNode<T>* TrieNode<T>::createExtension(const ByteSet<NIBBLE>& key, bool do_mutate) {
     TrieNode* extension = nullptr;
     if(do_mutate) {
-        auto parent = const_cast<TrieNode*>(getParent<const TrieNode*>());
+        auto parent = const_cast<TrieNode*>(dynamic_cast<const TrieNode*>(getParent()));
         if(parent && parent->getType() == TYPE::EXTN)
             extension = parent;
         else {
@@ -67,7 +76,7 @@ TrieNode<T>* TrieNode<T>::createExtension(const ByteSet<NIBBLE>& key, bool do_mu
 /// @param do_mutate: if true, mutates "this" into a Branch
 /// @return the Branch pointer, which is always "this" in a mutation scenario (no merge with the parent).
 template <typename T>
-TrieNode<T>* TrieNode<T>::createBranch(T* value, bool do_mutate) {
+TrieNode<T>* TrieNode<T>::createBranch(const T* value, bool do_mutate) {
     TrieNode* branch = do_mutate ? this : new TrieNode();
     branch->m_key.clear();
     branch->m_value = value ? std::move(*value) : std::move(T());
@@ -146,7 +155,7 @@ TrieNode<T>* TrieNode<T>::disconnectChild(uint child_index) {
 }
 
 template <typename T>
-TrieNode<T>* TrieNode<T>::insert(TrieNode* parent, uint index_in_parent, TrieNode* child, uint child_index, TYPE type, ByteSet<NIBBLE>* key, T* value) {
+TrieNode<T>* TrieNode<T>::insert(TrieNode* parent, uint index_in_parent, TrieNode* child, uint child_index, TYPE type, ByteSet<NIBBLE>* key, const T* value) {
     assert(parent && child);
     assert(!parent->m_children[index_in_parent]);
     TrieNode* node;
@@ -330,7 +339,7 @@ int TrieNode<T>::getFirstChildIndex() const
 }
 
 template <typename T>
-uint64_t TrieNode<T>::getChildrenCount() const {
+uint TrieNode<T>::getChildrenCount() const {
     int counter = 0;
     for(uint i=0;i<m_children.size();i++) {
         if(m_children[i])
@@ -341,7 +350,7 @@ uint64_t TrieNode<T>::getChildrenCount() const {
 
 template <typename T>
 void TrieNode<T>::wipeK(uint index) {
-    auto parent = const_cast<TrieNode*>(getParent<const TrieNode*>());
+    auto parent = const_cast<TrieNode*>(dynamic_cast<const TrieNode*>(getParent()));
     switch(getType()) {
         case EMPTY:
             break;
@@ -410,7 +419,7 @@ ByteSet<NIBBLE> TrieNode<T>::extractCommonNibbles(ByteSet<NIBBLE> &key1, ByteSet
 }
 
 template <typename T>
-void TrieNode<T>::printChildren() const {
+void TrieNode<T>::print() const {
     string type;
     auto toString = [](TYPE t) -> std::string {
         switch (t) {
@@ -433,7 +442,7 @@ void TrieNode<T>::printChildren() const {
         cout << endl << endl;
         for(int i=0;i<m_children.size();i++) {
             if(m_children[i])
-                m_children[i]->printChildren();
+                m_children[i]->print();
         }
     }
 }

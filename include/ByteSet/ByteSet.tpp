@@ -2,7 +2,8 @@
 
 template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const unsigned char *p, uint64_t source_nb_bytes)
-    : m_rlp_type(BYTES)
+    : IComponent()
+    , m_rlp_type(BYTES) 
 { 
     assert(isByteAligned());
 
@@ -12,7 +13,8 @@ ByteSet<BitsPerElement>::ByteSet(const unsigned char *p, uint64_t source_nb_byte
    
 template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const Integer &val, uint64_t nb_elem)
-    : m_rlp_type(BYTES)
+    : IComponent()
+    , m_rlp_type(BYTES) 
 {
     if(val >= 0)   //-1 is the conventional value for an empty ByteSet
     {
@@ -28,7 +30,8 @@ ByteSet<BitsPerElement>::ByteSet(const Integer &val, uint64_t nb_elem)
 
 template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const char *str, const ByteSetFormat &f, uint64_t target_nb_elem)
-    : m_rlp_type(BYTES)
+    : IComponent()
+    , m_rlp_type(BYTES) 
 {
     std::string s = f.toCanonicalString(str);
     if(s.size()) {
