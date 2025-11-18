@@ -1,3 +1,5 @@
+#pragma once
+#include <ByteSet/ByteSet.h>
 #include <ByteSet/Tools.h>
 
 template <BitsPerElem BitsPerElement>
