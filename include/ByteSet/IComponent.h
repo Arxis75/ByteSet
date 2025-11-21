@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <deque>
 
 using uint = unsigned int;
 
@@ -22,7 +23,6 @@ class IComponent
         inline virtual void parse(ByteSet<BYTE> &b) = 0;
         inline virtual const ByteSet<BYTE> serialize() const = 0;
         inline virtual void print() const { /*TODO*/ };
-        inline virtual bool isEmpty() const = 0;
         inline virtual void clear() = 0;
         /********************************************************************************/
 
@@ -36,6 +36,7 @@ class IComponent
         const IComposite* m_parent;
 };
 
+class IcompositeIterator;
 
 class IComposite: virtual public IComponent
 {
@@ -51,16 +52,13 @@ class IComposite: virtual public IComponent
         virtual void parse(ByteSet<BYTE> &b) override;
         virtual const ByteSet<BYTE> serialize() const override;
         virtual void print() const override;
-        inline virtual bool isEmpty() const override{ return getChildrenCount() == 0; }
         inline virtual void clear() override = 0;
         //********************************************************************************
 
         //******************************* ICOMPOSITE INTERFACE ****************************
         inline virtual IComponent* newChild(uint creation_index = 0) = 0;
-        inline virtual void addChild(IComponent *child, const ByteSet<NIBBLE>& key)= 0;
+        inline virtual void addChild(uint child_index, IComponent *child) = 0;
         inline virtual const IComponent* getChild(uint child_index) const = 0;
-        inline virtual uint getChildrenCount() const = 0;
-        inline virtual uint getChildrenContainerSize() const = 0;
         //********************************************************************************
 
         template<typename T>

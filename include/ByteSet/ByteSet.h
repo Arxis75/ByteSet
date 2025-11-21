@@ -10,8 +10,11 @@ class ByteSet : virtual public IComponent
     public: 
         inline static const ByteSet EMPTY = ByteSet();
 
-        ByteSet() : IComponent(), m_rlp_type(BYTES) {}
+        ByteSet(RLPType type = RLPType::BYTES) : IComponent(), m_rlp_type(type) {}
         virtual ~ByteSet() = default;
+
+        template <BitsPerElem T>
+            ByteSet<T> as() const;
 
         //****************************** Array Constructors/Operators ****************************************//
 
@@ -102,10 +105,9 @@ class ByteSet : virtual public IComponent
 
         /******************************************* ICOMPONENT INTERFACE *********************************************/
 
-        inline virtual void parse(ByteSet<BYTE> &b) override { /*TODO*/ }
-        inline virtual const ByteSet<BYTE> serialize() const override { return RLPSerialize(false).asAligned(); }
+        inline virtual void parse(ByteSet<BYTE> &b) override { *this = b.as<BitsPerElement>(); }
+        inline virtual const ByteSet<BYTE> serialize() const override { return RLPSerialize(getRLPType() == RLPType::LIST).template as<BYTE>(); }
         inline virtual void print() const override { cout << asString() << endl; }
-        inline virtual bool isEmpty() const override { return getNbElements() == 0; }
         inline virtual void clear() override { vvalue.clear(); }  
 
         //********************************************* RLP  Helpers *************************************************/
@@ -128,8 +130,6 @@ class ByteSet : virtual public IComponent
         const ByteSet withoutTerminator() const;
         
         ByteSet<BYTE> HexToCompact() const;
-
-        inline ByteSet<BYTE> asAligned() const { return ByteSet<BYTE>(asInteger(), (getNbElements()*getBitsPerElem()+7)/8); }
 
         //********************************** Container manipulation interface ***************************************//
 

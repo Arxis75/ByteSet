@@ -2,12 +2,14 @@
 #include <ByteSet/TrieNode.h>
 
 template <typename T>
-void TrieNode<T>::addChild(IComponent *child, const ByteSet<NIBBLE>& key) {
+void TrieNode<T>::addChild(uint child_index, IComponent *child) {
     auto value = dynamic_cast<T*>(child);
     assert(value);
     child->setParent(this);
-    ByteSet<NIBBLE> tmp_key(key);
-    storeKV(tmp_key, value);
+    ByteSet<NIBBLE> key(child_index);
+    key.setRLPType(RLPType::INT);
+    key = key.RLPSerialize(false);
+    storeKV(key, value);
 }
 
 /// @brief creates a new Leaf or tries to mutate "this" into a Leaf: mutation keeps the parent consistant.
@@ -316,6 +318,43 @@ void TrieNode<T>::storeKV(ByteSet<NIBBLE> &key, const T* value) {
         default:
             break;
     }
+}
+
+template <typename T>
+const T* TrieNode<T>::getV(ByteSet<NIBBLE> &key, bool &is_absent) const {
+    const T* result = nullptr;
+    key.addTerminator();
+    while(!is_absent && key.getNbElements()) {
+        if( getType() == TYPE::BRAN ) {
+            if(!key.isTerminator()) {
+                if(auto next_child = m_children[key.pop_front_elem()].get(); next_child)
+                    result = next_child->getV(key, is_absent);
+                else
+                    is_absent = true;
+            }
+            else
+                result = m_value.get();
+        }
+        else if( getType() == TYPE::LEAF &&
+                 m_key == key.pop_back(key.getNbElements()) )
+            result = m_value.get();
+        else if( getType() == TYPE::EXTN &&
+                 key.getNbElements() > m_key.getNbElements() &&
+                 m_key == key.pop_front(m_key.getNbElements()) )
+            result = m_children[0]->getV(key, is_absent);
+        else
+            is_absent = true;
+    }
+    return result;
+}
+
+template <typename T>
+const IComponent* TrieNode<T>::getChild(uint child_index) const {
+    ByteSet<NIBBLE> key(child_index);
+    key.setRLPType(RLPType::INT);
+    key = key.RLPSerialize(false);
+    bool is_absent = false;
+    return getV(key, is_absent);
 }
 
 template <typename T>

@@ -15,9 +15,7 @@ class TrieNode : public IComposite
         virtual ~TrieNode() = default; //{ cout << "-- node " << this << " deleted. --" << endl; }
 
         //*********************************** ICOMPONENT INTERFACE ************************************************/
-        inline virtual const ByteSet<BYTE> serialize() const override { return TrieNode<T>::hash(); }
         virtual void print() const override;
-        inline virtual bool isEmpty() const override { return TrieNode<T>::getType() ==  TrieNode<T>::TYPE::EMPTY; }
         inline void clear() override { m_children.reset(); m_key.clear(); m_value.reset(); }
         //**********************************************************************************************************
 
@@ -30,17 +28,17 @@ class TrieNode : public IComposite
 
          //*********************************** ICOMPOSITE INTERFACE ************************************************
         virtual IComponent* newChild(uint creation_index = 0) override { return new T(); }
-        virtual void addChild(IComponent *child, const ByteSet<NIBBLE>& key) override;
-        virtual const IComponent* getChild(uint child_index) const override { return (child_index < m_children.size() ? m_children[child_index].get() : nullptr); }
-        virtual uint getChildrenCount() const override;
-        inline virtual uint getChildrenContainerSize() const override { return m_children.size(); }
+        virtual void addChild(uint child_index, IComponent *child) override;
+        virtual const IComponent* getChild(uint child_index) const override;
         //**********************************************************************************************************
 
         TrieNode* createLeaf(const ByteSet<NIBBLE>& key, const T* value, bool do_mutate = false);
         TrieNode* createExtension(const ByteSet<NIBBLE>& key, bool do_mutate = false);
         TrieNode* createBranch(const T* value, bool do_mutate = false);
+        uint getChildrenCount() const;
 
         void storeKV(ByteSet<NIBBLE> &key, const T* value);
+        const T* getV(ByteSet<NIBBLE> &key, bool &is_absent) const;
         void wipeK(uint index = 0);
 
         void connectChild(TrieNode* child, uint child_index);

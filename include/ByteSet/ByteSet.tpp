@@ -1,6 +1,7 @@
 #pragma once
 #include <ByteSet/ByteSet.h>
 #include <ByteSet/Tools.h>
+#include <cstdint>
 
 template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const unsigned char *p, uint64_t source_nb_bytes)
@@ -65,6 +66,39 @@ ByteSet<BitsPerElement>::ByteSet(const char *str, const ByteSetFormat &f, uint64
             while( getNbElements() < target_nb_elem)
                 push_front_elem(0x00);                      // 0-padding inserted
         }
+    }
+}
+
+template <BitsPerElem BitsPerElement>
+template <BitsPerElem T>
+ByteSet<T> ByteSet<BitsPerElement>::as() const {
+    if constexpr(T == BitsPerElement)
+        return *this;
+    else {
+        ByteSet<T> result;
+        if(uint(T) > getBitsPerElem()) {
+            uint nb_origin_elem_for_one_target_elem = uint(T) / getBitsPerElem();
+            uint8_t target_elem = 0;
+            for(uint i = 0; i<getNbElements(); i++) {
+                target_elem += (getElem(getNbElements()-i-1) << ((i%nb_origin_elem_for_one_target_elem) * getBitsPerElem()));
+                if((i%nb_origin_elem_for_one_target_elem) == nb_origin_elem_for_one_target_elem - 1 || i == getNbElements() - 1) {
+                    result.push_front_elem(target_elem);
+                    target_elem = 0;    
+                }
+            }
+        }
+        else {
+            uint nb_target_elem_for_one_origin_elem = getBitsPerElem() / uint(T);
+            uint8_t target_elem = 0;
+            for(uint i = 0; i<getNbElements(); i++) {
+                target_elem = getElem(i);
+                uint mask = pow(2, uint(T))-1;
+                for(uint j = 0; j<nb_target_elem_for_one_origin_elem; j++) {
+                    result.push_back_elem(mask & (target_elem >> (uint(T)*(nb_target_elem_for_one_origin_elem-j-1))));
+                }
+            }  
+        }
+        return result;
     }
 }
 
@@ -181,7 +215,9 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPSerialize(bool as_list) cons
         // => adds front 0-padding if necessary
         result.push_front_elem(0);
 
-    if(as_list || result.byteSize() != 1 || (result.bitSize() == 8 && result.getRLPType() != RLPType::STR && result.asInteger() > 0x7F)) {
+    if( as_list ||
+        result.byteSize() != 1 ||
+        (result.byteSize() == 1 && (result.asInteger() > 0x7F || result.getRLPType() == RLPType::STR))) {
         ByteSet header(result.byteSize() < 56 ? 0x80 + 0x40*as_list + result.byteSize() : 0xB7 + 0x40*as_list + result.buildRLPSizeHeader().byteSize());
         if(result.byteSize() >= 56)
             header.push_back(result.buildRLPSizeHeader());
@@ -262,15 +298,14 @@ ByteSet<BYTE> ByteSet<BitsPerElement>::HexToCompact() const
 {
     assert(getBitsPerElem() == 4);
 
-    ByteSet tmp(withoutTerminator());
-    if(tmp.getNbElements()%2)
-        tmp.push_front_elem(0x1+2*hasTerminator());
+    ByteSet result(withoutTerminator());
+    if(result.getNbElements()%2)
+        result.push_front_elem(0x1+2*hasTerminator());
     else {
-        tmp.push_front_elem(0x0);
-        tmp.push_front_elem(2*hasTerminator());
+        result.push_front_elem(0x0);
+        result.push_front_elem(2*hasTerminator());
     }
-    ByteSet<BYTE> result = tmp.asAligned();
-    return result;
+    return result.as<BYTE>();
 }
 
 template <BitsPerElem bb>

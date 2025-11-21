@@ -7,15 +7,13 @@ void IComposite::parse(ByteSet<BYTE> &b) {
         bool has_list_header = b.hasRLPListHeader();
         ByteSet payload = b.parse();
         if(IComponent* child = newChild(child_index); child) {
-            if(child->getComposite() && !has_list_header) { 
+            if(auto composite_child = dynamic_cast<IComposite*>(child); composite_child && !has_list_header) { 
                 //If composite without RLP List header => typed composite
-                setTyped(payload.pop_front_elem());
+                composite_child->setTyped(payload.pop_front_elem());
                 payload = payload.parse();
             }
             child->parse(payload);
-            ByteSet<NIBBLE> key(child_index);
-            key.setRLPType(RLPType::INT);
-            addChild(child, key.RLPSerialize(false));
+            addChild(child_index, child);
             child_index++;
         }
         else
@@ -25,11 +23,12 @@ void IComposite::parse(ByteSet<BYTE> &b) {
 
 const ByteSet<BYTE> IComposite::serialize() const {
     ByteSet<BYTE> result;
-    for(uint child_index = 0; child_index < getChildrenContainerSize(); child_index++) {
-        if(auto child = getChild(child_index); child)
-            result.push_back(child->serialize());
-        else
-            result.push_back_elem(0x80);
+    uint child_index = 0;
+    auto child = getChild(child_index);
+    while(child) {
+        result.push_back(child->serialize());
+        child_index++;
+        child = getChild(child_index);
     }
     result = result.RLPSerialize(true);
     if(uint typed = getTyped(); typed) {
@@ -40,10 +39,11 @@ const ByteSet<BYTE> IComposite::serialize() const {
 }
 
 void IComposite::print() const {
-    for(uint child_index = 0; child_index < getChildrenContainerSize(); child_index++) {
-        if(auto child = getChild(child_index); child)
-            child->print();
-        else
-            IComponent::print();
+    uint child_index = 0;
+    auto child = getChild(child_index);
+    while(child) {
+        child->print();
+        child_index++;
+        child = getChild(child_index);
     }
 }
