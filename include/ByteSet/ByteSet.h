@@ -1,5 +1,5 @@
 #pragma once
-#include <ByteSet/IComponent.h>
+#include <ByteSet/IComposite.h>
 #include <ByteSet/ByteSetFormat.h>
 
 enum RLPType {LIST, INT, BYTES, STR};

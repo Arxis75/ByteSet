@@ -1,5 +1,5 @@
 #pragma once
-#include <ByteSet/IComponent.h>
+#include <ByteSet/IComposite.h>
 #include <vector>
 #include <memory>
 
@@ -9,11 +9,11 @@ using std::unique_ptr;
 class VectorNode : public IComposite
 {
     public:
-        inline virtual ~VectorNode() { clear(); }
+        inline virtual ~VectorNode() = default;
 
         //*********************************** ICOMPONENT INTERFACE ************************************************
         virtual void print() const override;
-        virtual void clear() override;
+        virtual void clear() override { m_children.clear(); }
         //**********************************************************************************************************
 
          //*********************************** ICOMPOSITE INTERFACE ************************************************

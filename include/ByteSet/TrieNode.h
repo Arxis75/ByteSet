@@ -1,5 +1,5 @@
 #pragma once
-#include <ByteSet/IComponent.h>
+#include <ByteSet/IComposite.h>
 #include <ByteSet/ByteSet.h>
 #include <ByteSet/Tools.h>
 

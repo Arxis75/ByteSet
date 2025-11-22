@@ -1,4 +1,4 @@
-#include <ByteSet/IComponent.h>
+#include <ByteSet/IComposite.h>
 #include <ByteSet/ByteSet.h>
 
 void IComposite::parse(ByteSet<BYTE> &b) {
