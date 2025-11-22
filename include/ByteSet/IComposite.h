@@ -49,7 +49,7 @@ class IComposite: virtual public IComponent
         inline virtual const IComposite* getComposite() const override { return this; }
         virtual void parse(ByteSet<BYTE> &b) override;
         virtual const ByteSet<BYTE> serialize() const override;
-        virtual void print() const override;
+        virtual void print() const override = 0;
         inline virtual void clear() override = 0;
         //********************************************************************************
 

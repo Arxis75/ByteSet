@@ -41,9 +41,12 @@ const ByteSet<BYTE> IComposite::serialize() const {
 void IComposite::print() const {
     uint child_index = 0;
     auto child = getChild(child_index);
+    cout << "IComposite::print() for " << this << ":" << endl;
     while(child) {
         child->print();
+        cout << " ";
         child_index++;
         child = getChild(child_index);
     }
+    cout << endl;
 }
