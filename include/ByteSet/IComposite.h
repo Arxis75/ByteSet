@@ -21,7 +21,7 @@ class IComponent
         inline virtual void parse(ByteSet<BYTE> &b) = 0;
         virtual const ByteSet<BYTE> getValue() const = 0;
         inline virtual const ByteSet<BYTE> serialize() const = 0;
-        inline virtual void print() const { /*TODO*/ };
+        inline virtual void print() const = 0;
         inline virtual void clear() = 0;
         /********************************************************************************/
 

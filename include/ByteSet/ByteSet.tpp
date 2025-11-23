@@ -227,7 +227,7 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPSerialize(bool as_list) cons
 }
 
 template <BitsPerElem BitsPerElement>
-ByteSet<BitsPerElement> ByteSet<BitsPerElement>::parse()
+ByteSet<BitsPerElement> ByteSet<BitsPerElement>::pop_rlp(bool remove_brackets)
 {
     assert(byteSize());
     
@@ -241,11 +241,17 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::parse()
 
     uint64_t total_header_size = header > 0x7F ? 1 + size_size : 0;
     assert(getNbElements() >= (total_header_size + size) * getNbElemPerByte());
-    pop_front(total_header_size*getNbElemPerByte());
+    
+    if(remove_brackets) {
+        pop_front(total_header_size*getNbElemPerByte());
+        return *this;
+    }
+    else
+        return pop_front((total_header_size + size) * getNbElemPerByte());
 
-    ByteSet<BitsPerElement> result = pop_front(size*getNbElemPerByte());
-    result.setRLPType(is_list ? RLPType::LIST : (has_header && result.byteSize() == 1 && result.asInteger() < 0x80 ? RLPType::STR : RLPType::BYTES));
-    return result;
+    //ByteSet<BitsPerElement> result = pop_front(size*getNbElemPerByte());
+    //result.setRLPType(is_list ? RLPType::LIST : (has_header && result.byteSize() == 1 && result.asInteger() < 0x80 ? RLPType::STR : RLPType::BYTES));
+    //return result;
 }
 
 template <BitsPerElem BitsPerElement>

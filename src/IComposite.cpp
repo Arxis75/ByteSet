@@ -6,23 +6,40 @@ const ByteSet<BYTE> IComposite::getValue() const {
 }
 
 void IComposite::parse(ByteSet<BYTE> &b) {
+    ByteSet payload;
+    uint child_index = 0;
+    b.pop_rlp(true);
+    do {
+        cout << "Left payload to parse: " << b.asString() << endl << endl;
+        IComponent* child = newChild(child_index);
+        if(b.byteSize()) {
+            payload = b.pop_rlp();
+            cout << "Parsing payload: " << payload.asString() << endl << endl;
+            child->parse(payload);
+        }
+        addChild(child_index, child);
+        child_index++;
+    } while(b.byteSize());
+}
+/*void IComposite::parse(ByteSet<BYTE> &b) {
     uint child_index = 0;
     while(b.byteSize()) {
         bool has_list_header = b.hasRLPListHeader();
-        cout << "Left payload to parse: " << b.asString() << endl << endl;
         ByteSet payload = b.parse();
-        IComponent* child = newChild(child_index);
-        if(auto composite_child = dynamic_cast<IComposite*>(child); composite_child && !has_list_header) { 
-            //If composite without RLP List header => typed composite
-            composite_child->setTyped(payload.pop_front_elem());
-            payload = payload.parse();
+        if(IComponent* child = newChild(child_index); child) {
+            if(auto composite_child = dynamic_cast<IComposite*>(child); composite_child && !has_list_header) { 
+                //If composite without RLP List header => typed composite
+                composite_child->setTyped(payload.pop_front_elem());
+                payload = payload.parse();
+            }
+            child->parse(payload);
+            addChild(child_index, child);
+            child_index++;
         }
-        cout << "Parsing payload: " << payload.asString() << endl << endl;
-        child->parse(payload);
-        addChild(child_index, child);
-        child_index++;
+        else
+            break;
     }
-}
+}*/
 
 const ByteSet<BYTE> IComposite::serialize() const {
     ByteSet<BYTE> result;
@@ -58,7 +75,6 @@ void IComposite::print() const {
     cout << "IComposite::print() for " << this << ":" << endl;
     while(child) {
         child->print();
-        cout << " ";
         child_index++;
         child = getChild(child_index);
     }

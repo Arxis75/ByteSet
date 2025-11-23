@@ -105,7 +105,7 @@ class ByteSet : virtual public IComponent
 
         /******************************************* ICOMPONENT INTERFACE *********************************************/
 
-        inline virtual void parse(ByteSet<BYTE> &b) override { *this = b.as<BitsPerElement>(); }
+        inline virtual void parse(ByteSet<BYTE> &b) override { *this = b.pop_rlp(true).as<BitsPerElement>(); }
         inline virtual const ByteSet<BYTE> getValue() const override { return as<BYTE>(); }
         inline virtual const ByteSet<BYTE> serialize() const override { return RLPSerialize(getRLPType() == RLPType::LIST).template as<BYTE>(); }
         inline virtual void print() const override { cout << asString() << endl; }
@@ -135,7 +135,7 @@ class ByteSet : virtual public IComponent
         //********************************** Container manipulation interface ***************************************//
 
         ByteSet RLPSerialize(bool as_list) const;
-        ByteSet parse();
+        ByteSet pop_rlp(bool remove_brackets = false);
         ByteSet keccak256() const;
         ByteSet sha256() const;
 
