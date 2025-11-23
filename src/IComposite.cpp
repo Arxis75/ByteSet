@@ -2,6 +2,19 @@
 #include <ByteSet/ByteSet.h>
 
 void IComposite::parse(ByteSet<BYTE> &b) {
+    ByteSet payload;
+    uint child_index = 0;
+    if(b.hasRLPListHeader())
+        b = b.parse();         //Removes the top brackets
+    while(b.byteSize()) {
+        payload = b.parse();
+        IComponent* child = newChild(child_index);
+        child->parse(payload);
+        addChild(child_index, child);
+        child_index++;
+    }
+}
+/*void IComposite::parse(ByteSet<BYTE> &b) {
     uint child_index = 0;
     while(b.byteSize()) {
         bool has_list_header = b.hasRLPListHeader();
@@ -19,9 +32,20 @@ void IComposite::parse(ByteSet<BYTE> &b) {
         else
             break;
     }
-}
+}*/
 
 const ByteSet<BYTE> IComposite::serialize() const {
+    ByteSet<BYTE> result;
+    uint child_index = 0;
+    auto child = getChild(child_index);
+    while(child) {
+        result.push_back(child->serialize());
+        child_index++;
+        child = getChild(child_index);
+    }
+    return result.RLPSerialize(true);
+}
+/*const ByteSet<BYTE> IComposite::serialize() const {
     ByteSet<BYTE> result;
     uint child_index = 0;
     auto child = getChild(child_index);
@@ -36,7 +60,7 @@ const ByteSet<BYTE> IComposite::serialize() const {
         result = result.RLPSerialize(false);
     }
     return result;
-}
+}*/
 
 void IComposite::print() const {
     uint child_index = 0;
