@@ -11,13 +11,14 @@ void IComposite::parse(ByteSet<BYTE> &b) {
     b.pop_rlp(true);
     do {
         cout << "Left payload to parse: " << b.asString() << endl << endl;
-        IComponent* child = newChild(child_index);
+        //IComponent* child = newChild(child_index);
         if(b.byteSize()) {
+            IComponent* child = newChild(child_index);
             payload = b.pop_rlp();
             cout << "Parsing payload: " << payload.asString() << endl << endl;
             child->parse(payload);
+            addChild(child_index, child);
         }
-        addChild(child_index, child);
         child_index++;
     } while(b.byteSize());
 }
