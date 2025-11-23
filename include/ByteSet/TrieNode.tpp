@@ -103,12 +103,12 @@ const ByteSet<BYTE> TrieNode<T>::hash() const {
     }
     else if(getType() == TYPE::LEAF) {
         result.push_back(m_key.HexToCompact().serialize());
-        result.push_back(m_value->serialize());
+        result.push_back(m_value->getValue().serialize());
         result = result.RLPSerialize(true);
-        cout << "Leaf " << dec << " rlp = " << result.asString() << endl;
+        //cout << "Leaf " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32 || isRoot())
             result = result.keccak256();
-        cout << "Leaf " << dec << " hash = " << result.asString() << endl;
+        //cout << "Leaf " << dec << " hash = " << result.asString() << endl;
     }
     else if(getType() == TYPE::EXTN) {
         result.push_back(m_key.HexToCompact().serialize());
@@ -129,12 +129,12 @@ const ByteSet<BYTE> TrieNode<T>::hash() const {
             else
                 result.push_back(ByteSet<BYTE>::EMPTY.serialize());
         }
-        result.push_back(m_value ? m_value->serialize() : ByteSet<BYTE>::EMPTY.serialize());
+        result.push_back(m_value ? m_value->getValue().serialize() : ByteSet<BYTE>::EMPTY.serialize());
         result = result.RLPSerialize(true);
-        cout << "Branch " << dec << " rlp = " << result.asString() << endl;
+        //cout << "Branch " << dec << " rlp = " << result.asString() << endl;
         if(result.byteSize() >= 32 || isRoot())
             result = result.keccak256();
-        cout << "Branch " << dec << " hash = " << result.asString() << endl;
+        //cout << "Branch " << dec << " hash = " << result.asString() << endl;
     }
     return result;
 } 

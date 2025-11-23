@@ -106,6 +106,7 @@ class ByteSet : virtual public IComponent
         /******************************************* ICOMPONENT INTERFACE *********************************************/
 
         inline virtual void parse(ByteSet<BYTE> &b) override { *this = b.as<BitsPerElement>(); }
+        inline virtual const ByteSet<BYTE> getValue() const override { return as<BYTE>(); }
         inline virtual const ByteSet<BYTE> serialize() const override { return RLPSerialize(getRLPType() == RLPType::LIST).template as<BYTE>(); }
         inline virtual void print() const override { cout << asString() << endl; }
         inline virtual void clear() override { vvalue.clear(); }  

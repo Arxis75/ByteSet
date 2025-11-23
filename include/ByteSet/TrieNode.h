@@ -12,7 +12,7 @@ class TrieNode : public IComposite
 
     public:
         enum TYPE {EMPTY, EXTN, BRAN, LEAF};
-        virtual ~TrieNode() = default; //{ cout << "-- node " << this << " deleted. --" << endl; }
+        virtual ~TrieNode() = default;
 
         //*********************************** ICOMPONENT INTERFACE ************************************************/
         virtual void print() const override;
