@@ -2,6 +2,11 @@
 #include <ByteSet/ByteSet.h>
 
 template <BitsPerElem BitsPerElement>
+ByteSet<BitsPerElement> RLPByteSet<BitsPerElement>::buildRLPSizeHeader(const ByteSet<BitsPerElement> &b) {
+    return ByteSet<BitsPerElement>(b.byteSize(), ByteSet<BitsPerElement>(b.byteSize()).byteSize() * b.getNbElemPerByte());  // the size needs to be byte-aligned
+}
+
+template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> RLPByteSet<BitsPerElement>::RLPSerialize(const ByteSet<BitsPerElement> &b, bool as_list)
 {
     ByteSet<BitsPerElement> result(b);

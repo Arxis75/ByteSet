@@ -165,7 +165,7 @@ class RLPByteSet : public ByteSet<BitsPerElement>
         //********************************************* RLP HELPERS ***********************************************
 
         static ByteSet<BitsPerElement> RLPSerialize(const ByteSet<BitsPerElement> &b, bool as_list = false);
-        inline static ByteSet<BitsPerElement> buildRLPSizeHeader(const ByteSet<BitsPerElement> &b) { return ByteSet<BitsPerElement>(b.byteSize(), ByteSet<BitsPerElement>(b.byteSize()).byteSize() * b.getNbElemPerByte()); }   // the size needs to be byte-aligned
+        static ByteSet<BitsPerElement> buildRLPSizeHeader(const ByteSet<BitsPerElement> &b);
         inline bool hasRLPListHeader() const { return this->getNbElements() && this->at(0, 8/this->getBitsPerElem()).asInteger() >= 0xC0; }
 
     protected:
