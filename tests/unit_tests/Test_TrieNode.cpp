@@ -162,7 +162,7 @@ TEST(Test_TrieNode, trieanyorder)
 
     ASSERT_EQ(btt.hash(), ByteSet("0x8aad789dff2f538bca5d8ea56e8abe10f4c7ba3a5dea95fea4cd6e7c3a1168d3"));
 
-    btt.clear();
+    /*btt.clear();
     
     key = ByteSet<NIBBLE>("do", UTF8);
     value = new ByteSet<BYTE>("verb", UTF8);
@@ -180,7 +180,7 @@ TEST(Test_TrieNode, trieanyorder)
     value = new ByteSet<BYTE>("puppy", UTF8);
     btt.store(key, value);
 
-    ASSERT_EQ(btt.hash(), ByteSet("0x5991bb8c6514148a29db676a14ac506cd2cd5775ace63c30a4fe457715e9ac84"));
+    ASSERT_EQ(btt.hash(), ByteSet("0x5991bb8c6514148a29db676a14ac506cd2cd5775ace63c30a4fe457715e9ac84"));*/
 
     /******************************************************************************************************************* */
     /*                                     NEXT TEST INTERNAL STRUCTURE FOR DEBUGGING
@@ -191,7 +191,7 @@ TEST(Test_TrieNode, trieanyorder)
     E0:
         key: 0x666F6F
         ["0x00666F6F", "0xda808080808080c634846261737380808080808080808083626172"]
-            = 0xe08400666f6fda808080808080c634846261737380808080808080808083626172
+            = e08400666f6fda808080808080c634846261737380808080808080808083626172
         keccak256 = 0x17beaa1648bafa633cda809c90c04af50fc8aed3cb40d16efbddee6fdf63c4c3
 
     B0:

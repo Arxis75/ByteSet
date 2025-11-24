@@ -98,39 +98,51 @@ TrieNode<T>* TrieNode<T>::createBranch(const T* value, bool do_mutate) {
 
 template <typename T>
 const ByteSet<BYTE> TrieNode<T>::hash() const {
-    ByteSet<BYTE> result;
+    RLPByteSet<BYTE> rlp;
 
     if(getType() == TYPE::EMPTY) {
-        result = result.serialize();
-        //cout << "Empty node " << dec << " rlp = " << result.asString() << endl;
+        rlp = RLPByteSet<BYTE>::EMPTY;
+        //cout << "Empty node " << dec << " rlp = " << rlp.asString() << endl;
     }
     else if(getType() == TYPE::LEAF) {
-        result.push_back_rlp(m_key.HexToCompact().serialize());
-        result.push_back_rlp(m_value->getValue().serialize());
-        cout << "Leaf " << dec << " rlp = " << result.asString() << endl;
+        rlp.push_back_rlp(m_key.HexToCompact());
+        rlp.push_back_rlp(m_value->getValue());
+        cout << "Leaf " << dec << " rlp = " << rlp.asString() << endl;
     }
     else if(getType() == TYPE::EXTN) {
-        result.push_back_rlp(m_key.HexToCompact().serialize());
+        rlp.push_back_rlp(m_key.HexToCompact());
         ByteSet<BYTE> h(m_children[0]->hash());
-        result.push_back_rlp(h.byteSize() < 32 ? h : h.serialize());    // < 32 Bytes => Value node, else Hash Node
-        //cout << "Extension " << dec << " rlp = " << result.asString() << endl;
+        RLPByteSet<BYTE> rlp_encoded_h(h);
+        if(h.byteSize() < 32)
+            //If the child node hash length < 32 Bytes, the hash is in fact already a RLP => raw copy
+            rlp_encoded_h = h;
+        rlp.push_back_rlp(rlp_encoded_h);    
+        cout << "Extension " << dec << " rlp = " << rlp.asString() << endl;
     }
     else if(getType() == TYPE::BRAN) {
         for(uint i=0;i<m_children.size();i++) {
             if(m_children[i]) {
                 ByteSet<BYTE> h(m_children[i]->hash());
-                result.push_back_rlp(h.byteSize() < 32 ? h : h.serialize());
+                RLPByteSet<BYTE> rlp_encoded_h(h);
+                if(h.byteSize() < 32)
+                    //If the child node hash length < 32 Bytes, the hash is in fact already a RLP => raw copy
+                    rlp_encoded_h = h;
+                rlp.push_back_rlp(rlp_encoded_h);   
             }
             else
-                result.push_back_rlp(ByteSet<BYTE>::EMPTY.serialize());
+                rlp.push_back_rlp(ByteSet<BYTE>::EMPTY);
         }
-        result.push_back_rlp(m_value ? m_value->getValue().serialize() : ByteSet<BYTE>::EMPTY.serialize());
-        cout << "Branch " << dec << " rlp = " << result.asString() << endl;
+        rlp.push_back_rlp(m_value ? m_value->getValue() : ByteSet<BYTE>::EMPTY);
+        cout << "Branch " << dec << " rlp = " << rlp.asString() << endl;
     }
-    if(result.byteSize() >= 32 || isRoot())
-        result = result.keccak256();
-    cout << "Node " << dec << " hash = " << result.asString() << endl;
-    return result;
+    if(rlp.byteSize() >= 32 || isRoot()){    // < 32 Bytes => Value node, else Hash Node
+        cout << "Node " << dec << " hash = " << rlp.keccak256().asString() << endl;
+        return rlp.keccak256();
+    }
+    else {
+        cout << "Node " << dec << " hash = " << rlp.asString() << endl;
+        return rlp.as<BYTE>();
+    }
 } 
 
 template <typename T>

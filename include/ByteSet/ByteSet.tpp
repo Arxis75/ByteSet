@@ -6,7 +6,6 @@
 template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const unsigned char *p, uint64_t source_nb_bytes)
     : IComponent()
-    , m_rlp_type(BYTES) 
 { 
     assert(isByteAligned());
 
@@ -17,7 +16,6 @@ ByteSet<BitsPerElement>::ByteSet(const unsigned char *p, uint64_t source_nb_byte
 template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const Integer &val, uint64_t nb_elem)
     : IComponent()
-    , m_rlp_type(BYTES) 
 {
     if(val >= 0)   //-1 is the conventional value for an empty ByteSet
     {
@@ -34,7 +32,6 @@ ByteSet<BitsPerElement>::ByteSet(const Integer &val, uint64_t nb_elem)
 template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement>::ByteSet(const char *str, const ByteSetFormat &f, uint64_t target_nb_elem)
     : IComponent()
-    , m_rlp_type(BYTES) 
 {
     std::string s = f.toCanonicalString(str);
     if(s.size()) {
@@ -207,59 +204,14 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::at(const uint64_t elem_offset, 
 }
 
 template <BitsPerElem BitsPerElement>
-ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPSerialize(bool as_list) const
-{
-    ByteSet result(*this);
-    while(result.getNbElements() % (result.getNbElemPerByte()))
-        //May need to be byte-aligned for RLP
-        // => adds front 0-padding if necessary
-        result.push_front_elem(0);
-
-    if( as_list ||
-        result.byteSize() != 1 ||
-        (result.byteSize() == 1 && (result.asInteger() > 0x7F || result.getRLPType() == RLPType::STR))) {
-        ByteSet header(result.byteSize() < 56 ? 0x80 + 0x40*as_list + result.byteSize() : 0xB7 + 0x40*as_list + result.buildRLPSizeHeader().byteSize());
-        if(result.byteSize() >= 56)
-            header.push_back(result.buildRLPSizeHeader());
-        result.push_front(header);
-    }
-    return result;
+const RLPByteSet<BYTE> ByteSet<BitsPerElement>::serialize() const {
+    return RLPByteSet<BYTE>(as<BYTE>()); 
 }
 
 template <BitsPerElem BitsPerElement>
-void ByteSet<BitsPerElement>::push_back_rlp(const ByteSet& b) { 
-    if(hasRLPListHeader())
-        pop_brackets();
-    push_back(b);
-    push_brackets();
-}
-
-template <BitsPerElem BitsPerElement>
-ByteSet<BitsPerElement> ByteSet<BitsPerElement>::pop_rlp(bool remove_brackets)
-{
-    assert(byteSize());
-    
-    uint8_t header = (isByteAligned() ? getElem(0) : uint8_t(at(0, 1*getNbElemPerByte()).asInteger()));
-    bool has_header = (header >= 0x80);
-    bool is_list = (header >= 0xC0);
-    uint8_t list_modifier = 0x40 * is_list;
-    bool is_long = (header > 0xB7 + list_modifier);
-    uint64_t size_size = is_long ? header - 0xB7 - list_modifier : 0;
-    uint64_t size = is_long ? uint64_t(at(1*getNbElemPerByte(), size_size*getNbElemPerByte()).asInteger()) : (has_header ? header - 0x80 - list_modifier : 1);
-
-    uint64_t total_header_size = header > 0x7F ? 1 + size_size : 0;
-    assert(getNbElements() >= (total_header_size + size) * getNbElemPerByte());
-    
-    if(remove_brackets) {
-        pop_front(total_header_size*getNbElemPerByte());
-        return *this;
-    }
-    else
-        return pop_front((total_header_size + size) * getNbElemPerByte());
-
-    //ByteSet<BitsPerElement> result = pop_front(size*getNbElemPerByte());
-    //result.setRLPType(is_list ? RLPType::LIST : (has_header && result.byteSize() == 1 && result.asInteger() < 0x80 ? RLPType::STR : RLPType::BYTES));
-    //return result;
+void ByteSet<BitsPerElement>::parse(RLPByteSet<BYTE> &b) {
+    b.pop_brackets();
+    *this = b.as<BitsPerElement>();
 }
 
 template <BitsPerElem BitsPerElement>

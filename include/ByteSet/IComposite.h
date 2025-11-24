@@ -20,9 +20,9 @@ class IComponent
 
         /******************************** ICOMPONENT INTERFACE **************************/
         inline virtual const IComposite* getComposite() const { return nullptr; }
-        inline virtual void parse(ByteSet<BYTE> &b) = 0;
+        inline virtual void parse(RLPByteSet<BYTE> &b) = 0;
         virtual const ByteSet<BYTE> getValue() const = 0;
-        inline virtual const ByteSet<BYTE> serialize() const = 0;
+        inline virtual const RLPByteSet<BYTE> serialize() const = 0;
         inline virtual void print() const = 0;
         inline virtual void clear() = 0;
         /********************************************************************************/
@@ -50,9 +50,9 @@ class IComposite: virtual public IComponent
         
         //******************************* ICOMPONENT INTERFACE ****************************
         inline virtual const IComposite* getComposite() const override { return this; }
-        virtual void parse(ByteSet<BYTE> &b) override;
+        virtual void parse(RLPByteSet<BYTE> &b) override;
         virtual const ByteSet<BYTE> getValue() const override;
-        virtual const ByteSet<BYTE> serialize() const override;
+        virtual const RLPByteSet<BYTE> serialize() const override;
         virtual void print() const override = 0;
         inline virtual void clear() override = 0;
         //********************************************************************************

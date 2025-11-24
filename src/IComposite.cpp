@@ -1,8 +1,8 @@
 #include <ByteSet/IComposite.h>
 #include <ByteSet/ByteSet.h>
 
-void IComposite::parse(ByteSet<BYTE> &b) {
-    ByteSet<BYTE> payload;
+void IComposite::parse(RLPByteSet<BYTE> &b) {
+    RLPByteSet<BYTE> payload;
     uint child_index = 0;
     b.pop_brackets();
     do {
@@ -21,11 +21,11 @@ void IComposite::parse(ByteSet<BYTE> &b) {
 }
 
 const ByteSet<BYTE> IComposite::getValue() const {
-    return IComposite::serialize();
+    return IComposite::serialize().as<BYTE>();
 }
 
-const ByteSet<BYTE> IComposite::serialize() const {
-    ByteSet<BYTE> result;
+const RLPByteSet<BYTE> IComposite::serialize() const {
+    RLPByteSet<BYTE> result;
     uint child_index = 0;
     auto child = getChild(child_index);
     while(child) {
