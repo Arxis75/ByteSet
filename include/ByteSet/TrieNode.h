@@ -29,13 +29,15 @@ class TrieNode : public IComposite
          //*********************************** ICOMPOSITE INTERFACE ************************************************
         virtual IComponent* newChild(uint creation_index = 0) override { return new T(); }
         virtual void addChild(uint child_index, IComponent *child) override;
+        virtual IComponent* removeChild(uint child_index) override;
         virtual const IComponent* getChild(uint child_index) const override;
+        uint getChildrenCount() const override { /*TODO*/ return 0; }
         //**********************************************************************************************************
 
         TrieNode* createLeaf(const ByteSet<NIBBLE>& key, const T* value, bool do_mutate = false);
         TrieNode* createExtension(const ByteSet<NIBBLE>& key, bool do_mutate = false);
         TrieNode* createBranch(const T* value, bool do_mutate = false);
-        uint getChildrenCount() const;
+        uint getChildrenNodeCount() const;
 
         void storeKV(ByteSet<NIBBLE> &key, const T* value);
         const T* getV(ByteSet<NIBBLE> &key, bool &is_absent) const;

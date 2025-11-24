@@ -105,13 +105,19 @@ class ByteSet : virtual public IComponent
 
         /******************************************* ICOMPONENT INTERFACE *********************************************/
 
-        inline virtual void parse(ByteSet<BYTE> &b) override { *this = b.pop_rlp(true).as<BitsPerElement>(); }
+        inline virtual void parse(ByteSet<BYTE> &b) override { b.pop_brackets(); *this = b.as<BitsPerElement>(); }
         inline virtual const ByteSet<BYTE> getValue() const override { return as<BYTE>(); }
         inline virtual const ByteSet<BYTE> serialize() const override { return RLPSerialize().template as<BYTE>(); }
         inline virtual void print() const override { cout << asString() << endl; }
         inline virtual void clear() override { vvalue.clear(); }  
 
         //********************************************* RLP  Helpers *************************************************/
+
+        inline void push_brackets() { *this = RLPSerialize(true); }
+        inline void pop_brackets() { pop_rlp(true); }
+
+        inline void push_back_rlp(const ByteSet& b);
+        inline ByteSet pop_front_rlp() { return pop_rlp(false); }
 
         RLPType getRLPType() const { return m_rlp_type; }
         void setRLPType(RLPType t) { if(t == RLPType::INT) removefront0padding(); m_rlp_type = t; }
@@ -134,10 +140,14 @@ class ByteSet : virtual public IComponent
 
         //********************************** Container manipulation interface ***************************************//
 
-        ByteSet RLPSerialize(bool as_list = false) const;
-        ByteSet pop_rlp(bool remove_brackets = false);
         ByteSet keccak256() const;
         ByteSet sha256() const;
+
+    protected:
+        ByteSet pop_rlp(bool remove_brackets);
+
+    public:
+        ByteSet RLPSerialize(bool as_list = false) const;
 
     private:
         /// @brief Vector is used to store the data with the Big-Endian convention

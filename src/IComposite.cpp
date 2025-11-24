@@ -2,18 +2,22 @@
 #include <ByteSet/ByteSet.h>
 
 void IComposite::parse(ByteSet<BYTE> &b) {
-    ByteSet payload;
+    ByteSet<BYTE> payload;
     uint child_index = 0;
-    b.pop_rlp(true);
-    while(b.byteSize()) {
-        cout << "Left payload to parse: " << b.asString() << endl << endl;
+    b.pop_brackets();
+    do {
+        //cout << "Left payload to parse: " << b.asString() << endl;
         IComponent* child = newChild(child_index);
-        payload = b.pop_rlp();
-        cout << "Parsing payload: " << payload.asString() << endl << endl;
-        child->parse(payload);
+        if(b.byteSize()) {
+            payload = b.pop_front_rlp();
+            cout << "Parsing payload: " << payload.asString() << endl << endl;
+            child->parse(payload);
+        }
+        else
+            cout << "Parsing empty payload: " << endl << endl;
         addChild(child_index, child);
         child_index++;
-    }
+    } while(b.byteSize()); 
 }
 
 const ByteSet<BYTE> IComposite::getValue() const {
@@ -25,11 +29,11 @@ const ByteSet<BYTE> IComposite::serialize() const {
     uint child_index = 0;
     auto child = getChild(child_index);
     while(child) {
-        result.push_back(child->serialize());
+        result.push_back_rlp(child->serialize());
         child_index++;
         child = getChild(child_index);
     }
-    return result.RLPSerialize(true);
+    return result;
 }
 
 void IComposite::print() const {

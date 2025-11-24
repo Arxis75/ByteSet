@@ -227,6 +227,14 @@ ByteSet<BitsPerElement> ByteSet<BitsPerElement>::RLPSerialize(bool as_list) cons
 }
 
 template <BitsPerElem BitsPerElement>
+void ByteSet<BitsPerElement>::push_back_rlp(const ByteSet& b) { 
+    if(hasRLPListHeader())
+        pop_brackets();
+    push_back(b);
+    push_brackets();
+}
+
+template <BitsPerElem BitsPerElement>
 ByteSet<BitsPerElement> ByteSet<BitsPerElement>::pop_rlp(bool remove_brackets)
 {
     assert(byteSize());

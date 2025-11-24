@@ -6,10 +6,16 @@ void TrieNode<T>::addChild(uint child_index, IComponent *child) {
     auto value = dynamic_cast<T*>(child);
     assert(value);
     child->setParent(this);
-    ByteSet<NIBBLE> key(child_index);
-    key.setRLPType(RLPType::INT);
-    key = key.RLPSerialize(false);
+    ByteSet<NIBBLE> key(child_index ? ByteSet<BYTE>(child_index).serialize().as<NIBBLE>() : ByteSet<BYTE>::EMPTY.serialize().as<NIBBLE>());
     storeKV(key, value);
+}
+
+template <typename T>
+IComponent* TrieNode<T>::removeChild(uint child_index) {
+    ByteSet<NIBBLE> key(child_index ? ByteSet<BYTE>(child_index).serialize().as<NIBBLE>() : ByteSet<BYTE>::EMPTY.serialize().as<NIBBLE>());
+    //IComponent * child = get<T>(key);   //FIXME! the child will be deleted by the next line which does a m_value.reset()
+    storeKV(key, nullptr);
+    return nullptr; //return child;
 }
 
 /// @brief creates a new Leaf or tries to mutate "this" into a Leaf: mutation keeps the parent consistant.
@@ -97,45 +103,33 @@ const ByteSet<BYTE> TrieNode<T>::hash() const {
     if(getType() == TYPE::EMPTY) {
         result = result.serialize();
         //cout << "Empty node " << dec << " rlp = " << result.asString() << endl;
-        if(result.byteSize() >= 32 || isRoot())
-            result = result.keccak256();
-        //cout << "Empty node " << dec << " hash = " << result.asString() << endl;
     }
     else if(getType() == TYPE::LEAF) {
-        result.push_back(m_key.HexToCompact().serialize());
-        result.push_back(m_value->getValue().serialize());
-        result = result.RLPSerialize(true);
+        result.push_back_rlp(m_key.HexToCompact().serialize());
+        result.push_back_rlp(m_value->getValue().serialize());
         cout << "Leaf " << dec << " rlp = " << result.asString() << endl;
-        if(result.byteSize() >= 32 || isRoot())
-            result = result.keccak256();
-        cout << "Leaf " << dec << " hash = " << result.asString() << endl;
     }
     else if(getType() == TYPE::EXTN) {
-        result.push_back(m_key.HexToCompact().serialize());
+        result.push_back_rlp(m_key.HexToCompact().serialize());
         ByteSet<BYTE> h(m_children[0]->hash());
-        result.push_back(h.byteSize() < 32 ? h : h.serialize());    // < 32 Bytes => Value node, else Hash Node
-        result = result.RLPSerialize(true);
+        result.push_back_rlp(h.byteSize() < 32 ? h : h.serialize());    // < 32 Bytes => Value node, else Hash Node
         //cout << "Extension " << dec << " rlp = " << result.asString() << endl;
-        if(result.byteSize() >= 32 || isRoot())
-            result = result.keccak256();
-        //cout << "Extension " << dec << " hash = " << result.asString() << endl;
     }
     else if(getType() == TYPE::BRAN) {
         for(uint i=0;i<m_children.size();i++) {
             if(m_children[i]) {
                 ByteSet<BYTE> h(m_children[i]->hash());
-                result.push_back(h.byteSize() < 32 ? h : h.serialize());
+                result.push_back_rlp(h.byteSize() < 32 ? h : h.serialize());
             }
             else
-                result.push_back(ByteSet<BYTE>::EMPTY.serialize());
+                result.push_back_rlp(ByteSet<BYTE>::EMPTY.serialize());
         }
-        result.push_back(m_value ? m_value->getValue().serialize() : ByteSet<BYTE>::EMPTY.serialize());
-        result = result.RLPSerialize(true);
+        result.push_back_rlp(m_value ? m_value->getValue().serialize() : ByteSet<BYTE>::EMPTY.serialize());
         cout << "Branch " << dec << " rlp = " << result.asString() << endl;
-        if(result.byteSize() >= 32 || isRoot())
-            result = result.keccak256();
-        cout << "Branch " << dec << " hash = " << result.asString() << endl;
     }
+    if(result.byteSize() >= 32 || isRoot())
+        result = result.keccak256();
+    cout << "Node " << dec << " hash = " << result.asString() << endl;
     return result;
 } 
 
@@ -350,9 +344,7 @@ const T* TrieNode<T>::getV(ByteSet<NIBBLE> &key, bool &is_absent) const {
 
 template <typename T>
 const IComponent* TrieNode<T>::getChild(uint child_index) const {
-    ByteSet<NIBBLE> key(child_index);
-    key.setRLPType(RLPType::INT);
-    key = key.RLPSerialize(false);
+    ByteSet<NIBBLE> key(child_index ? ByteSet<BYTE>(child_index).serialize().as<NIBBLE>() : ByteSet<BYTE>::EMPTY.serialize().as<NIBBLE>());
     bool is_absent = false;
     return getV(key, is_absent);
 }
@@ -383,7 +375,7 @@ int TrieNode<T>::getFirstChildIndex() const
 }
 
 template <typename T>
-uint TrieNode<T>::getChildrenCount() const {
+uint TrieNode<T>::getChildrenNodeCount() const {
     int counter = 0;
     for(uint i=0;i<m_children.size();i++) {
         if(m_children[i])
@@ -417,7 +409,7 @@ void TrieNode<T>::wipeK(uint index) {
         case BRAN: {
                 if(m_children[index])
                     m_children[index].reset();
-                uint nb_children = getChildrenCount();
+                uint nb_children = getChildrenNodeCount();
                 if(!nb_children && m_value)
                     //This BRANCH mutates to LEAF to integrate the m_value of the former BRANCH
                     auto leaf = createLeaf(EMPTY_KEY, m_value.release(), true);

@@ -1,6 +1,16 @@
 #include <ByteSet/VectorNode.h>
 #include <ByteSet/Tools.h>
 
+IComponent* VectorNode::pop_front() {
+    if(getChildrenCount()) {
+        const IComponent* child = m_children[0].release();
+        m_children.erase(m_children.begin());
+        return const_cast<IComponent*>(child);
+    }
+    else
+        return nullptr;
+}
+
 inline void VectorNode::print() const
 {
     if(m_children.size())

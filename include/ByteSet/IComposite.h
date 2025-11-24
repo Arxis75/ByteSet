@@ -1,4 +1,5 @@
 #pragma once
+#include <cassert>
 
 using uint = unsigned int;
 
@@ -10,6 +11,7 @@ constexpr BitsPerElem BYTE = BitsPerElem::EIGHT;
 
 class IComposite;
 template <BitsPerElem> class ByteSet;
+template <BitsPerElem> class RLPByteSet;
 
 class IComponent
 {
@@ -58,12 +60,19 @@ class IComposite: virtual public IComponent
         //******************************* ICOMPOSITE INTERFACE ****************************
         inline virtual IComponent* newChild(uint creation_index = 0) = 0;
         inline virtual void addChild(uint child_index, IComponent *child) = 0;
+        inline virtual IComponent* removeChild(uint child_index) = 0;
         inline virtual const IComponent* getChild(uint child_index) const = 0;
+        inline virtual uint getChildrenCount() const = 0;
         //********************************************************************************
 
         template<typename T>
            inline const T* get(uint child_index) const { return dynamic_cast<const T*>(getChild(child_index)); }
-   
+
+        inline IComposite* removeBrackets() {
+            assert(getChildrenCount() == 1 && getChild(0)->getComposite());
+            return dynamic_cast<IComposite*>(removeChild(0)); 
+        }
+
         inline virtual uint getTyped() const { return m_typed; }
         inline virtual void setTyped(uint typed) { m_typed = typed; }
 
