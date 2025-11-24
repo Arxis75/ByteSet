@@ -146,7 +146,7 @@ class RLPByteSet : public ByteSet<BitsPerElement>
 
          //******************************* std::string Constructors/Operators *************************************
 
-        inline explicit RLPByteSet(const std::string &str, const ByteSetFormat &f = Hex, uint64_t target_nb_elem = 0) : RLPByteSet(str.c_str(), f, target_nb_elem) {}
+        explicit RLPByteSet(const std::string &str, const ByteSetFormat &f = Hex, uint64_t target_nb_elem = 0) : RLPByteSet(str.c_str(), f, target_nb_elem) {}
         explicit RLPByteSet(const char *str, const ByteSetFormat &f = Hex, uint64_t target_nb_elem = 0) : ByteSet<BitsPerElement>(str, f, target_nb_elem) {}
 
         //****************************************** PUSH/POP METHODS **************************************************
