@@ -133,7 +133,7 @@ class ByteSet : virtual public IComponent
 };
 
 template <BitsPerElem BitsPerElement = BYTE>
-class RLPByteSet : protected ByteSet<BitsPerElement>
+class RLPByteSet : public ByteSet<BitsPerElement>
 {
     public:
         enum Type {INT, BYTES, STR};
@@ -151,9 +151,6 @@ class RLPByteSet : protected ByteSet<BitsPerElement>
 
         //****************************************** PUSH/POP METHODS **************************************************
 
-        inline void push_front_elem(uint8_t elem) { ByteSet<BitsPerElement>::push_front_elem(elem); }
-        inline uint8_t pop_front_elem() { return ByteSet<BitsPerElement>::pop_front_elem(); }
-
         inline void push_brackets() { *this = RLPSerialize(*this, true); }
         inline void pop_brackets() { pop_rlp(true); }
 
@@ -161,32 +158,19 @@ class RLPByteSet : protected ByteSet<BitsPerElement>
         inline void push_back_rlp(const ByteSet<BitsPerElement>& b) { push_back_rlp(RLPByteSet(b)); }
         inline RLPByteSet pop_front_rlp() { return pop_rlp(false); }
 
-        //****************************************** BYTESET ACCESSORS ***********************************************
+        //********************************************* OPERATORS ***********************************************
 
-        inline bool operator==(const RLPByteSet &rlp) const { return ByteSet<BitsPerElement>::operator==(rlp); }
         inline RLPByteSet& operator=(const ByteSet<BitsPerElement> &b) { ByteSet<BitsPerElement>::operator=(b); return *this; }
-        template <BitsPerElem T>
-            inline ByteSet<T> as() const { return ByteSet<BitsPerElement>::template as<T>(); }
-        inline uint64_t byteSize() const { return ByteSet<BitsPerElement>::byteSize(); }
-        inline virtual const RLPByteSet<BYTE> serialize() const override { return ByteSet<BitsPerElement>::serialize(); }
-        inline ByteSet<BitsPerElement> keccak256() const { return ByteSet<BitsPerElement>::keccak256(); }
-        inline std::string asString(const ByteSetFormat &f = Hex, bool with_header = true, bool upper_case = true) const { return ByteSet<BitsPerElement>::asString(f,with_header, upper_case); }
-        inline virtual void clear() override { ByteSet<BitsPerElement>::clear(); }
 
         //********************************************* RLP HELPERS ***********************************************
 
         static ByteSet<BitsPerElement> RLPSerialize(const ByteSet<BitsPerElement> &b, bool as_list = false);
+        inline static ByteSet<BitsPerElement> buildRLPSizeHeader(const ByteSet<BitsPerElement> &b) { return ByteSet<BitsPerElement>(b.byteSize(), ByteSet<BitsPerElement>(b.byteSize()).byteSize() * b.getNbElemPerByte()); }   // the size needs to be byte-aligned
         inline bool hasRLPListHeader() const { return this->getNbElements() && this->at(0, 8/this->getBitsPerElem()).asInteger() >= 0xC0; }
 
     protected:
         RLPByteSet<BitsPerElement> pop_rlp(bool remove_brackets);
-
         inline RLPByteSet pop_front(uint64_t nb_element) { RLPByteSet rlp; rlp = ByteSet<BitsPerElement>::pop_front(nb_element); return rlp; }
-
-        //inline Type getType() const { return m_rlp_type; }
-        //inline void setType(Type t) { if(t == Type::INT) removefront0padding(); m_rlp_type = t; }
-        //inline void removefront0padding() { while(this->getNbElements() && !this->getElem(0)) this->pop_front_elem(); }
-        inline static ByteSet<BitsPerElement> buildRLPSizeHeader(const ByteSet<BitsPerElement> &b) { return ByteSet<BitsPerElement>(b.byteSize(), ByteSet<BitsPerElement>(b.byteSize()).byteSize() * b.getNbElemPerByte()); }   // the size needs to be byte-aligned
 
     private:
         Type m_rlp_type;
